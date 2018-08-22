@@ -19,4 +19,6 @@ DB_PASSWORD='your_mongo_password'
 
 # start project
 --------------
-npm start
+```shellsession
+npm run dev
+```

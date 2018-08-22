@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "babel-node": "babel-node --presets=latest",
-    "start": "nodemon --exec npm run babel-node -- ./index.js"
+    "server": "nodemon --exec npm run babel-node -- ./index.js",
+    "client": "npm start --prefix client",
+    "start": "npm run server",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "dependencies": {
     "babel-cli": "^6.26.0",
