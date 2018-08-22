@@ -11,6 +11,12 @@ Tracking my collection/progress/... of movies/tvshows...
 npm install
 ```
 
+* Create a file '.env' in the root folder
+```
+DB_USERNAME='your_mongo_username'
+DB_PASSWORD='your_mongo_password'
+```
+
 # start project
 --------------
 npm start
