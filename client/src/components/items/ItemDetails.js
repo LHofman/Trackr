@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button } from 'semantic-ui-react';
+import { Button, Confirm } from 'semantic-ui-react';
 
 import fetch from '../../utils/fetch';
 import getIcon from '../../utils/getIcon';
@@ -10,6 +10,7 @@ export default class ItemDetails extends Component {
 		super(props);
 		this.state = {
 			details: '',
+			deleteConfirmationAlert: false,
 			redirect: undefined
 		}
 	}
@@ -28,6 +29,21 @@ export default class ItemDetails extends Component {
 		});
 	}
 
+  showConfirmationAlert() {
+    this.setState({ deleteConfirmationAlert: true });
+  }
+
+	hideConfirmationAlert() {
+		this.setState({ deleteConfirmationAlert: false });
+	}
+
+	onDelete() {
+		const itemId = this.state.details._id;
+		return fetch(`/api/items/${itemId}`, 'delete').then(res => 
+			this.setState({redirect: '/'})
+		);
+	}
+
 	render() {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
@@ -42,6 +58,13 @@ export default class ItemDetails extends Component {
 					{getIcon(details)}
 					{details.title}
 				</h1>
+				<Confirm
+					open={this.state.deleteConfirmationAlert}
+					header={`confirm delete`}
+					content={`Are you sure you want to delete ${details.title}?`}
+					onCancel={this.hideConfirmationAlert.bind(this)}
+					onConfirm={this.onDelete.bind(this)}
+				/>
 				{
 					details.type === 'Book' &&
 					<h3>Author: {details.author}</h3>
@@ -51,6 +74,7 @@ export default class ItemDetails extends Component {
 					<h3>{details.ongoing ? 'Ongoing' : 'Ended'}</h3>
 				}
 				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
+				<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert()}>Delete</Button>
       </div>
     );
   }
