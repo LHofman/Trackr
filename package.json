@@ -23,6 +23,7 @@
     "dotenv": "^6.0.0",
     "express": "~4.15.5",
     "jade": "~1.11.0",
+    "moment-timezone": "^0.5.21",
     "mongoose": "^5.2.9",
     "morgan": "~1.9.0",
     "nodemon": "^1.18.3",
@@ -34,6 +35,8 @@
     "presets": [
       "latest"
     ],
-    "plugins": ["transform-object-rest-spread"]
+    "plugins": [
+      "transform-object-rest-spread"
+    ]
   }
 }

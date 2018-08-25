@@ -74,6 +74,7 @@ export default class ItemDetails extends Component {
 					<h3>{details.ongoing ? 'Ongoing' : 'Ended'}</h3>
 				}
 				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
+				<Button key='edit' positive floated='left' as={Link} to={`/items/${details.title_id}/edit`}>Edit</Button>
 				<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert()}>Delete</Button>
       </div>
     );
