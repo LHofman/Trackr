@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { List } from 'semantic-ui-react';
+import { Link } from 'react-router-dom';
+import { Button, List } from 'semantic-ui-react';
 
 import Item from './Item';
 
@@ -33,6 +34,7 @@ export default class Items extends Component {
     return (
       <div>
         <h2>Items</h2>
+        <Button positive circular floated='right' icon='plus' as={Link} to='/items/add' />
         <List>
           {items}
         </List>

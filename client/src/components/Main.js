@@ -1,6 +1,7 @@
 import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
+import AddItem from './items/AddItem';
 import Items from './items/Items';
 import ItemDetails from './items/ItemDetails';
 import PageNotFound from './PageNotFound';
@@ -10,6 +11,7 @@ export default () => (
         <Switch>
             <Route exact path="/" render={() => <Redirect to="/items" />} />
             <Route exact path='/items' component={Items} />
+            <Route exact path='/items/add' component={AddItem} />
             <Route exact path='/items/:titleId' component={ItemDetails} />
             <Route path='*' component={PageNotFound} />
         </Switch>
