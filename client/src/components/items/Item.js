@@ -17,7 +17,7 @@ export default class Item extends Component {
       <List.Item>
         {getIcon(item)}
         <List.Content>
-          <List.Header>{item.title}</List.Header>
+        <List.Header as='a' href={`/items/${item.title_id}`}>{item.title}</List.Header>
           <List.Description>Release Date: {new Date(item.releaseDate).toDateString()}</List.Description>
         </List.Content>
       </List.Item>

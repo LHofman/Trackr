@@ -1,10 +1,10 @@
 import React from 'react';
 import { Container } from 'semantic-ui-react';
 
-import Items from './components/items/Items';
+import Main from './components/Main';
 
 export default () => (
   <Container>
-    <Items />
+    <Main />
   </Container>
 );
