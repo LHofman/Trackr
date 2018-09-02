@@ -15,6 +15,7 @@ npm install
 ```
 DB_USERNAME='your_mongo_username'
 DB_PASSWORD='your_mongo_password'
+DB_SECRET='a_random_chosen_secret' //do not put 'a_random_chosen_secret', choose you own
 ```
 
 # start project

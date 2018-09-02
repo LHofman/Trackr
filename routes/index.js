@@ -1,7 +1,9 @@
 import express from 'express';
+import passport from 'passport';
 
 import Item from '../models/Item';
 
+const auth = passport.authenticate('jwt', { session: false });
 const router = express.Router();
 
 const STATUS_500_MESSAGE = 'Something went wrong';
@@ -69,12 +71,12 @@ const getTitleId = title => {
   const title_id = toSnakeCase(title);
   return getMaxItemsWithTitleId(toSnakeCase(title)).then(
     max => (max === 0 ? title_id : `${title_id}_${max + 1}`)
-  )
-}
+  );
+};
 
 //#endregion
 
-router.post('/items', (req, res, next) => {
+router.post('/items', auth, (req, res, next) => {
   return getTitleId(req.body.title).then(title_id => {
     const item = new Item({ ...req.body, title_id });
 
@@ -85,21 +87,19 @@ router.post('/items', (req, res, next) => {
   });
 });
 
-router.put('/items/:id', (req, res, next) => {
+router.put('/items/:id', auth, (req, res, next) => {
   Item.findById(req.params.id, (err, item) => {
     const newItem = req.body;
     const title = newItem.title;
 
     const update = newItem => {
-      Item.findByIdAndUpdate(
-        item._id,
-        newItem,
-        { new: true }
-      ).exec((err, item) => {
-        if (err) return res.status(500).send('Something went wrong');
-        res.json(item);
-      });
-    }
+      Item.findByIdAndUpdate(item._id, newItem, { new: true }).exec(
+        (err, item) => {
+          if (err) return res.status(500).send('Something went wrong');
+          res.json(item);
+        }
+      );
+    };
 
     if (title || title == item.title) {
       return getTitleId(title).then(title_id => {

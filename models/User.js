@@ -1,0 +1,32 @@
+import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
+
+export default mongoose.model(
+  'User',
+  mongoose.Schema({
+    name: String,
+    firstName: String,
+    email: {
+      type: String,
+      required: true
+    },
+    username: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    password: {
+      type: String,
+      required: true
+    }
+  })
+);
+
+export const comparePassword = (candidatePassword, hash, callback) => {
+  if (!candidatePassword)
+    return callback(new Error('A password must be provided'), false);
+  bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
+    if (err) throw err;
+    callback(null, isMatch);
+  });
+};

@@ -4,6 +4,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
+import passport from 'passport';
+
+import passportStrategy from './config/passportStrategy';
 
 import index from './routes';
 import users from './routes/users';
@@ -20,6 +23,9 @@ const db = mongoose.connection;
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(passport.initialize());
+app.use(passport.session());
+passportStrategy(passport);
 
 app.use('/api', index);
 app.use('/users', users);
