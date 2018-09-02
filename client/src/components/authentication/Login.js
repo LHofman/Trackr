@@ -19,7 +19,7 @@ export default class Login extends Component {
   }
 
   login(user) {
-    return fetch(`/users/authenticate`, 'post', user).then(body => {
+    return fetch(`/users/authenticate`, 'post', false, user).then(body => {
       if (body.success) {
         localStorage.setItem('auth_token', body.token);
         localStorage.setItem('user', JSON.stringify(body.user));

@@ -9,16 +9,19 @@ import Login from './authentication/Login';
 import Logout from './authentication/Logout';
 import PageNotFound from './PageNotFound';
 
+import getAuthComponent from '../utils/getAuthComponent';
+import getNonAuthComponent from '../utils/getNonAuthComponent';
+
 export default () => (
     <main>
         <Switch>
             <Route exact path="/" render={() => <Redirect to="/items" />} />
             <Route exact path='/items' component={Items} />
-            <Route exact path='/items/add' component={AddItem} />
+            <Route exact path='/items/add' component={getAuthComponent(AddItem)} />
             <Route exact path='/items/:titleId' component={ItemDetails} />
-            <Route exact path='/items/:titleId/edit' component={EditItem} />
-            <Route exact path='/login' component={Login} />
-            <Route exact path='/logout' component={Logout} />
+            <Route exact path='/items/:titleId/edit' component={getAuthComponent(EditItem)} />
+            <Route exact path='/login' component={getNonAuthComponent(Login)} />
+            <Route exact path='/logout' component={getAuthComponent(Logout)} />
             <Route path='*' component={PageNotFound} />
         </Switch>
     </main>

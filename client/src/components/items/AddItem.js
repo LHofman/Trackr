@@ -24,7 +24,7 @@ export default class AddItem extends Component {
   }
 
   addItem(newItem) {
-    return fetch('/api/items', 'post', newItem).then(item => {
+    return fetch('/api/items', 'post', true, newItem).then(item => {
       this.setState({redirect: `/items/${item.title_id}`});
     }).catch(console.log);
   }

@@ -4,6 +4,7 @@ import { Button, Confirm } from 'semantic-ui-react';
 
 import fetch from '../../utils/fetch';
 import getIcon from '../../utils/getIcon';
+import isLoggedIn from '../../utils/isLoggedIn';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -39,7 +40,7 @@ export default class ItemDetails extends Component {
 
 	onDelete() {
 		const itemId = this.state.details._id;
-		return fetch(`/api/items/${itemId}`, 'delete').then(res => 
+		return fetch(`/api/items/${itemId}`, 'delete', true).then(res => 
 			this.setState({redirect: '/'})
 		);
 	}
@@ -74,8 +75,13 @@ export default class ItemDetails extends Component {
 					<h3>{details.ongoing ? 'Ongoing' : 'Ended'}</h3>
 				}
 				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
-				<Button key='edit' positive floated='left' as={Link} to={`/items/${details.title_id}/edit`}>Edit</Button>
-				<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert()}>Delete</Button>
+				{
+          isLoggedIn() && 
+          [
+            <Button key='edit' positive floated='left' as={Link} to={`/items/${details.title_id}/edit`}>Edit</Button>,
+						<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert()}>Delete</Button>	
+          ]
+        }
       </div>
     );
   }

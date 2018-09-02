@@ -53,7 +53,7 @@ export default class EditItem extends Component {
 
 	editItem(newItem) {
 		const itemId = this.state.id;
-		return fetch(`/api/items/${itemId}`, 'put', newItem).then(item => {
+		return fetch(`/api/items/${itemId}`, 'put', true, newItem).then(item => {
 			this.setState({redirect: `/items/${item.title_id}`});
 		}).catch(console.log);
 	}

@@ -1,5 +1,6 @@
-export default (url, method, body) => {
+export default (url, method, authorization, body) => {
     const headers = { 'Content-Type': 'application/json' };
+    if (authorization) headers.Authorization = localStorage.getItem('auth_token');
     return fetch(url, {
         method,
         headers,

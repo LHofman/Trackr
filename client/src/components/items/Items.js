@@ -5,6 +5,7 @@ import { Button, List } from 'semantic-ui-react';
 import Item from './Item';
 
 import fetch from '../../utils/fetch';
+import isLoggedIn from '../../utils/isLoggedIn';
 
 export default class Items extends Component {
   constructor() {
@@ -34,7 +35,10 @@ export default class Items extends Component {
     return (
       <div>
         <h2>Items</h2>
-        <Button positive circular floated='right' icon='plus' as={Link} to='/items/add' />
+        {
+          isLoggedIn() && 
+          <Button positive circular floated='right' icon='plus' as={Link} to='/items/add' />
+        }
         <List>
           {items}
         </List>
