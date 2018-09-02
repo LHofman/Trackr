@@ -14,10 +14,12 @@ export default class ItemDetails extends Component {
 		super(props);
 		this.state = {
 			details: '',
-			deleteConfirmationAlert: false,
+			confirmationAlert: '',
 			userItem: '',
 			redirect: undefined
 		}
+
+		this.showConfirmationAlert = this.showConfirmationAlert.bind(this);
 	}
 
   componentWillMount() {
@@ -38,6 +40,7 @@ export default class ItemDetails extends Component {
 	getUserItem() {
 		fetch(`/api/userItems/${getUser().id}/${this.state.details._id}`).then(userItem => {
 			if (!userItem || userItem === null) throw new Error('userItem not found');
+			console.log(userItem);
 			this.setState({userItem});
 		}).catch(console.log);
 	}
@@ -54,12 +57,27 @@ export default class ItemDetails extends Component {
 		.catch(console.log);
   }
 
-  showConfirmationAlert() {
-    this.setState({ deleteConfirmationAlert: true });
+  unfollowItem() {
+    return fetch(`/api/userItems/${this.state.userItem._id}`, 'delete', true).then(userItem => {
+			this.setState({ userItem: ''});
+			this.hideConfirmationAlert();
+    }).catch(console.log);
+  }
+
+  showConfirmationAlert(alert) {
+    this.setState({ confirmationAlert: alert });
   }
 
 	hideConfirmationAlert() {
-		this.setState({ deleteConfirmationAlert: false });
+		this.setState({ confirmationAlert: '' });
+	}
+
+	confirmAlert() {
+		switch (this.state.confirmationAlert) {
+			case 'delete': this.onDelete(); break;
+			case 'unfollow': this.unfollowItem(); break;
+			default: break;
+		}
 	}
 
 	onDelete() {
@@ -83,19 +101,26 @@ export default class ItemDetails extends Component {
 					{getIcon(details)}
 					{details.title}
 					{
-						(isLoggedIn() && !this.state.userItem) &&
-						<Popup
-							trigger={<Icon id='follow' name='plus' color='green' onClick={this.followItem.bind(this)} />}
-							content='Follow this item'
-						/>
+						isLoggedIn() &&
+						(
+							this.state.userItem ?
+							<Popup
+								trigger={<Icon id='unfollow' name='minus' color='red' onClick={() => this.showConfirmationAlert('unfollow')} />}
+								content='Unfollow this item'
+							/> :
+							<Popup
+								trigger={<Icon id='follow' name='plus' color='green' onClick={this.followItem.bind(this)} />}
+								content='Follow this item'
+							/>
+						)
 					}
 				</h1>
 				<Confirm
-					open={this.state.deleteConfirmationAlert}
-					header={`confirm delete`}
-					content={`Are you sure you want to delete ${details.title}?`}
+					open={this.state.confirmationAlert !== ''}
+					header={`confirm action`}
+					content={`Are you sure you want to ${this.state.confirmationAlert} ${details.title}?`}
 					onCancel={this.hideConfirmationAlert.bind(this)}
-					onConfirm={this.onDelete.bind(this)}
+					onConfirm={this.confirmAlert.bind(this)}
 				/>
 				{
 					details.type === 'Book' &&
@@ -117,7 +142,7 @@ export default class ItemDetails extends Component {
           canEdit(details) && 
           [
             <Button key='edit' positive floated='left' as={Link} to={`/items/${details.title_id}/edit`}>Edit</Button>,
-						<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert()}>Delete</Button>	
+						<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert('delete')}>Delete</Button>	
           ]
         }
       </div>
