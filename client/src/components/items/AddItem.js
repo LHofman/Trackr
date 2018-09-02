@@ -3,6 +3,7 @@ import { Link, Redirect } from 'react-router-dom';
 import { Button, Form, Dropdown, Checkbox, Message } from 'semantic-ui-react';
 
 import fetch from '../../utils/fetch';
+import getUser from '../../utils/getUser';
 import typeOptions from './typeOptions';
 
 export default class AddItem extends Component {
@@ -72,7 +73,8 @@ export default class AddItem extends Component {
     const newItem = {
       type,
       title: this.state.title,
-      releaseDate: new Date(this.state.releaseDate).toISOString()
+      releaseDate: new Date(this.state.releaseDate).toISOString(),
+      createdBy: getUser().id
     }
     switch (type) {
       case 'Book': newItem.author = this.state.author; break;

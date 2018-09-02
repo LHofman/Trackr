@@ -20,6 +20,11 @@ export default mongoose.model(
       required: true
     },
     author: String,
-    ongoing: Boolean
+    ongoing: Boolean,
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
   })
 );
