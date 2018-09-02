@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Confirm } from 'semantic-ui-react';
 
+import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
 import getIcon from '../../utils/getIcon';
-import isLoggedIn from '../../utils/isLoggedIn';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -76,7 +76,7 @@ export default class ItemDetails extends Component {
 				}
 				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
 				{
-          isLoggedIn() && 
+          canEdit(details) && 
           [
             <Button key='edit' positive floated='left' as={Link} to={`/items/${details.title_id}/edit`}>Edit</Button>,
 						<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert()}>Delete</Button>	

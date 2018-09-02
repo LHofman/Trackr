@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import passport from 'passport';
 
 import Item from '../models/Item';
@@ -11,21 +12,27 @@ const STATUS_500_MESSAGE = 'Something went wrong';
 //#region items
 
 router.get('/items', (req, res, next) => {
-  Item.find((err, items) => {
+  Item.find()
+  .populate({ path: 'createdBy', select: 'username' })
+  .exec((err, items) => {
     if (err) return res.status(500).send(STATUS_500_MESSAGE);
     res.json(items);
   });
 });
 
 router.get('/items/:id', (req, res, next) => {
-  Item.findById(req.params.id, (err, item) => {
+  Item.findById(req.params.id)
+  .populate({ path: 'createdBy', select: 'username' })
+  .exec((err, item) => {
     if (err) return res.status(404).send('Item not found');
     res.json(item);
   });
 });
 
 router.get('/items/title_id/:title_id', (req, res, next) => {
-  Item.findOne({ title_id: req.params.title_id }, (err, item) => {
+  Item.findOne({ title_id: req.params.title_id })
+  .populate({ path: 'createdBy', select: 'username' })
+  .exec((err, item) => {
     if (err) return res.status(404).send('Item not found');
     res.json(item);
   });
@@ -87,8 +94,12 @@ router.post('/items', auth, (req, res, next) => {
   });
 });
 
+const isCreator = (model, user) => new mongoose.Types.ObjectId(user._id).equals(model.createdBy);
+
 router.put('/items/:id', auth, (req, res, next) => {
   Item.findById(req.params.id, (err, item) => {
+    if (!isCreator(item, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+
     const newItem = req.body;
     const title = newItem.title;
 
@@ -113,6 +124,7 @@ router.put('/items/:id', auth, (req, res, next) => {
 router.delete('/items/:id', auth, (req, res, next) => {
   Item.findById(req.params.id, (err, item) => {
     if (err) return res.status(500).send({success: false, msg: 'Item not found'});
+    if (!isCreator(item, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this item'});
     
     item.remove((err, item) => {
       if (err) return res.status(500).send('Something went wrong');
