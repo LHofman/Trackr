@@ -22,6 +22,18 @@ export default mongoose.model(
   })
 );
 
+export const addUser = (newUser, callback) => {
+  const password = newUser.password;
+  if (!password) throw new Error('A password must be provided');
+  bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(password, salt, (err, hash) => {
+      if (err) throw err;
+      newUser.password = hash;
+      newUser.save(callback);
+    });
+  });
+};
+
 export const comparePassword = (candidatePassword, hash, callback) => {
   if (!candidatePassword)
     return callback(new Error('A password must be provided'), false);

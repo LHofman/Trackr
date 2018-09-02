@@ -19,6 +19,7 @@ export default class Navbar extends Component {
             </Menu.Menu>
           ) : (
             <Menu.Menu position='right'>
+              <Menu.Item name='register' as={Link} to='/register' />
               <Menu.Item name='login' as={Link} to='/login' />
             </Menu.Menu>
           )

@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 
-import User, { comparePassword } from '../models/User';
+import User, { addUser, comparePassword } from '../models/User';
 
 dotenv.config();
 
@@ -21,7 +21,7 @@ router.post('/authenticate', (req, res, next) => {
       const token = jwt.sign(user.toJSON(), process.env.DB_SECRET, {
         expiresIn: 7 * 24 * 60 * 60 //1 week
       });
-      
+
       res.json({
         success: true,
         token: 'JWT ' + token,
@@ -32,6 +32,22 @@ router.post('/authenticate', (req, res, next) => {
         }
       });
     });
+  });
+});
+
+router.post('/register', (req, res, next) => {
+  const user = new User(req.body);
+  addUser(user, (err, user) => {
+    if (err)
+      return res.status(500).send({
+        success: false,
+        code: err.code,
+        msg:
+          err.code === 11000
+            ? 'The username is already in use'
+            : 'Something went wrong'
+      });
+    res.json(user);
   });
 });
 

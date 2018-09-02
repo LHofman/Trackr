@@ -8,6 +8,7 @@ import ItemDetails from './items/ItemDetails';
 import Login from './authentication/Login';
 import Logout from './authentication/Logout';
 import PageNotFound from './PageNotFound';
+import Register from './authentication/Register';
 
 import getAuthComponent from '../utils/getAuthComponent';
 import getNonAuthComponent from '../utils/getNonAuthComponent';
@@ -22,6 +23,7 @@ export default () => (
             <Route exact path='/items/:titleId/edit' component={getAuthComponent(EditItem)} />
             <Route exact path='/login' component={getNonAuthComponent(Login)} />
             <Route exact path='/logout' component={getAuthComponent(Logout)} />
+            <Route exact path='/register' component={getNonAuthComponent(Register)} />
             <Route path='*' component={PageNotFound} />
         </Switch>
     </main>
