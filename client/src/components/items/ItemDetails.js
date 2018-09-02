@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Confirm } from 'semantic-ui-react';
+import { Button, Confirm, Icon, Popup } from 'semantic-ui-react';
 
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
 import getIcon from '../../utils/getIcon';
+import getUser from '../../utils/getUser';
+import isLoggedIn from '../../utils/isLoggedIn';
+import statusOptions from './statusOptions';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -12,6 +15,7 @@ export default class ItemDetails extends Component {
 		this.state = {
 			details: '',
 			deleteConfirmationAlert: false,
+			userItem: '',
 			redirect: undefined
 		}
 	}
@@ -29,6 +33,18 @@ export default class ItemDetails extends Component {
 			this.setState({redirect: '/'});
 		});
 	}
+
+  followItem(e) {
+    e.preventDefault();
+		return fetch(`/api/userItems`, 'post', true, 
+			{ 
+				user: getUser().id, 
+				item: this.state.details._id,
+				status: statusOptions(this.state.details)[0].value
+			}
+		).then(userItem => this.setState({ userItem }))
+		.catch(console.log);
+  }
 
   showConfirmationAlert() {
     this.setState({ deleteConfirmationAlert: true });
@@ -58,6 +74,13 @@ export default class ItemDetails extends Component {
 				<h1>
 					{getIcon(details)}
 					{details.title}
+					{
+						(isLoggedIn() && !this.state.userItem) &&
+						<Popup
+							trigger={<Icon id='follow' name='plus' color='green' onClick={this.followItem.bind(this)} />}
+							content='Follow this item'
+						/>
+					}
 				</h1>
 				<Confirm
 					open={this.state.deleteConfirmationAlert}

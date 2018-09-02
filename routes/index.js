@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import passport from 'passport';
 
 import Item from '../models/Item';
+import UserItem from '../models/UserItem';
 
 const auth = passport.authenticate('jwt', { session: false });
 const router = express.Router();
@@ -137,5 +138,18 @@ router.delete('/items/:id', auth, (req, res, next) => {
 });
 
 //#endregion items
+
+//#region userItems
+
+router.post('/userItems', auth, (req, res, next) => {
+  const userItem = new UserItem(req.body);
+
+  userItem.save((err, userItem) => {
+    if (err) return res.status(500).send({success: false, msg: STATUS_500_MESSAGE});
+    res.json(userItem);
+  });
+});
+
+//#endregion
 
 export default router;

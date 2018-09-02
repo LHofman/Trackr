@@ -1,0 +1,18 @@
+export default item => {
+    const options = [];
+    if (!item || !item.type) return '';
+    switch (item.type) {
+        case 'Book': options.push('To Read', 'Reading', 'Read'); break;
+        case 'Movie': options.push('To Watch', 'Watched'); break;
+        case 'TvShow': options.push('To Watch', 'Watching', 'Awaiting Hiatus', 'Watched'); break;
+        case 'Video Game': options.push('To Play', 'Playing', 'Played', 'Completed'); break;
+        case '': return '';
+        default: options.push('To Do', 'Done'); break;
+    }
+    return options.map(option => {
+        return {
+            text: option, 
+            value: option
+        }
+    });
+}
