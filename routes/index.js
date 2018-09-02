@@ -141,6 +141,15 @@ router.delete('/items/:id', auth, (req, res, next) => {
 
 //#region userItems
 
+router.get('/userItems/:user/:item', (req, res, next) => {
+  UserItem.findOne({user: req.params.user, item: req.params.item}, 
+    (err, userItem) => {
+      if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
+      res.json(userItem);
+    }
+  );
+});
+
 router.post('/userItems', auth, (req, res, next) => {
   const userItem = new UserItem(req.body);
 

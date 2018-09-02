@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Confirm, Icon, Popup } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Dropdown, Icon, Popup } from 'semantic-ui-react';
 
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
@@ -29,9 +29,17 @@ export default class ItemDetails extends Component {
 		return fetch(`/api/items/title_id/${title_id}`).then(details => {
 			if (!details || details === null) throw new Error('item not found');
 			this.setState({ details })
+			this.getUserItem();
 		}).catch(reason => {
 			this.setState({redirect: '/'});
 		});
+	}
+
+	getUserItem() {
+		fetch(`/api/userItems/${getUser().id}/${this.state.details._id}`).then(userItem => {
+			if (!userItem || userItem === null) throw new Error('userItem not found');
+			this.setState({userItem});
+		}).catch(console.log);
 	}
 
   followItem(e) {
@@ -98,6 +106,13 @@ export default class ItemDetails extends Component {
 					<h3>{details.ongoing ? 'Ongoing' : 'Ended'}</h3>
 				}
 				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
+				{
+					this.state.userItem &&
+					<div>
+						<Checkbox key='inCollection' label='In Collection' name='inCollection' checked={this.state.userItem.inCollection} disabled/><br /><br />
+						<Dropdown key='status' placeholder='Status' selection options={statusOptions(details)} name='status' value={this.state.userItem.status} disabled/><br /><br />
+          </div>
+        }
 				{
           canEdit(details) && 
           [
