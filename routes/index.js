@@ -159,6 +159,20 @@ router.post('/userItems', auth, (req, res, next) => {
   });
 });
 
+router.put('/userItems/:id', auth, (req, res, next) => {
+  const userItemId = req.params.id;
+  UserItem.findById(userItemId, (err, userItem) => {
+    if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
+    if (!new mongoose.Types.ObjectId(req.user._id).equals(userItem.user))
+      return res.status(500).send({sucess: false, msg: 'You did not create this userItem'});
+    
+    UserItem.findByIdAndUpdate(userItemId, req.body, { new: true }, (err, userItem) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json(userItem);
+    });
+  });
+});
+
 router.delete('/userItems/:id', auth, (req, res, next) => {
   UserItem.findById(req.params.id)
     .populate('item')

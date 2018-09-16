@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Checkbox, Confirm, Dropdown, Icon, Popup } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Dropdown, Header, Icon, Modal, Popup } from 'semantic-ui-react';
 
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
@@ -16,9 +16,12 @@ export default class ItemDetails extends Component {
 			details: '',
 			confirmationAlert: '',
 			userItem: '',
+			modalOpen: false,
 			redirect: undefined
 		}
 
+		this.updateUserItem = this.updateUserItem.bind(this);
+		this.closeModal = this.closeModal.bind(this);
 		this.showConfirmationAlert = this.showConfirmationAlert.bind(this);
 	}
 
@@ -87,6 +90,23 @@ export default class ItemDetails extends Component {
 		);
 	}
 
+  updateUserItem(name, value) {
+    const userItem = this.state.userItem;
+    if (userItem[name] === value) return;
+    userItem[name] = value;
+		fetch(`/api/userItems/${userItem._id}`, 'put', true, userItem)
+			.catch(res => {
+				res.json().then(body => {
+					console.log(body);
+				});
+			});
+    this.setState({ userItem, modalOpen: true });
+	}
+	
+	closeModal() {
+		this.setState({ modalOpen: false })
+	}
+
 	render() {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
@@ -134,8 +154,22 @@ export default class ItemDetails extends Component {
 				{
 					this.state.userItem &&
 					<div>
-						<Checkbox key='inCollection' label='In Collection' name='inCollection' checked={this.state.userItem.inCollection} disabled/><br /><br />
-						<Dropdown key='status' placeholder='Status' selection options={statusOptions(details)} name='status' value={this.state.userItem.status} disabled/><br /><br />
+						<Checkbox key='inCollection' label='In Collection' name='inCollection' checked={this.state.userItem.inCollection}
+							onChange={(param, data) => this.updateUserItem('inCollection', data.checked)} /><br /><br />
+						<Dropdown key='status' placeholder='Status' selection options={statusOptions(details)} name='status' value={this.state.userItem.status} 
+							onChange={(param, data) => this.updateUserItem('status', data.value)} /><br /><br />
+						<Modal key='message'
+							open={this.state.modalOpen}
+							onClose={this.closeModal}
+							basic
+							size='small'>
+							<Header icon='browser' content='Item updated' />
+							<Modal.Actions>
+								<Button color='green' onClick={this.closeModal} inverted>
+									<Icon name='checkmark' /> Got it
+          			</Button>
+              </Modal.Actions>
+            </Modal>
           </div>
         }
 				{
