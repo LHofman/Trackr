@@ -7,7 +7,7 @@ import fetch from '../../utils/fetch';
 import getIcon from '../../utils/getIcon';
 import getUser from '../../utils/getUser';
 import isLoggedIn from '../../utils/isLoggedIn';
-import statusOptions from './statusOptions';
+import statusOptions from '../userItems/statusOptions';
 
 export default class ItemDetails extends Component {
 	constructor(props) {

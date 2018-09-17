@@ -150,6 +150,16 @@ router.get('/userItems/:user/:item', (req, res, next) => {
   );
 });
 
+router.get('/userItems/:user', (req, res, next) => {
+  UserItem.find({user: req.params.user})
+    .populate('item')
+    .exec((err, userItems) => {
+      if (err) return res.status(500).send({success: false, msg: 'UserItems not found'});
+      res.json(userItems);
+    }
+  );
+});
+
 router.post('/userItems', auth, (req, res, next) => {
   const userItem = new UserItem(req.body);
 
