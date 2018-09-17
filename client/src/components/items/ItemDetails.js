@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Checkbox, Confirm, Dropdown, Header, Icon, Modal, Popup } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Dropdown, Header, Icon, Modal, Popup, Rating } from 'semantic-ui-react';
 
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
@@ -91,7 +91,7 @@ export default class ItemDetails extends Component {
 	}
 
   updateUserItem(name, value) {
-    const userItem = this.state.userItem;
+		const userItem = this.state.userItem;
     if (userItem[name] === value) return;
     userItem[name] = value;
 		fetch(`/api/userItems/${userItem._id}`, 'put', true, userItem)
@@ -156,6 +156,7 @@ export default class ItemDetails extends Component {
 					<div>
 						<Checkbox key='inCollection' label='In Collection' name='inCollection' checked={this.state.userItem.inCollection}
 							onChange={(param, data) => this.updateUserItem('inCollection', data.checked)} /><br /><br />
+						<Rating icon='star' defaultRating={this.state.userItem.rating} maxRating={10} clearable onRate={(param, data) => this.updateUserItem('rating', data.rating)} /><br/><br/>
 						<Dropdown key='status' placeholder='Status' selection options={statusOptions(details)} name='status' value={this.state.userItem.status} 
 							onChange={(param, data) => this.updateUserItem('status', data.value)} /><br /><br />
 						<Modal key='message'

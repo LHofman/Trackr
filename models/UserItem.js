@@ -22,6 +22,7 @@ export default mongoose.model(
       type: String,
       required: true,
       default: 'To Do'
-    }
+    },
+    rating: Number
   })
 );
