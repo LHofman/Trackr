@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
+import MediaQuery from 'react-responsive';
 import { Link } from 'react-router-dom';
-import { Button, Dropdown, Input, List } from 'semantic-ui-react';
+import { Button, Dropdown, Input, Label, List, Pagination } from 'semantic-ui-react';
 
 import Item from './Item';
 
@@ -15,10 +16,12 @@ export default class Items extends Component {
       items: [],
       typeFilter: '',
       titleFilter: '',
-      sort: { field: 'title', order: 'asc' }
+      sort: { field: 'title', order: 'asc' },
+      activePage: 1
     }
 
     this.sort = this.sort.bind(this);
+    this.changePage = this.changePage.bind(this);
   }
 
   componentWillMount() {
@@ -60,6 +63,31 @@ export default class Items extends Component {
       asc: asc * -1;
   }
 
+  handlePaginationChange(e, { activePage }) {
+    this.setState({ activePage });
+  }
+
+  changePage(activePage) {
+    this.handlePaginationChange(null, { activePage });
+  }
+
+  getPagination(totalPages) {
+    return (
+      <div>
+        <MediaQuery query='(max-width: 550px)'>
+          <Button icon='fast backward' onClick={() => this.changePage(1)} />
+          <Button icon='step backward' onClick={() => this.changePage(this.state.activePage-1)} />
+          <Label content={`${this.state.activePage}/${totalPages}`} color='teal' />
+          <Button icon='step forward' onClick={() => this.changePage(this.state.activePage+1)} />
+          <Button icon='fast forward' onClick={() => this.changePage(totalPages)} />
+        </MediaQuery>
+        <MediaQuery query='(min-width: 550px)'>
+          <Pagination activePage={this.state.activePage} totalPages={totalPages} onPageChange={this.handlePaginationChange.bind(this)} />
+        </MediaQuery>
+      </div>
+    )
+  }
+
   render() {
     const {typeFilter, titleFilter} = this.state;
     const filteredItems = this.state.items.filter(item => 
@@ -69,9 +97,13 @@ export default class Items extends Component {
       (typeFilter === '' || item.type === typeFilter)
     ).sort(this.sort);
     
-    const items = filteredItems.map(item => 
-      <Item key={item._id} item={item}></Item>
-    );
+    const begin = (this.state.activePage - 1) * 100;
+    const totalPages = Math.ceil(filteredItems.length / 100, 0);
+    const items = filteredItems
+      .slice(begin, begin + 100)
+      .map(item => 
+        <Item key={item._id} item={item}></Item>
+      );
 
     return (
       <div>
@@ -86,14 +118,16 @@ export default class Items extends Component {
             { key: 'title_desc', text: 'Title (desc)', value: 'title_desc' },
             { key: 'releaseDate_asc', text: 'Release Date (asc)', value: 'releaseDate_asc' },
             { key: 'releaseDate_desc', text: 'Release Date (desc)', value: 'releaseDate_desc' },
-          ]} onChange={(param, data) => this.handleSortChange(data.value)} />
+          ]} onChange={(param, data) => this.handleSortChange(data.value)} /><br/><br/>
         {
           isLoggedIn() && 
           <Button positive circular floated='right' icon='plus' as={Link} to='/items/add' />
         }
+        {this.getPagination(totalPages)}
         <List>
           {items}
         </List>
+        {this.getPagination(totalPages)}
       </div>
     );
   }
