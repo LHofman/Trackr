@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import { Link } from 'react-router-dom';
@@ -16,10 +17,13 @@ export default class Items extends Component {
       items: [],
       typeFilter: '',
       titleFilter: '',
+      releaseDateLowerLimit: '',
+      releaseDateUpperLimit: '',
       sort: { field: 'title', order: 'asc' },
       activePage: 1
     }
 
+    this.onFilterChange = this.onFilterChange.bind(this);
     this.sort = this.sort.bind(this);
     this.changePage = this.changePage.bind(this);
   }
@@ -41,6 +45,7 @@ export default class Items extends Component {
   }
 
   onFilterChange(event) {
+    console.log(event.target.value);
     this.handleValueChange(event.target.name, event.target.value);
   }
 
@@ -89,12 +94,19 @@ export default class Items extends Component {
   }
 
   render() {
-    const {typeFilter, titleFilter} = this.state;
+    const {typeFilter, titleFilter, releaseDateLowerLimit, releaseDateUpperLimit} = this.state;
     const filteredItems = this.state.items.filter(item => 
+      //titleFilter
       item.title.toString().toLowerCase().indexOf(
         titleFilter.toString().toLowerCase()
       ) !== -1 &&
-      (typeFilter === '' || item.type === typeFilter)
+      //typeFilter
+      (typeFilter === '' || item.type === typeFilter) &&
+      //releaseDateFilter
+      (
+        (releaseDateLowerLimit === '' || moment(releaseDateLowerLimit).isSameOrBefore(item.releaseDate)) &&
+        (releaseDateUpperLimit === '' || moment(releaseDateUpperLimit).isSameOrAfter(item.releaseDate))
+      )
     ).sort(this.sort);
     
     const begin = (this.state.activePage - 1) * 100;
@@ -119,6 +131,10 @@ export default class Items extends Component {
             { key: 'releaseDate_asc', text: 'Release Date (asc)', value: 'releaseDate_asc' },
             { key: 'releaseDate_desc', text: 'Release Date (desc)', value: 'releaseDate_desc' },
           ]} onChange={(param, data) => this.handleSortChange(data.value)} /><br/><br/>
+        <Label>Release Date Lower Limit</Label>
+        <Input type='date' name='releaseDateLowerLimit' value={moment(this.state.releaseDateLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+        <Label>Release Date Upper Limit</Label>
+        <Input type='date' name='releaseDateUpperLimit' value={moment(this.state.releaseDateUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/><br/>
         {
           isLoggedIn() && 
           <Button positive circular floated='right' icon='plus' as={Link} to='/items/add' />
