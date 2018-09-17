@@ -14,8 +14,11 @@ export default class Items extends Component {
     this.state = {
       items: [],
       typeFilter: '',
-      titleFilter: ''
+      titleFilter: '',
+      sort: { field: 'title', order: 'asc' }
     }
+
+    this.sort = this.sort.bind(this);
   }
 
   componentWillMount() {
@@ -42,6 +45,21 @@ export default class Items extends Component {
     this.setState({ [name]: value });
   }
 
+  handleSortChange(value) {
+    const index = value.indexOf('_');
+    this.handleValueChange('sort' , { 
+      field: value.substring(0, index), 
+      order: value.substring(index+1) 
+    });
+  }
+
+  sort(i1, i2) {
+    const asc = this.state.sort.order === 'asc' ? -1 : 1;
+    return i1[this.state.sort.field].toString().toLowerCase() < 
+      i2[this.state.sort.field].toString().toLowerCase() ?
+      asc: asc * -1;
+  }
+
   render() {
     const {typeFilter, titleFilter} = this.state;
     const filteredItems = this.state.items.filter(item => 
@@ -49,7 +67,7 @@ export default class Items extends Component {
         titleFilter.toString().toLowerCase()
       ) !== -1 &&
       (typeFilter === '' || item.type === typeFilter)
-    );
+    ).sort(this.sort);
     
     const items = filteredItems.map(item => 
       <Item key={item._id} item={item}></Item>
@@ -62,6 +80,13 @@ export default class Items extends Component {
         <Dropdown placeholder='Type' name='typeFilter' selection value={''}
           options={[{ text: '---No Filter---', value: '' }, ...typeOptions]}
           onChange={(param, data) => this.handleValueChange('typeFilter', data.value)} />&nbsp;&nbsp;&nbsp;
+        <Dropdown text='Sort' labeled button name='sort'
+          options={[
+            { key: 'title_asc', text: 'Title (asc)', value: 'title_asc' },
+            { key: 'title_desc', text: 'Title (desc)', value: 'title_desc' },
+            { key: 'releaseDate_asc', text: 'Release Date (asc)', value: 'releaseDate_asc' },
+            { key: 'releaseDate_desc', text: 'Release Date (desc)', value: 'releaseDate_desc' },
+          ]} onChange={(param, data) => this.handleSortChange(data.value)} />
         {
           isLoggedIn() && 
           <Button positive circular floated='right' icon='plus' as={Link} to='/items/add' />
