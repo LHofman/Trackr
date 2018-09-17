@@ -2,7 +2,7 @@ import moment from 'moment';
 import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import { Link } from 'react-router-dom';
-import { Button, Dropdown, Input, Label, List, Pagination } from 'semantic-ui-react';
+import { Button, Dropdown, Icon, Input, Label, List, Menu, Pagination, Sidebar } from 'semantic-ui-react';
 
 import Item from './Item';
 
@@ -20,12 +20,15 @@ export default class Items extends Component {
       releaseDateLowerLimit: '',
       releaseDateUpperLimit: '',
       sort: { field: 'title', order: 'asc' },
-      activePage: 1
+      activePage: 1,
+      isSidebarVisible: false
     }
 
     this.onFilterChange = this.onFilterChange.bind(this);
+    this.handleSortChange = this.handleSortChange.bind(this);
     this.sort = this.sort.bind(this);
     this.changePage = this.changePage.bind(this);
+    this.toggleSidebar = this.toggleSidebar.bind(this);
   }
 
   componentWillMount() {
@@ -45,7 +48,6 @@ export default class Items extends Component {
   }
 
   onFilterChange(event) {
-    console.log(event.target.value);
     this.handleValueChange(event.target.name, event.target.value);
   }
 
@@ -53,12 +55,8 @@ export default class Items extends Component {
     this.setState({ [name]: value });
   }
 
-  handleSortChange(value) {
-    const index = value.indexOf('_');
-    this.handleValueChange('sort' , { 
-      field: value.substring(0, index), 
-      order: value.substring(index+1) 
-    });
+  handleSortChange(event, { name, value }) {
+    this.handleValueChange('sort', { field: name, order: value });
   }
 
   sort(i1, i2) {
@@ -93,8 +91,16 @@ export default class Items extends Component {
     )
   }
 
+  toggleSidebar() {
+    this.setState({ isSidebarVisible: !this.state.isSidebarVisible });
+  }
+
+  hideSidebar() {
+    this.setState({ isSidebarVisible: false });
+  }
+
   render() {
-    const {typeFilter, titleFilter, releaseDateLowerLimit, releaseDateUpperLimit} = this.state;
+    const {typeFilter, titleFilter, releaseDateLowerLimit, releaseDateUpperLimit, sort} = this.state;
     const filteredItems = this.state.items.filter(item => 
       //titleFilter
       item.title.toString().toLowerCase().indexOf(
@@ -120,25 +126,64 @@ export default class Items extends Component {
     return (
       <div>
         <h2>Items</h2>
-        <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' />&nbsp;&nbsp;&nbsp;
-        <Dropdown placeholder='Type' name='typeFilter' selection value={''}
-          options={[{ text: '---No Filter---', value: '' }, ...typeOptions]}
-          onChange={(param, data) => this.handleValueChange('typeFilter', data.value)} />&nbsp;&nbsp;&nbsp;
-        <Dropdown text='Sort' labeled button name='sort'
-          options={[
-            { key: 'title_asc', text: 'Title (asc)', value: 'title_asc' },
-            { key: 'title_desc', text: 'Title (desc)', value: 'title_desc' },
-            { key: 'releaseDate_asc', text: 'Release Date (asc)', value: 'releaseDate_asc' },
-            { key: 'releaseDate_desc', text: 'Release Date (desc)', value: 'releaseDate_desc' },
-          ]} onChange={(param, data) => this.handleSortChange(data.value)} /><br/><br/>
-        <Label>Release Date Lower Limit</Label>
-        <Input type='date' name='releaseDateLowerLimit' value={moment(this.state.releaseDateLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
-        <Label>Release Date Upper Limit</Label>
-        <Input type='date' name='releaseDateUpperLimit' value={moment(this.state.releaseDateUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/><br/>
         {
           isLoggedIn() && 
           <Button positive circular floated='right' icon='plus' as={Link} to='/items/add' />
         }
+        <Button onClick={this.toggleSidebar}><Icon name='bars' />Filter/Sort</Button>
+        <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' /><br/><br/><br/>
+        <Sidebar as={Menu}
+          animation='overlay'
+          onHide={this.hideSidebar.bind(this)}
+          vertical
+          visible={this.state.isSidebarVisible}
+          width='wide'
+        >
+          <Menu.Item header>Filter By</Menu.Item>
+          <Menu.Item>
+            <Label>Type</Label>
+            <Dropdown placeholder='Type' name='typeFilter' selection value={''}
+              options={[{ text: '---No Filter---', value: '' }, ...typeOptions]}
+              onChange={(param, data) => this.handleValueChange('typeFilter', data.value)} /><br/>
+          </Menu.Item>
+          <Menu.Item>
+            <Label>Release Date Lower Limit</Label>
+            <Input type='date' name='releaseDateLowerLimit' value={moment(this.state.releaseDateLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+          </Menu.Item>
+          <Menu.Item>
+            <Label>Release Date Upper Limit</Label>
+            <Input type='date' name='releaseDateUpperLimit' value={moment(this.state.releaseDateUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+          </Menu.Item>
+          <Menu.Item header>Sort By</Menu.Item>
+          <Menu.Item 
+            name='title'
+            value='asc'
+            active={sort.field === 'title' && sort.order === 'asc'}
+            onClick={this.handleSortChange}>
+            Title (asc)
+          </Menu.Item>
+          <Menu.Item 
+            name='title'
+            value='desc'
+            active={sort.field === 'title' && sort.order === 'desc'}
+            onClick={this.handleSortChange}>
+            Title (desc)
+          </Menu.Item>
+          <Menu.Item 
+            name='releaseDate'
+            value='asc'
+            active={sort.field === 'releaseDate' && sort.order === 'asc'}
+            onClick={this.handleSortChange}>
+            Release Date (asc)
+          </Menu.Item>
+          <Menu.Item 
+            name='releaseDate'
+            value='desc'
+            active={sort.field === 'releaseDate' && sort.order === 'desc'}
+            onClick={this.handleSortChange}>
+            Release Date (desc)
+          </Menu.Item>
+        </Sidebar>
         {this.getPagination(totalPages)}
         <List>
           {items}
