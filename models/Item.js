@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 import UserItem from './UserItem';
+import GameObjective from './GameObjective';
 
 const ItemSchema = mongoose.Schema({
   type: {
@@ -30,6 +31,7 @@ const ItemSchema = mongoose.Schema({
 
 ItemSchema.pre('remove', function (next) {
   UserItem.remove({item: this._id}).exec();
+  GameObjective.remove({game: this._id}).exec();
   next();
 });
 

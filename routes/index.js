@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import passport from 'passport';
 
 import Item from '../models/Item';
+import GameObjective from '../models/GameObjective';
 import UserItem from '../models/UserItem';
 
 const auth = passport.authenticate('jwt', { session: false });
@@ -201,6 +202,19 @@ router.delete('/userItems/:id', auth, (req, res, next) => {
         });
       });
     });
+});
+
+//#endregion
+
+//#region gameObjectives
+
+router.get('/gameObjectives/:game', (req, res, next) => {
+  GameObjective.find({game: req.params.game})
+    .exec((err, gameObjectives) => {
+      if (err) return res.status(500).send({success: false, msg: 'GameObjectives not found'});
+      res.json(gameObjectives);
+    }
+  );
 });
 
 //#endregion

@@ -152,6 +152,10 @@ export default class ItemDetails extends Component {
 				}
 				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
 				{
+					details.type === 'Video Game' &&
+					<div><Button as={Link} to={`/items/${details.title_id}/objectives`} color='teal'>Objectives</Button><br /><br /></div>
+				}
+				{
 					this.state.userItem &&
 					<div>
 						<Checkbox key='inCollection' label='In Collection' name='inCollection' checked={this.state.userItem.inCollection}
