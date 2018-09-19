@@ -217,6 +217,14 @@ router.get('/gameObjectives/:game', (req, res, next) => {
   );
 });
 
+router.post('/gameObjectives', auth, (req, res, next) => {
+  const gameObjective = new GameObjective(req.body);
+  gameObjective.save((err, gameObjective) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    res.json(gameObjective);
+  });
+});
+
 //#endregion
 
 export default router;

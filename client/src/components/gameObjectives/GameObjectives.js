@@ -6,6 +6,7 @@ import { Button, List } from 'semantic-ui-react';
 import GameObjective from './GameObjective';
 
 import fetch from '../../utils/fetch';
+import isLoggedIn from '../../utils/isLoggedIn'
 
 class GameObjectives extends Component {
   constructor(props) {
@@ -57,6 +58,12 @@ class GameObjectives extends Component {
       <div>
         <Button labelPosition='left' icon='left chevron' content='Back' as={Link} to={`/items/${this.state.game.title_id}`} />
         <h1>{this.state.game.title} objectives</h1>
+        {
+          isLoggedIn() &&
+          <Button positive circular floated='right' icon='plus' as={Link} 
+            to={`/items/${this.state.game.title_id}/objectives/add`} 
+          />
+        }
         <List>
           {gameObjectives}
         </List>
