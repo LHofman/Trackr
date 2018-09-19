@@ -1,11 +1,11 @@
 import isLoggedIn from './isLoggedIn';
 import getUser from './getUser';
 
-export default item => {
+export default model => {
   return (
-    item &&
-    item.createdBy &&
+    model &&
+    model.createdBy &&
     isLoggedIn() &&
-    getUser().username === item.createdBy.username
+    getUser().username === model.createdBy.username
   );
 };

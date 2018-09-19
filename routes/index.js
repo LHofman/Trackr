@@ -11,6 +11,8 @@ const router = express.Router();
 
 const STATUS_500_MESSAGE = 'Something went wrong';
 
+const isCreator = (model, user) => new mongoose.Types.ObjectId(user._id).equals(model.createdBy);
+
 //#region items
 
 router.get('/items', (req, res, next) => {
@@ -95,8 +97,6 @@ router.post('/items', auth, (req, res, next) => {
     });
   });
 });
-
-const isCreator = (model, user) => new mongoose.Types.ObjectId(user._id).equals(model.createdBy);
 
 router.put('/items/:id', auth, (req, res, next) => {
   Item.findById(req.params.id, (err, item) => {
@@ -210,6 +210,7 @@ router.delete('/userItems/:id', auth, (req, res, next) => {
 
 router.get('/gameObjectives/:game', (req, res, next) => {
   GameObjective.find({game: req.params.game})
+    .populate({ path: 'createdBy', select: 'username' })
     .exec((err, gameObjectives) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjectives not found'});
       res.json(gameObjectives);
@@ -222,6 +223,21 @@ router.post('/gameObjectives', auth, (req, res, next) => {
   gameObjective.save((err, gameObjective) => {
     if (err) return res.status(500).send(STATUS_500_MESSAGE);
     res.json(gameObjective);
+  });
+});
+
+router.delete('/gameObjectives/:id', auth, (req, res, next) => {
+  GameObjective.findById(req.params.id, (err, gameObjective) => {
+    if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
+    if (!isCreator(gameObjective, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this game objective'});
+    
+    gameObjective.remove((err, gameObjective) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json({
+        success: true,
+        msg: `${gameObjective.objective} has successfully been removed.`
+      });
+    });
   });
 });
 

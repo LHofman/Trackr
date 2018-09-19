@@ -17,6 +17,8 @@ class GameObjectives extends Component {
       gameObjectives: [],
       redirect: undefined
     }
+
+    this.onDelete = this.onDelete.bind(this);
   }
 
   componentWillMount() {
@@ -45,13 +47,21 @@ class GameObjectives extends Component {
     });
   }
 
+  onDelete(gameObjective) {
+    return fetch(`/api/gameObjectives/${gameObjective._id}`, 'delete', true).then(res => {
+      const gameObjectives = this.state.gameObjectives;
+      gameObjectives.splice(gameObjectives.indexOf(gameObjective), 1);
+      this.setState({ gameObjectives });
+    }).catch(console.log);
+  }
+
   render() {
     const redirect = this.state.redirect;
     if (redirect) return <Redirect to={redirect} />
 
 
     const gameObjectives = this.state.gameObjectives.sort((o1, o2) => o1.index - o2.index).map(gameObjective => 
-      <GameObjective key={gameObjective._id} gameObjective={gameObjective} game={this.state.game} />
+      <GameObjective key={gameObjective._id} gameObjective={gameObjective} onDelete={this.onDelete}/>
     );
 
     return (
