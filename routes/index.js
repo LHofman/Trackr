@@ -319,6 +319,24 @@ router.get('/userGameObjectives/:user/:gameObjective', (req, res, next) => {
   });
 });
 
+router.post('/userGameObjectives', auth, (req, res, next) => {
+  const userGameObjective = new UserGameObjective(req.body);
+  userGameObjective.save((err, userGameObjective) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    res.json(userGameObjective);
+  });
+});
+
+router.delete('/userGameObjectives/:id', auth, (req, res, next) => {
+  UserGameObjective.findById(req.params.id, (err, userGameObjective) => {
+    if (err) return res.status(404).send('UserGameObjective not found');
+    userGameObjective.remove((err, userGameObjective) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json(userGameObjective);
+    });
+  });
+});
+
 //#endregion userGameObjectives
 
 export default router;

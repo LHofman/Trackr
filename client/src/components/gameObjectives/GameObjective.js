@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Checkbox, Confirm, Icon, List } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Header, Icon, List, Modal } from 'semantic-ui-react';
 
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
@@ -13,8 +13,11 @@ class GameObjective extends Component {
       gameObjective: props.gameObjective,
       following: props.following,
       userGameObjective: undefined,
-      confirmationAlert: false
+      confirmationAlert: false,
+      modalOpen: false
     }
+
+    this.closeModal = this.closeModal.bind(this);
   }
 
   componentWillMount() {
@@ -42,6 +45,34 @@ class GameObjective extends Component {
     this.props.onDelete(this.state.gameObjective);
   }
 
+  updateUserObjective() {
+    let userGameObjective = this.state.userGameObjective;
+    new Promise(resolve => {
+      if (userGameObjective) {
+        fetch(`/api/userGameObjectives/${userGameObjective._id}`, 'delete', true).then(newUserGameObjective => {
+          userGameObjective = undefined;
+          resolve()
+        });
+      } else {
+        const newUserGameObjective = {
+          gameObjective: this.state.gameObjective._id,
+          user: getUser().id,
+          completed: true
+        }
+        fetch(`/api/userGameObjectives`, 'post', true, newUserGameObjective).then(newUserGameObjective => {
+          userGameObjective = newUserGameObjective;
+          resolve()
+        });
+      }
+    }).then(() => {
+      this.setState({ userGameObjective, modalOpen: true });
+    });
+  }
+
+  closeModal() {
+    this.setState({ modalOpen: false });
+  }
+
   render() {
     const gameObjective = this.state.gameObjective;
     return (
@@ -51,8 +82,22 @@ class GameObjective extends Component {
             {`${gameObjective.index}. ${gameObjective.objective}`}
             {
               this.state.following &&
-              <Checkbox key='completed' name='completed' checked={(this.state.userGameObjective || { completed: false }).completed} 
-                style={{ float: 'left', marginRight:'1em'}} />
+              <div style={{ float: 'left', marginRight:'1em'}}>
+                <Checkbox key='completed' name='completed' checked={(this.state.userGameObjective || { completed: false }).completed} 
+                  onChange={this.updateUserObjective.bind(this)} />
+                <Modal key='message'
+                  open={this.state.modalOpen}
+                  onClose={this.closeModal}
+                  basic
+                  size='small'>
+                  <Header icon='browser' content='Item updated' />
+                  <Modal.Actions>
+                    <Button color='green' onClick={this.closeModal} inverted >
+                      <Icon name='checkmark' /> Got it
+                    </Button>
+                  </Modal.Actions>
+                </Modal>
+              </div>
             }
             {
               canEdit(this.props.gameObjective) &&
