@@ -3,6 +3,7 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 
 import AddGameObjective from './gameObjectives/AddGameObjective';
 import AddItem from './items/AddItem';
+import EditGameObjective from './gameObjectives/EditGameObjective';
 import EditItem from './items/EditItem';
 import GameObjectives from './gameObjectives/GameObjectives';
 import Items from './items/Items';
@@ -26,6 +27,7 @@ export default () => (
             <Route exact path='/items/:titleId/edit' component={getAuthComponent(EditItem)} />
             <Route exact path='/items/:titleId/objectives' component={GameObjectives} />
             <Route exact path='/items/:titleId/objectives/add' component={getAuthComponent(AddGameObjective)} />
+            <Route exact path='/items/:titleId/objectives/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
             <Route exact path='/myItems' component={UserItems} />
             <Route exact path='/login' component={getNonAuthComponent(Login)} />
             <Route exact path='/logout' component={getAuthComponent(Logout)} />

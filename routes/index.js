@@ -54,19 +54,20 @@ const getMaxItemsWithTitleId = title_id =>
             ? 0
             : //get highest number after '_'
               items.reduce(
-                (max, item) =>
+                (max, item) => {
+                  const title_id_number = item.title_id.substr(
+                    item.title_id.lastIndexOf('_') + 1
+                  );
                   Math.max(
                     max,
                     //number = 1 if there is no '_'
                     title_id === item.title_id
                       ? 1
-                      : parseInt(
-                          item.title_id.substr(
-                            item.title_id.lastIndexOf('_') + 1
-                          )
-                        )
-                  ),
-                0
+                      : isNaN(title_id_number)
+                        ? 0
+                        : parseInt(title_id_number)
+                  )
+                }, 0
               )
         )
     )
@@ -208,9 +209,29 @@ router.delete('/userItems/:id', auth, (req, res, next) => {
 
 //#region gameObjectives
 
+const getMaxGameObjectiveId = gameId =>
+  new Promise(resolve =>
+    //find param, param_2...
+    GameObjective.find({ game: gameId }).exec(
+      (err, gameObjectives) =>
+        resolve(
+          err || gameObjectives.length === 0
+            ? 0
+            : //get highest number
+              gameObjectives.reduce(
+                (max, gameObjective) => {
+                  const objectiveId = gameObjective.objectiveId || 0;
+                  return Math.max(max, isNaN(objectiveId) ? 0 : objectiveId)
+                }, 0
+              )
+        )
+    )
+  );
+
 router.get('/gameObjectives/:game', (req, res, next) => {
   GameObjective.find({game: req.params.game})
-    .populate({ path: 'createdBy', select: 'username' })
+    .populate('game')
+    .populate('createdBy', 'username' )
     .exec((err, gameObjectives) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjectives not found'});
       res.json(gameObjectives);
@@ -218,11 +239,37 @@ router.get('/gameObjectives/:game', (req, res, next) => {
   );
 });
 
+router.get('/gameObjectives/objective_id/:objective_id', (req, res, next) => {
+  GameObjective.findOne({objective_id: req.params.objective_id})
+    .populate('game')
+    .populate('createdBy', 'username')
+    .exec((err, gameObjective) => {
+      if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
+      res.json(gameObjective);
+    }
+  );
+});
+
+router.get('/gameObjectives/:id', (req, res, next) => {
+  GameObjective.findById(req.params.id)
+    .populate('game')
+    .populate('createdBy', 'username')
+    .exec((err, gameObjective) => {
+      if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
+      res.json(gameObjective);
+    }
+  );
+});
+
 router.post('/gameObjectives', auth, (req, res, next) => {
   const gameObjective = new GameObjective(req.body);
-  gameObjective.save((err, gameObjective) => {
-    if (err) return res.status(500).send(STATUS_500_MESSAGE);
-    res.json(gameObjective);
+  return getMaxGameObjectiveId(gameObjective.game).then(maxObjective => {
+    gameObjective.objective_id = (maxObjective + 1);
+
+    gameObjective.save((err, gameObjective) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json(gameObjective);
+    });
   });
 });
 
@@ -238,6 +285,21 @@ router.delete('/gameObjectives/:id', auth, (req, res, next) => {
         msg: `${gameObjective.objective} has successfully been removed.`
       });
     });
+  });
+});
+
+router.put('/gameObjectives/:id', auth, (req, res, next) => {
+  const gameObjectiveId = req.params.id;
+  GameObjective.findById(gameObjectiveId, (err, gameObjective) => {
+    if (!isCreator(gameObjective, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this gameObjective'});
+
+    GameObjective.findByIdAndUpdate(gameObjectiveId, req.body, { new: true }).exec(
+      (err, gameObjective) => {
+        if (err) return res.status(500).send(STATUS_500_MESSAGE);
+        res.json(gameObjective);
+      }
+    )
+    
   });
 });
 

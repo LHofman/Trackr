@@ -74,6 +74,7 @@ class GameObjectives extends Component {
             to={`/items/${this.state.game.title_id}/objectives/add`} 
           />
         }
+        <br />
         <List>
           {gameObjectives}
         </List>

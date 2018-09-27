@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { Confirm, Icon, List } from 'semantic-ui-react';
 
 import canEdit from '../../utils/canEdit';
@@ -34,7 +35,12 @@ class GameObjective extends Component {
             {`${gameObjective.index}. ${gameObjective.objective}`}
             {
               canEdit(this.props.gameObjective) &&
-              <Icon name='trash' color='red' onClick={this.showConfirmationAlert.bind(this)} />
+              <div style={{ display: 'inline' }}>
+                <Link to={`/items/${this.props.gameObjective.game.title_id}/objectives/${this.props.gameObjective.objective_id}/edit`}>
+                  <Icon name='edit' color='orange' />
+                </Link>
+                <Icon name='trash' color='red' onClick={this.showConfirmationAlert.bind(this)} />
+              </div>
             }
             <Confirm
               open={this.state.confirmationAlert}

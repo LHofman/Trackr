@@ -20,6 +20,10 @@ export default mongoose.model(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
+    },
+    objective_id: {
+      type: String,
+      required: true
     }
   })
 );
