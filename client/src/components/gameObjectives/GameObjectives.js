@@ -6,6 +6,7 @@ import { Button, List } from 'semantic-ui-react';
 import GameObjective from './GameObjective';
 
 import fetch from '../../utils/fetch';
+import getUser from '../../utils/getUser';
 import isLoggedIn from '../../utils/isLoggedIn'
 
 class GameObjectives extends Component {
@@ -32,6 +33,10 @@ class GameObjectives extends Component {
     return fetch(`/api/items/title_id/${title_id}`).then(item => {
       if (!item || item === null || item.type !== 'Video Game') throw new Error('Game not found');
       this.setState({ game: item });
+      return fetch(`/api/userItems/${getUser().id}/${this.state.game._id}`).then(userItem => {
+        if (userItem) this.setState({ following: true });
+        else this.setState({ following: false });
+      })
     }).catch(reason => {
       this.setState({redirect: '/'});
     });
@@ -61,7 +66,7 @@ class GameObjectives extends Component {
 
 
     const gameObjectives = this.state.gameObjectives.sort((o1, o2) => o1.index - o2.index).map(gameObjective => 
-      <GameObjective key={gameObjective._id} gameObjective={gameObjective} onDelete={this.onDelete}/>
+      <GameObjective key={gameObjective._id} gameObjective={gameObjective} onDelete={this.onDelete} following={this.state.following}/>
     );
 
     return (

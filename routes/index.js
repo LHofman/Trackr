@@ -4,6 +4,7 @@ import passport from 'passport';
 
 import Item from '../models/Item';
 import GameObjective from '../models/GameObjective';
+import UserGameObjective from '../models/UserGameObjective';
 import UserItem from '../models/UserItem';
 
 const auth = passport.authenticate('jwt', { session: false });
@@ -304,5 +305,20 @@ router.put('/gameObjectives/:id', auth, (req, res, next) => {
 });
 
 //#endregion
+
+//#region userGameObjectives
+
+router.get('/userGameObjectives/:user/:gameObjective', (req, res, next) => {
+  UserGameObjective.findOne({
+    gameObjective: req.params.gameObjective,
+    user: req.params.user
+  }, (err, userGameObjective) => {
+    if (err || userGameObjective === null)
+      return res.status(404).send('userGameObjective not found');
+    res.json(userGameObjective);
+  });
+});
+
+//#endregion userGameObjectives
 
 export default router;
