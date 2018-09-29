@@ -78,7 +78,7 @@ const toSnakeCase = value =>
   value
     .toLowerCase()
     .replace(/ /g, '_')
-    .replace(/\//g, '_');
+    .replace(/[^a-zA-Z0-9-_]/g, '');
 
 const getTitleId = title => {
   const title_id = toSnakeCase(title);
