@@ -45,11 +45,11 @@ router.get('/items/title_id/:title_id', (req, res, next) => {
 
 //#region getTitle_id
 
-const getMaxItemsWithTitleId = title_id =>
+const getMaxItemsWithTitleId = title_id => 
   new Promise(resolve =>
     //find param, param_2...
-    Item.find({ title_id: new RegExp(title_id + '(_[1-9][0-9]*)?') }).exec(
-      (err, items) =>
+    Item.find({ title_id: new RegExp(`${title_id}(_[1-9][0-9]*)?$`) }).exec(
+      (err, items) => 
         resolve(
           err || items.length === 0
             ? 0
@@ -59,7 +59,7 @@ const getMaxItemsWithTitleId = title_id =>
                   const title_id_number = item.title_id.substr(
                     item.title_id.lastIndexOf('_') + 1
                   );
-                  Math.max(
+                  return Math.max(
                     max,
                     //number = 1 if there is no '_'
                     title_id === item.title_id
