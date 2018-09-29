@@ -210,43 +210,61 @@ router.delete('/userItems/:id', auth, (req, res, next) => {
 
 //#region gameObjectives
 
-const getMaxGameObjectiveId = gameId =>
-  new Promise(resolve =>
-    //find param, param_2...
+const getMaxGameObjectiveId = gameId => 
+  new Promise(resolve => 
     GameObjective.find({ game: gameId }).exec(
-      (err, gameObjectives) =>
+      (err, gameObjectives) => 
         resolve(
           err || gameObjectives.length === 0
             ? 0
             : //get highest number
               gameObjectives.reduce(
                 (max, gameObjective) => {
-                  const objectiveId = gameObjective.objectiveId || 0;
-                  return Math.max(max, isNaN(objectiveId) ? 0 : objectiveId)
+                  const objectiveId = gameObjective.objective_id || 0;
+                  return Math.max(max, isNaN(objectiveId) ? 0 : parseInt(objectiveId))
                 }, 0
               )
         )
     )
   );
 
-router.get('/gameObjectives/:game', (req, res, next) => {
+const populateParent = node =>
+  GameObjective.populate(node, 'parent' ).then(node => {
+    node.parent ? populateParent(node.parent) : Promise.resolve(node);
+  });
+
+router.get('/gameObjectives/byGame/:game', (req, res, next) => {
   GameObjective.find({game: req.params.game})
     .populate('game')
     .populate('createdBy', 'username' )
     .exec((err, gameObjectives) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjectives not found'});
-      res.json(gameObjectives);
+      const firstOrderGameObjectives = gameObjectives.filter(gameObjective => 
+        gameObjective.parent === undefined
+      );
+      res.json(firstOrderGameObjectives);
     }
   );
 });
 
-router.get('/gameObjectives/objective_id/:objective_id', (req, res, next) => {
-  GameObjective.findOne({objective_id: req.params.objective_id})
+router.get('/gameObjectives/byParent/:parent', (req, res, next) => {
+  GameObjective.find({ parent: req.params.parent })
     .populate('game')
+    .populate('createdBy', 'username')
+    .exec((err, gameObjectives) => {
+      if (err || !gameObjectives) return res.json([]);
+      Promise.all(
+        gameObjectives.map(gameObjective => populateParent(gameObjective))
+      ).then(() => res.json(gameObjectives));
+    });
+});
+
+router.get('/gameObjectives/objective_id/:game/:objective_id', (req, res, next) => {
+  GameObjective.findOne({ game: req.params.game, objective_id: req.params.objective_id })
     .populate('createdBy', 'username')
     .exec((err, gameObjective) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
-      res.json(gameObjective);
+      populateParent(gameObjective).then(() => res.json(gameObjective));
     }
   );
 });
@@ -257,10 +275,16 @@ router.get('/gameObjectives/:id', (req, res, next) => {
     .populate('createdBy', 'username')
     .exec((err, gameObjective) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
-      res.json(gameObjective);
+      populateParent(gameObjective).then(() => res.json(gameObjective));
     }
   );
 });
+
+router.get('/hasSubObjectives/:objective', (req, res, next) => 
+  GameObjective.find({ parent: req.params.objective }).exec(
+    (err, gameObjectives) => res.send(! (err || gameObjectives.length < 1))
+  )
+);
 
 router.post('/gameObjectives', auth, (req, res, next) => {
   const gameObjective = new GameObjective(req.body);

@@ -43,7 +43,6 @@ export default class ItemDetails extends Component {
 	getUserItem() {
 		fetch(`/api/userItems/${getUser().id}/${this.state.details._id}`).then(userItem => {
 			if (!userItem || userItem === null) throw new Error('userItem not found');
-			console.log(userItem);
 			this.setState({userItem});
 		}).catch(console.log);
 	}
@@ -153,7 +152,7 @@ export default class ItemDetails extends Component {
 				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
 				{
 					details.type === 'Video Game' &&
-					<div><Button as={Link} to={`/items/${details.title_id}/objectives`} color='teal'>Objectives</Button><br /><br /></div>
+					<div><Button as={Link} to={`/objectives/${details.title_id}`} color='teal'>Objectives</Button><br /><br /></div>
 				}
 				{
 					this.state.userItem &&

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Redirect from 'react-router-dom/Redirect';
-import { Button, List } from 'semantic-ui-react';
+import { Breadcrumb, Button, List } from 'semantic-ui-react';
 
 import GameObjective from './GameObjective';
 
@@ -14,6 +14,7 @@ class GameObjectives extends Component {
     super(props);
     this.state = {
       game: '',
+      parent: '',
       following: false,
       gameObjectives: [],
       redirect: undefined
@@ -22,10 +23,26 @@ class GameObjectives extends Component {
     this.onDelete = this.onDelete.bind(this);
   }
 
+  componentWillReceiveProps(newProps) {
+    this.init(newProps);
+  }
+
   componentWillMount() {
-    const title_id = this.props.match.params.titleId;
-    this.getGame(title_id).then(() => {
-      this.getGameObjectives();
+    this.init(this.props);
+  }
+
+  init(props) {
+    const params = props.match.params;
+    const parentId = params.parentId;
+
+    this.getGame(params.titleId).then(() => {
+      if (!parentId)
+        this.getGameObjectives(`/api/gameObjectives/byGame/${this.state.game._id}`);
+      else {
+        this.getParent(parentId).then(() => {
+          this.getGameObjectives(`/api/gameObjectives/byParent/${this.state.parent._id}`);
+        });
+      }
     });
   }
 
@@ -42,10 +59,18 @@ class GameObjectives extends Component {
     });
   }
 
-  getGameObjectives() {
-    const gameId = this.state.game._id;
-    return fetch(`/api/gameObjectives/${gameId}`).then(gameObjectives => {
-      if (!gameObjectives || gameObjectives === null) throw new Error('item not found');
+  getParent(objective_id) {
+    return fetch(`/api/gameObjectives/objective_id/${this.state.game._id}/${objective_id}`).then(gameObjective => {
+      if (!gameObjective) throw new Error('GameObjective not found');
+      this.setState({ parent: gameObjective });
+    }).catch(reason => {
+      this.setState({redirect: '/'});
+    });
+  }
+
+  getGameObjectives(apiUrl) {
+    return fetch(apiUrl).then(gameObjectives => {
+      if (!gameObjectives || gameObjectives === null) throw new Error('gameObjectives not found');
       this.setState({ gameObjectives });
     }).catch(reason => {
       this.setState({redirect: `/items/${this.state.game.title_id}`});
@@ -58,6 +83,37 @@ class GameObjectives extends Component {
       gameObjectives.splice(gameObjectives.indexOf(gameObjective), 1);
       this.setState({ gameObjectives });
     }).catch(console.log);
+  }
+
+  getBreadCrumbs() {
+    const sections = []
+    let parent = this.state.parent;
+    if (!parent) return;
+    let active = false;
+    while (parent) {
+      active = parent === this.state.parent;
+      sections.unshift({
+        key: parent._id,
+        content: active ? 
+          parent.objective : 
+          <a href={`/objectives/${this.state.game.title_id}/subObjectives/${parent.objective_id}`}>{parent.objective}</a>,
+        active
+      });
+      parent = parent.parent;
+    }
+    sections.unshift({
+      key: 'Home',
+      content: <a href={`/objectives/${this.state.game.title_id}`}>Home</a>,
+    });
+
+    return <Breadcrumb icon='right chevron' sections={sections} />
+  }
+
+  getAddUrl() {
+    const { game, parent } = this.state;
+    let addUrl = `/objectives/${game.title_id}`;
+    if (parent) addUrl += `/subObjectives/${parent.objective_id}`;
+    return addUrl.concat('/add');
   }
 
   render() {
@@ -73,10 +129,11 @@ class GameObjectives extends Component {
       <div>
         <Button labelPosition='left' icon='left chevron' content='Back' as={Link} to={`/items/${this.state.game.title_id}`} />
         <h1>{this.state.game.title} objectives</h1>
+        {this.getBreadCrumbs()}
         {
           isLoggedIn() &&
           <Button positive circular floated='right' icon='plus' as={Link} 
-            to={`/items/${this.state.game.title_id}/objectives/add`} 
+            to={this.getAddUrl()} 
           />
         }
         <br />

@@ -25,9 +25,12 @@ export default () => (
             <Route exact path='/items/add' component={getAuthComponent(AddItem)} />
             <Route exact path='/items/:titleId' component={ItemDetails} />
             <Route exact path='/items/:titleId/edit' component={getAuthComponent(EditItem)} />
-            <Route exact path='/items/:titleId/objectives' component={GameObjectives} />
-            <Route exact path='/items/:titleId/objectives/add' component={getAuthComponent(AddGameObjective)} />
-            <Route exact path='/items/:titleId/objectives/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
+            <Route exact path='/objectives/:titleId' component={GameObjectives} />
+            <Route exact path='/objectives/:titleId/add' component={getAuthComponent(AddGameObjective)} />
+            <Route exact path='/objectives/:titleId/subObjectives/:parentId' component={GameObjectives} />
+            <Route exact path='/objectives/:titleId/subObjectives/:parentId/add' component={getAuthComponent(AddGameObjective)} />
+            <Route exact path='/objectives/:titleId/subObjectives/:parentId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
+            <Route exact path='/objectives/:titleId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
             <Route exact path='/myItems' component={UserItems} />
             <Route exact path='/login' component={getNonAuthComponent(Login)} />
             <Route exact path='/logout' component={getAuthComponent(Logout)} />

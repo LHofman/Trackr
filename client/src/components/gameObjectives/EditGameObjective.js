@@ -8,6 +8,7 @@ class EditGameObjective extends Component {
   constructor() {
     super();
     this.state = {
+      game: undefined,
       id: '',
       backUrl: '',
       index: 0,
@@ -18,15 +19,37 @@ class EditGameObjective extends Component {
     this.handleInputChange = this.handleInputChange.bind(this);
   }
 
+  componentWillReceiveProps(newProps) {
+    this.init(newProps);
+  }
+
   componentWillMount() {
-    const params = this.props.match.params;
+    this.init(this.props);
+  }
+
+  init(props) {
+    const params = props.match.params;
     const title_id = params.titleId;
-    this.setState({backUrl: `/items/${title_id}/objectives`});
-    this.getGameObjective(params.objectiveId);
+    const parent_id = params.parentId;
+    
+    let backUrl = `/objectives/${title_id}`;
+    if (parent_id) backUrl += `/subObjectives/${parent_id}`;
+    
+    this.setState({ backUrl });
+    this.getGame(title_id).then(() => {
+      this.getGameObjective(params.objectiveId);
+    });
+  }
+
+  getGame(title_id) {
+    return fetch(`/api/items/title_id/${title_id}`).then(item => {
+      if (!item || item.type !== 'Video Game') throw new Error('Game not Found');
+      this.setState({ game: item });
+    }).catch(console.log);
   }
 
   getGameObjective(objective_id) {
-    return fetch(`/api/gameObjectives/objective_id/${objective_id}`).then(({_id, index, objective}) => {
+    return fetch(`/api/gameObjectives/objective_id/${this.state.game._id}/${objective_id}`).then(({_id, index, objective}) => {
       this.setState({id: _id, index, objective});
     }).catch(console.log);
   }

@@ -11,6 +11,7 @@ class AddObjective extends Component {
     this.state = {
       backUrl: '',
       game: undefined,
+      parent: undefined,
       index: 0,
       objective: '',
       objectiveError: '',
@@ -19,16 +20,41 @@ class AddObjective extends Component {
     this.handleInputChange = this.handleInputChange.bind(this);
   }
 
+  componentWillReceiveProps(newProps) {
+    this.init(newProps);
+  }
+
   componentWillMount() {
-    const title_id = this.props.match.params.titleId;
-    this.setState({backUrl: `/items/${title_id}/objectives`});
-    this.getGame(title_id);
+    this.init(this.props);
+  }
+
+  init(props) {
+    const params = props.match.params;
+    const title_id = params.titleId;
+    const parent_id = params.parentId;
+
+    let backUrl = `/objectives/${title_id}`;
+    if (parent_id) backUrl += `/subObjectives/${parent_id}`;
+    
+    this.setState({ backUrl });
+    this.getGame(title_id).then(() => { 
+      this.getParent(parent_id); 
+    });
   }
 
   getGame(title_id) {
     return fetch(`/api/items/title_id/${title_id}`).then(item => {
       if (!item || item === null || item.type !== 'Video Game') throw new Error('Game not found');
       this.setState({game: item})
+    }).catch(reason => {
+      this.setState({redirect: '/'});
+    });
+  }
+
+  getParent(objective_id) {
+    return fetch(`/api/gameObjectives/objective_id/${this.state.game._id}/${objective_id}`).then(gameObjective => {
+      if (!gameObjective) throw new Error('Parent not found');
+      this.setState({ parent: gameObjective });
     }).catch(reason => {
       this.setState({redirect: '/'});
     });
@@ -66,12 +92,14 @@ class AddObjective extends Component {
     const err = this.checkForErrors();
     if (err) return;
 
+    const { index, objective, game, parent } = this.state;
     const newObjective = {
-      index: this.state.index,
-      objective: this.state.objective,
-      game: this.state.game._id,
+      index,
+      objective,
+      game,
       createdBy: getUser().id
     }
+    if (parent) newObjective.parent = parent._id;
 
     this.addObjective(newObjective);
   }

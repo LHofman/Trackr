@@ -8,6 +8,10 @@ const GameObjectiveSchema = mongoose.Schema({
     ref: 'Item',
     required: true
   },
+  parent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'GameObjective'
+  },
   index: {
     type: Number,
     default: 0
@@ -27,9 +31,12 @@ const GameObjectiveSchema = mongoose.Schema({
   }
 });
 
+const GameObjective = mongoose.model('GameObjective', GameObjectiveSchema);
+
 GameObjectiveSchema.pre('remove', function (next) {
-  UserGameObjective.remove({gameObjective: this._id}).exec();
+  UserGameObjective.remove({ gameObjective: this._id }).exec();
+  GameObjective.remove({ parent: this._id }).exec();
   next();
 });
 
-export default mongoose.model('GameObjective', GameObjectiveSchema);
+export default GameObjective;

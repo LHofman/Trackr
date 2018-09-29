@@ -12,6 +12,7 @@ class GameObjective extends Component {
     this.state = {
       gameObjective: props.gameObjective,
       following: props.following,
+      hasSubObjectives: false,
       userGameObjective: undefined,
       confirmationAlert: false,
       modalOpen: false
@@ -21,7 +22,14 @@ class GameObjective extends Component {
   }
 
   componentWillMount() {
+    this.hasSubObjectives();
     if (this.state.following) this.getUserGameObjective();
+  }
+
+  hasSubObjectives() {
+    fetch(`/api/hasSubObjectives/${this.state.gameObjective._id}`).then(result => {
+      this.setState({ hasSubObjectives: result });
+    });
   }
 
   getUserGameObjective() {
@@ -73,13 +81,27 @@ class GameObjective extends Component {
     this.setState({ modalOpen: false });
   }
 
+  getEditUrl() {
+    const { game, parent } = this.state.gameObjective;
+    let editUrl = `/objectives/${game.title_id}`;
+    if (parent) editUrl += `/subObjectives/${parent.objective_id}`;
+    return editUrl.concat(`/${this.state.gameObjective.objective_id}/edit`);
+  }
+
   render() {
     const gameObjective = this.state.gameObjective;
     return (
       <List.Item>
         <List.Content>
           <List.Header style={{ float: 'left' }} >
-            {`${gameObjective.index}. ${gameObjective.objective}`}
+            {`${gameObjective.index}. `}
+            {
+              this.state.hasSubObjectives ?
+                <a href={`/objectives/${gameObjective.game.title_id}/subObjectives/${gameObjective.objective_id}`}>
+                  { gameObjective.objective }
+                </a> :
+                gameObjective.objective
+            }
             {
               this.state.following &&
               <div style={{ float: 'left', marginRight:'1em'}}>
@@ -100,9 +122,15 @@ class GameObjective extends Component {
               </div>
             }
             {
+              !this.state.hasSubObjectives &&
+              <Link to={`/objectives/${gameObjective.game.title_id}/subObjectives/${gameObjective.objective_id}/add`}>
+                <Icon name='angle double down' color='green' />
+              </Link>
+            }
+            {
               canEdit(this.props.gameObjective) &&
               <div style={{ display: 'inline' }}>
-                <Link to={`/items/${this.props.gameObjective.game.title_id}/objectives/${this.props.gameObjective.objective_id}/edit`}>
+                <Link to={this.getEditUrl()}>
                   <Icon name='edit' color='orange' />
                 </Link>
                 <Icon name='trash' color='red' onClick={this.showConfirmationAlert.bind(this)} />
