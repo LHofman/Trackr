@@ -61,9 +61,9 @@ export default class Items extends Component {
 
   sort(i1, i2) {
     const asc = this.state.sort.order === 'asc' ? -1 : 1;
-    return i1[this.state.sort.field].toString().toLowerCase() < 
-      i2[this.state.sort.field].toString().toLowerCase() ?
-      asc: asc * -1;
+    const s1 = i1[this.state.sort.field].toString().toLowerCase();
+    const s2 = i2[this.state.sort.field].toString().toLowerCase()
+    return s1 < s2 || (s1 === s2 && i1.title.toString().toLowerCase() < i2.title.toString().toLowerCase()) ? asc : asc * -1;
   }
 
   handlePaginationChange(e, { activePage }) {
