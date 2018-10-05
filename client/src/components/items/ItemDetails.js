@@ -34,13 +34,13 @@ export default class ItemDetails extends Component {
 		return fetch(`/api/items/title_id/${title_id}`).then(details => {
 			if (!details || details === null) throw new Error('item not found');
 			this.setState({ details })
-			this.getUserItem();
 		}).catch(reason => {
 			this.setState({redirect: '/'});
-		});
+		}).then(() => this.getUserItem());
 	}
 
 	getUserItem() {
+		if (!isLoggedIn()) return;
 		fetch(`/api/userItems/${getUser().id}/${this.state.details._id}`).then(userItem => {
 			if (!userItem || userItem === null) throw new Error('userItem not found');
 			this.setState({userItem});

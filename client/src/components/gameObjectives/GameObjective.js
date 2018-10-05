@@ -5,6 +5,7 @@ import { Button, Checkbox, Confirm, Header, Icon, List, Modal } from 'semantic-u
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';
+import isLoggedIn from '../../utils/isLoggedIn';
 
 class GameObjective extends Component {
   constructor(props) {
@@ -122,7 +123,7 @@ class GameObjective extends Component {
               </div>
             }
             {
-              !this.state.hasSubObjectives &&
+              isLoggedIn() && !this.state.hasSubObjectives &&
               <Link to={`/objectives/${gameObjective.game.title_id}/subObjectives/${gameObjective.objective_id}/add`}>
                 <Icon name='angle double down' color='green' />
               </Link>

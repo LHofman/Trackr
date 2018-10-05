@@ -50,12 +50,14 @@ class GameObjectives extends Component {
     return fetch(`/api/items/title_id/${title_id}`).then(item => {
       if (!item || item === null || item.type !== 'Video Game') throw new Error('Game not found');
       this.setState({ game: item });
+    }).catch(reason => {
+      this.setState({redirect: '/'});
+    }).then(() => {
+      if (!isLoggedIn()) return;
       return fetch(`/api/userItems/${getUser().id}/${this.state.game._id}`).then(userItem => {
         if (userItem) this.setState({ following: true });
         else this.setState({ following: false });
-      })
-    }).catch(reason => {
-      this.setState({redirect: '/'});
+      });
     });
   }
 
