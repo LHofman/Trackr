@@ -38,7 +38,7 @@ class AddObjective extends Component {
     
     this.setState({ backUrl });
     this.getGame(title_id).then(() => { 
-      this.getParent(parent_id); 
+      if (parent_id) this.getParent(parent_id); 
     });
   }
 
