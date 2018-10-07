@@ -146,7 +146,10 @@ class GameObjective extends Component {
             />
           </List.Header>
         </List.Content>
-        <br/><br/>
+        {
+          this.props.count <= 15 &&
+          <div><br/><br/></div>
+        }
       </List.Item>
     );
   }

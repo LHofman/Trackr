@@ -124,7 +124,13 @@ class GameObjectives extends Component {
 
 
     const gameObjectives = this.state.gameObjectives.sort((o1, o2) => o1.index - o2.index).map(gameObjective => 
-      <GameObjective key={gameObjective._id} gameObjective={gameObjective} onDelete={this.onDelete} following={this.state.following}/>
+      <GameObjective 
+        key={gameObjective._id} 
+        gameObjective={gameObjective} 
+        onDelete={this.onDelete} 
+        following={this.state.following}
+        count={this.state.gameObjectives.length}
+      />
     );
 
     return (
