@@ -29,6 +29,15 @@ const ItemSchema = mongoose.Schema({
   }
 });
 
+const autoPopulate = function (next) {
+  this.populate('createdBy', 'username');
+  next();
+}
+
+ItemSchema.pre('findOne', autoPopulate);
+ItemSchema.pre('findById', autoPopulate);
+ItemSchema.pre('find', autoPopulate);
+
 ItemSchema.pre('remove', function (next) {
   UserItem.remove({item: this._id}).exec();
   GameObjective.remove({game: this._id}).exec();
