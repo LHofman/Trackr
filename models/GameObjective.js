@@ -31,6 +31,17 @@ const GameObjectiveSchema = mongoose.Schema({
   }
 });
 
+const autoPopulate = function (next) {
+  this.populate('createdBy', 'username')
+    .populate('game')
+    .populate('parent');
+  next();
+}
+
+GameObjectiveSchema.pre('findOne', autoPopulate);
+GameObjectiveSchema.pre('findById', autoPopulate);
+GameObjectiveSchema.pre('find', autoPopulate);
+
 const GameObjective = mongoose.model('GameObjective', GameObjectiveSchema);
 
 GameObjectiveSchema.pre('remove', function (next) {

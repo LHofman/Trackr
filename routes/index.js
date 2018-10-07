@@ -228,11 +228,6 @@ const getMaxGameObjectiveId = gameId =>
     )
   );
 
-const populateParent = node =>
-  GameObjective.populate(node, 'parent' ).then(node => {
-    node.parent ? populateParent(node.parent) : Promise.resolve(node);
-  });
-
 router.get('/gameObjectives/byGame/:game', (req, res, next) => {
   GameObjective.find({game: req.params.game})
     .populate('game')
@@ -249,33 +244,26 @@ router.get('/gameObjectives/byGame/:game', (req, res, next) => {
 
 router.get('/gameObjectives/byParent/:parent', (req, res, next) => {
   GameObjective.find({ parent: req.params.parent })
-    .populate('game')
-    .populate('createdBy', 'username')
     .exec((err, gameObjectives) => {
       if (err || !gameObjectives) return res.json([]);
-      Promise.all(
-        gameObjectives.map(gameObjective => populateParent(gameObjective))
-      ).then(() => res.json(gameObjectives));
+      res.json(gameObjectives);
     });
 });
 
 router.get('/gameObjectives/objective_id/:game/:objective_id', (req, res, next) => {
   GameObjective.findOne({ game: req.params.game, objective_id: req.params.objective_id })
-    .populate('createdBy', 'username')
     .exec((err, gameObjective) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
-      populateParent(gameObjective).then(() => res.json(gameObjective));
+      res.json(gameObjective);
     }
   );
 });
 
 router.get('/gameObjectives/:id', (req, res, next) => {
   GameObjective.findById(req.params.id)
-    .populate('game')
-    .populate('createdBy', 'username')
     .exec((err, gameObjective) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
-      populateParent(gameObjective).then(() => res.json(gameObjective));
+      res.json(gameObjective);
     }
   );
 });
