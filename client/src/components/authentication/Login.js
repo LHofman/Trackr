@@ -82,7 +82,7 @@ export default class Login extends Component {
       <div>
         <h1>Login</h1>
         <Form error onSubmit={this.handleSubmit.bind(this)}>
-          <Form.Field>
+          <Form.Field required>
             <label>Username</label>
             <input placeholder='Username' name='username' onChange={this.handleInputChange} />
             {
@@ -90,7 +90,7 @@ export default class Login extends Component {
               <Message error header={this.state.usernameError} />
             }
           </Form.Field>
-          <Form.Field>
+          <Form.Field required>
             <label>Password</label>
             <input placeholder='Password' name='password' type='password' onChange={this.handleInputChange} />
             {

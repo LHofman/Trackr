@@ -137,11 +137,11 @@ export default class EditItem extends Component {
       <div>
         <h1>Edit Item</h1>
         <Form error onSubmit={this.handleSubmit.bind(this)}>
-          <Form.Field>
+          <Form.Field required>
             <label>Type</label>
             <Dropdown placeholder='Type' fluid selection options={typeOptions} name='type' value={this.state.type} onChange={(param, data) => this.handleValueChange('type', data.value)} />
           </Form.Field>
-          <Form.Field>
+          <Form.Field required>
             <label>Title</label>
             <input placeholder='Title' name='title' value={this.state.title} onChange={this.handleInputChange} />
             {
@@ -151,7 +151,7 @@ export default class EditItem extends Component {
           </Form.Field>
           {
 						this.state.type === 'Book' &&
-            <Form.Field>
+            <Form.Field required>
               <label>Author</label>
               <input placeholder='Author' name='author' value={this.state.author} onChange={this.handleInputChange} />
               {
@@ -160,7 +160,7 @@ export default class EditItem extends Component {
               }
             </Form.Field>
           }
-          <Form.Field>
+          <Form.Field required>
             <label>Release Date</label>
             <input type='date' name='releaseDate' value={moment(this.state.releaseDate).format('YYYY-MM-DD')} onChange={this.handleInputChange} />
             {
@@ -174,7 +174,7 @@ export default class EditItem extends Component {
           </Form.Field>
           {
 						(this.state.type === 'TvShow' && hasStarted(this.state.releaseDate)) &&
-            <Form.Field>
+            <Form.Field required>
               <Checkbox label='Ongoing' name='ongoing' checked={this.state.ongoing} onChange={(param, data) => this.handleValueChange('ongoing', data.checked)} />
             </Form.Field>
           }

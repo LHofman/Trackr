@@ -13,6 +13,7 @@ class EditGameObjective extends Component {
       backUrl: '',
       hint: undefined,
       index: 0,
+      indexError: '',
       objective: '',
       objectiveError: '',
       redirect: undefined
@@ -65,6 +66,13 @@ class EditGameObjective extends Component {
     let isError = false;
     const errors = {};
 
+    if (!this.state.index) {
+      isError = true;
+      errors.indexError = 'Index is required (enter 0 or a negative number if you want it to show up at the top)';
+    } else {
+      errors.indexError = '';
+    }
+
     if (!this.state.objective) {
       isError = true;
       errors.objectiveError = 'Objective is required';
@@ -108,11 +116,15 @@ class EditGameObjective extends Component {
       <div>
         <h1>Add Objective</h1>
         <Form error onSubmit={this.handleSubmit.bind(this)}>
-          <Form.Field>
+          <Form.Field required>
             <label>Index</label>
             <input type='number' name='index' value={this.state.index} onChange={this.handleInputChange} />
+            {
+              this.state.indexError &&
+              <Message error header={this.state.indexError} />
+            }
           </Form.Field>
-          <Form.Field>
+          <Form.Field required>
             <label>Objective</label>
             <input placeholder='Objective' name='objective' onChange={this.handleInputChange} value={this.state.objective}/>
             {

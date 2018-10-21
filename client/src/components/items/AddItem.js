@@ -105,12 +105,12 @@ export default class AddItem extends Component {
       <div>
         <h1>Add Item</h1>
         <Form error onSubmit={this.handleSubmit.bind(this)}>
-          <Form.Field>
+          <Form.Field required>
             <label>Type</label>
             <Dropdown name='type' fluid selection value={this.state.type}
               options={typeOptions} onChange={(param, data) => this.handleValueChange('type', data.value)} />
           </Form.Field>
-          <Form.Field>
+          <Form.Field required>
             <label>Title</label>
             <input placeholder='Title' name='title' onChange={this.handleInputChange} />
             {
@@ -120,7 +120,7 @@ export default class AddItem extends Component {
           </Form.Field>
           {
             this.state.type === 'Book' &&
-            <Form.Field>
+            <Form.Field required>
               <label>Author</label>
               <input placeholder='Author' name='author' onChange={this.handleInputChange} />
               {
@@ -129,7 +129,7 @@ export default class AddItem extends Component {
               }
             </Form.Field>
           }
-          <Form.Field>
+          <Form.Field required>
             <label>Release Date</label>
             <input type='date' name='releaseDate' onChange={this.handleInputChange} />
             {
@@ -143,7 +143,7 @@ export default class AddItem extends Component {
           </Form.Field>
           {
             (this.state.type === 'TvShow' && hasStarted(this.state.releaseDate)) &&
-            <Form.Field>
+            <Form.Field required>
               <Checkbox label='Ongoing' name='ongoing' onChange={(param, data) => this.handleValueChange('ongoing', data.checked)} />
             </Form.Field>
           }
