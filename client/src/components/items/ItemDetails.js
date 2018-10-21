@@ -160,6 +160,17 @@ export default class ItemDetails extends Component {
 					}
 				</h3>
 				{
+					(details.type === 'Movie' && details.releaseDateDvd) &&
+					<h3>
+						Dvd Release Date: {
+							details.releaseDateDvdStatus === 'Date' ? 
+							new Date(details.releaseDateDvd).toDateString() : 
+							details.releaseDateDvdStatus
+						}
+					</h3>
+				}
+				<br />
+				{
 					details.type === 'Video Game' &&
 					<div><Button as={Link} to={`/objectives/${details.title_id}`} color='teal'>Objectives</Button><br /><br /></div>
 				}

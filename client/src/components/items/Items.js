@@ -21,6 +21,8 @@ export default class Items extends Component {
       titleFilter: '',
       releaseDateLowerLimit: '',
       releaseDateUpperLimit: '',
+      releaseDateDvdLowerLimit: '',
+      releaseDateDvdUpperLimit: '',
       sort: { field: 'title', order: 'asc' },
       activePage: 1,
       isSidebarVisible: false
@@ -67,11 +69,17 @@ export default class Items extends Component {
     const asc = order === 'asc' ? -1 : 1;
 
     const s1 = field === 'releaseDate' && i1.releaseDateStatus !== 'Date' ? 
-      i1.releaseDateStatus : 
-      i1[field].toString().toLowerCase();
+      i1.releaseDateStatus : (
+        field === 'releaseDateDvd' && i1.releaseDateDvdStatus !== 'Date' ? 
+        i1.releaseDateDvdStatus : 
+        i1[field].toString().toLowerCase()
+      );
     const s2 = field === 'releaseDate' && i2.releaseDateStatus !== 'Date' ? 
-      i2.releaseDateStatus : 
-        i2[field].toString().toLowerCase();
+      i2.releaseDateStatus : (
+        field === 'releaseDateDvd' && i2.releaseDateDvdStatus !== 'Date' ? 
+        i2.releaseDateDvdStatus :
+        i2[field].toString().toLowerCase()
+      );
 
     return s1 < s2 || (s1 === s2 && i1.title.toString().toLowerCase() < i2.title.toString().toLowerCase()) ? asc : asc * -1;
   }
@@ -111,8 +119,16 @@ export default class Items extends Component {
   }
 
   render() {
-    const {typeFilter, titleFilter, releaseDateLowerLimit, releaseDateUpperLimit, sort} = this.state;
-    const filteredItems = this.state.items.filter(item => 
+    const {
+      typeFilter, 
+      titleFilter, 
+      releaseDateLowerLimit, 
+      releaseDateUpperLimit, 
+      releaseDateDvdLowerLimit, 
+      releaseDateDvdUpperLimit, 
+      sort
+    } = this.state;
+    let filteredItems = this.state.items.filter(item => 
       //titleFilter
       item.title.toString().toLowerCase().indexOf(
         titleFilter.toString().toLowerCase()
@@ -135,7 +151,25 @@ export default class Items extends Component {
         )
       )
     ).sort(this.sort);
-
+    //releaseDateDvdFilter
+    if (this.state.typeFilter === 'Movie') {
+      filteredItems = filteredItems.filter(item => {
+        if ((releaseDateDvdLowerLimit || releaseDateDvdUpperLimit) && !item.releaseDateDvdStatus) return false;
+        return (
+          releaseDateDvdLowerLimit === '' || 
+          item.releaseDateDvdStatus !== 'Date' ||
+          moment(releaseDateDvdLowerLimit).isSameOrBefore(item.releaseDateDvd)
+        ) &&
+        (
+          releaseDateDvdUpperLimit === '' || 
+          (
+            item.releaseDateDvdStatus === 'Date' && 
+            moment(releaseDateDvdUpperLimit).isSameOrAfter(item.releaseDateDvd)
+          )
+        )
+      })
+    }
+    
     const begin = (this.state.activePage - 1) * 100;
     const totalPages = Math.ceil(filteredItems.length / 100, 0);
     const items = filteredItems
@@ -175,6 +209,19 @@ export default class Items extends Component {
             <Label>Release Date Upper Limit</Label>
             <Input type='date' name='releaseDateUpperLimit' value={moment(this.state.releaseDateUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
           </Menu.Item>
+          {
+            this.state.typeFilter === 'Movie' &&
+            <div>
+              <Menu.Item>
+                <Label>Dvd Release Date Lower Limit</Label>
+                <Input type='date' name='releaseDateDvdLowerLimit' value={moment(this.state.releaseDateDvdLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+              </Menu.Item>
+              <Menu.Item>
+                <Label>Dvd Release Date Upper Limit</Label>
+                <Input type='date' name='releaseDateDvdUpperLimit' value={moment(this.state.releaseDateDvdUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+              </Menu.Item>
+            </div>
+          }
           <Menu.Item header>Sort By</Menu.Item>
           <Menu.Item 
             name='title'
@@ -204,6 +251,25 @@ export default class Items extends Component {
             onClick={this.handleSortChange}>
             Release Date (desc)
           </Menu.Item>
+          {
+            this.state.typeFilter === 'Movie' &&
+            <div>
+              <Menu.Item 
+                name='releaseDateDvd'
+                value='asc'
+                active={sort.field === 'releaseDateDvd' && sort.order === 'asc'}
+                onClick={this.handleSortChange}>
+                Dvd Release Date (asc)
+              </Menu.Item>
+              <Menu.Item 
+                name='releaseDateDvd'
+                value='desc'
+                active={sort.field === 'releaseDateDvd' && sort.order === 'desc'}
+                onClick={this.handleSortChange}>
+                Dvd Release Date (desc)
+              </Menu.Item>
+            </div>
+          }
         </Sidebar>
         {this.getPagination(totalPages)}
         <List>

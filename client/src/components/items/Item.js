@@ -23,6 +23,14 @@ export default class Item extends Component {
               item.releaseDateStatus === 'Date' ? 
               new Date(item.releaseDate).toDateString() :
               item.releaseDateStatus
+            }<br />
+            {
+              item.type === 'Movie' && item.releaseDateDvd ?
+              `Dvd Release Date: ${
+                item.releaseDateDvdStatus === 'Date' ? 
+                new Date(item.releaseDateDvd).toDateString() :
+                item.releaseDateStatusDvd
+              }` : ''
             }
           </List.Description>
         </List.Content>

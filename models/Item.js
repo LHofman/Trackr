@@ -18,6 +18,11 @@ const ItemSchema = mongoose.Schema({
     enum: ['Date', 'TBA', 'Unknown'],
     required: true
   },
+  releaseDateDvd: String,
+  releaseDateDvdStatus: {
+    type: String,
+    enum: ['Date', 'TBA', 'Unknown']
+  },
   title: {
     type: String,
     required: true

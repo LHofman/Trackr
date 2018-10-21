@@ -20,6 +20,9 @@ export default class AddItem extends Component {
       releaseDate: '',
       releaseDateError: '',
       releaseDateStatus: 'Date',
+      releaseDateDvd: '',
+      releaseDateDvdError: '',
+      releaseDateDvdStatus: 'Date',
       description: undefined,
       artist: '',
       artistError: '',
@@ -54,6 +57,13 @@ export default class AddItem extends Component {
       errors.releaseDateError = '';
     }
 
+    if (this.state.type === 'Movie' && this.state.releaseDateDvdStatus === 'Date' && this.state.releaseDateDvd === '') {
+      isError = true;
+      errors.releaseDateDvdError = 'Dvd ReleaseDate is required';
+    } else {
+      errors.releaseDateDvdError = '';
+    }
+
     if (extendedEquals(this.state.type, 'Album', 'Book') && !this.state.artist) {
       isError = true;
       errors.artistError = `${getArtistType(this.state.type)} is required`;
@@ -80,7 +90,15 @@ export default class AddItem extends Component {
     e.preventDefault();
     const err = this.checkForErrors();
     if (err) return;
-    const { type, title, releaseDate, releaseDateStatus, description } = this.state;
+    const { 
+      type, 
+      title, 
+      releaseDate, 
+      releaseDateStatus, 
+      releaseDateDvd, 
+      releaseDateDvdStatus, 
+      description 
+    } = this.state;
     const newItem = {
       type,
       title,
@@ -91,6 +109,10 @@ export default class AddItem extends Component {
     }
     switch (type) {
       case 'Album': case 'Book': newItem.artist = this.state.artist; break;
+      case 'Movie': 
+        newItem.releaseDateDvd = releaseDateDvdStatus !== 'Date' ? undefined : new Date(releaseDateDvd).toISOString();
+        newItem.releaseDateDvdStatus = releaseDateDvdStatus;
+        break;
       case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
       default:
     }
@@ -152,6 +174,27 @@ export default class AddItem extends Component {
               </Form.Field>
             }
           </Form.Group>
+          {
+            this.state.type === 'Movie' &&
+            <Form.Group>
+              <Form.Field required width={3}>
+                <label>Dvd ReleaseDate Status</label>
+                <Dropdown name='releaseDateDvdStatus' fluid selection value={this.state.releaseDateDvdStatus}
+                  options={releaseDateStatusOptions} onChange={(param, data) => this.handleValueChange('releaseDateDvdStatus', data.value)} />
+              </Form.Field>
+              {
+                this.state.releaseDateDvdStatus === 'Date' &&
+                <Form.Field required width={13}>
+                  <label>Dvd Release Date</label>
+                  <input type='date' name='releaseDateDvd' onChange={this.handleInputChange} />
+                  {
+                    this.state.releaseDateDvdError &&
+                    <Message error header={this.state.releaseDateDvdError} />
+                  }
+                </Form.Field>
+              }
+            </Form.Group>
+          }
           <Form.Field>
             <label>Description</label>
             <TextArea autoHeight placeholder='Description' name='description' onChange={this.handleInputChange} />

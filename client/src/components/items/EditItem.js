@@ -23,6 +23,9 @@ export default class EditItem extends Component {
       releaseDate: '',
       releaseDateError: '',
       releaseDateStatus: '',
+      releaseDateDvd: '',
+      releaseDateDvdError: '',
+      releaseDateDvdStatus: '',
       description: undefined,
       artist: '',
       artistError: '',
@@ -54,6 +57,13 @@ export default class EditItem extends Component {
       errors.releaseDateError = 'ReleaseDate is required';
     } else {
       errors.releaseDateError = '';
+    }
+
+    if (this.state.type === 'Movie' && this.state.releaseDateDvdStatus === 'Date' && this.state.releaseDateDvd === '') {
+      isError = true;
+      errors.releaseDateDvdError = 'Dvd ReleaseDate is required';
+    } else {
+      errors.releaseDateDvdError = '';
     }
 
     if (extendedEquals(this.state.type, 'Album', 'Book') && !this.state.artist) {
@@ -93,7 +103,9 @@ export default class EditItem extends Component {
             releaseDate: details.releaseDate,
             releaseDateStatus: details.releaseDateStatus,
             artist: details.artist,
-            ongoing: details.ongoing
+            ongoing: details.ongoing,
+            releaseDateDvd: details.releaseDateDvd,
+            releaseDateDvdStatus: details.releaseDateDvdStatus,
           });
         } else this.setState({ redirect: `/items/${title_id}` });
 			}).catch(reason => 
@@ -110,7 +122,15 @@ export default class EditItem extends Component {
     e.preventDefault();
     const err = this.checkForErrors();
     if (err) return;
-    const { type, title, releaseDate, releaseDateStatus, description } = this.state;
+    const { 
+      type, 
+      title, 
+      releaseDate, 
+      releaseDateStatus, 
+      releaseDateDvd, 
+      releaseDateDvdStatus, 
+      description
+    } = this.state;
     const newItem = {
       type,
       title,
@@ -120,6 +140,10 @@ export default class EditItem extends Component {
     }
     switch (type) {
       case 'Album': case 'Book': newItem.artist = this.state.artist; break;
+      case 'Movie': 
+        newItem.releaseDateDvd = releaseDateDvdStatus !== 'Date' ? undefined : new Date(releaseDateDvd).toISOString();
+        newItem.releaseDateDvdStatus = releaseDateDvdStatus;
+        break;
       case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
       default:
     }
@@ -142,7 +166,7 @@ export default class EditItem extends Component {
         <Form error onSubmit={this.handleSubmit.bind(this)}>
           <Form.Field required>
             <label>Type</label>
-            <Dropdown placeholder='Type' fluid selection options={typeOptions} name='type' value={this.state.type} onChange={(param, data) => this.handleValueChange('type', data.value)} />
+            <Dropdown fluid selection options={typeOptions} name='type' value={this.state.type} onChange={(param, data) => this.handleValueChange('type', data.value)} />
           </Form.Field>
           <Form.Field required>
             <label>Title</label>
@@ -180,6 +204,26 @@ export default class EditItem extends Component {
               </Form.Field>
             }
           </Form.Group>
+          {
+            this.state.type === 'Movie' &&
+            <Form.Group>
+              <Form.Field required width={3}>
+                <label>Dvd ReleaseDate Status</label>
+                <Dropdown fluid selection options={releaseDateStatusOptions} name='releaseDateDvdStatus' value={this.state.releaseDateDvdStatus} onChange={(param, data) => this.handleValueChange('releaseDateDvdStatus', data.value)} />
+              </Form.Field>
+              {
+                this.state.releaseDateDvdStatus === 'Date' &&
+                <Form.Field required width={13}>
+                  <label>Dvd Release Date</label>
+                  <input type='date' name='releaseDateDvd' value={moment(this.state.releaseDateDvd).format('YYYY-MM-DD')} onChange={this.handleInputChange} />
+                  {
+                    this.state.releaseDateDvdError && 
+                    <Message error header={this.state.releaseDateDvdError} />
+                  }
+                </Form.Field>
+              }
+            </Form.Group>
+          }
           <Form.Field>
             <label>Description</label>
             <TextArea autoHeight placeholder='Description' name='description' value={this.state.description} onChange={this.handleInputChange} />
