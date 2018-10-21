@@ -11,15 +11,16 @@ class GameObjective extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      gameObjective: props.gameObjective,
-      following: props.following,
-      hasSubObjectives: false,
-      userGameObjective: undefined,
       confirmationAlert: false,
-      modalOpen: false
+      following: props.following,
+      gameObjective: props.gameObjective,
+      hasSubObjectives: false,
+      modalFollowingOpen: false,
+      modalHintOpen: false,
+      userGameObjective: undefined
     }
 
-    this.closeModal = this.closeModal.bind(this);
+    this.closeModals = this.closeModals.bind(this);
   }
 
   componentWillMount() {
@@ -27,10 +28,11 @@ class GameObjective extends Component {
     if (this.state.following) this.getUserGameObjective();
   }
 
-  hasSubObjectives() {
-    fetch(`/api/hasSubObjectives/${this.state.gameObjective._id}`).then(result => {
-      this.setState({ hasSubObjectives: result });
-    });
+  getEditUrl() {
+    const { game, parent } = this.state.gameObjective;
+    let editUrl = `/objectives/${game.title_id}`;
+    if (parent) editUrl += `/subObjectives/${parent.objective_id}`;
+    return editUrl.concat(`/${this.state.gameObjective.objective_id}/edit`);
   }
 
   getUserGameObjective() {
@@ -41,8 +43,10 @@ class GameObjective extends Component {
     }).catch(reason => {});
   }
 
-  showConfirmationAlert() {
-    this.setState({ confirmationAlert: true });
+  hasSubObjectives() {
+    fetch(`/api/hasSubObjectives/${this.state.gameObjective._id}`).then(result => {
+      this.setState({ hasSubObjectives: result });
+    });
   }
 
   hideConfirmationAlert() {
@@ -52,6 +56,14 @@ class GameObjective extends Component {
   onDelete() {
     this.hideConfirmationAlert();
     this.props.onDelete(this.state.gameObjective);
+  }
+
+  showConfirmationAlert() {
+    this.setState({ confirmationAlert: true });
+  }
+
+  showHint() {
+    this.setState({ modalHintOpen: true });
   }
 
   updateUserObjective() {
@@ -74,19 +86,12 @@ class GameObjective extends Component {
         });
       }
     }).then(() => {
-      this.setState({ userGameObjective, modalOpen: true });
+      this.setState({ userGameObjective, modalFollowingOpen: true });
     });
   }
 
-  closeModal() {
-    this.setState({ modalOpen: false });
-  }
-
-  getEditUrl() {
-    const { game, parent } = this.state.gameObjective;
-    let editUrl = `/objectives/${game.title_id}`;
-    if (parent) editUrl += `/subObjectives/${parent.objective_id}`;
-    return editUrl.concat(`/${this.state.gameObjective.objective_id}/edit`);
+  closeModals() {
+    this.setState({ modalFollowingOpen: false, modalHintOpen: false });
   }
 
   render() {
@@ -109,7 +114,7 @@ class GameObjective extends Component {
                 <Checkbox key='completed' name='completed' checked={(this.state.userGameObjective || { completed: false }).completed} 
                   onChange={this.updateUserObjective.bind(this)} />
                 <Modal key='message'
-                  open={this.state.modalOpen}
+                  open={this.state.modalFollowingOpen}
                   onClose={this.closeModal}
                   basic
                   size='small'>
@@ -135,6 +140,24 @@ class GameObjective extends Component {
                   <Icon name='edit' color='orange' />
                 </Link>
                 <Icon name='trash' color='red' onClick={this.showConfirmationAlert.bind(this)} />
+              </div>
+            }
+            {
+              this.state.gameObjective.hint &&
+              <div>
+                <a onClick={this.showHint.bind(this)}>Show Hint</a>
+                <Modal key='hint'
+                  open={this.state.modalHintOpen}
+                  onClose={this.closeModals}
+                  basic
+                  size='small'>
+                  <Header icon='browser' content={this.state.gameObjective.hint} />
+                  <Modal.Actions>
+                    <Button color='green' onClick={this.closeModals} inverted >
+                      <Icon name='checkmark' /> Got it
+                    </Button>
+                  </Modal.Actions>
+                </Modal>
               </div>
             }
             <Confirm

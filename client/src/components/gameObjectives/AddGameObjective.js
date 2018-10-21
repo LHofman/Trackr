@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Form, Message } from 'semantic-ui-react';
+import { Button, Form, Message, TextArea } from 'semantic-ui-react';
 
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';
@@ -12,6 +12,7 @@ class AddObjective extends Component {
       backUrl: '',
       game: undefined,
       parent: undefined,
+      hint: undefined,
       index: 0,
       objective: '',
       objectiveError: '',
@@ -92,12 +93,13 @@ class AddObjective extends Component {
     const err = this.checkForErrors();
     if (err) return;
 
-    const { index, objective, game, parent } = this.state;
+    const { game, parent, hint, index, objective } = this.state;
     const newObjective = {
+      game,
+      createdBy: getUser().id,
+      hint,
       index,
       objective,
-      game,
-      createdBy: getUser().id
     }
     if (parent) newObjective.parent = parent._id;
 
@@ -129,6 +131,10 @@ class AddObjective extends Component {
               this.state.objectiveError &&
               <Message error header={this.state.objectiveError} />
             }
+          </Form.Field>
+          <Form.Field>
+            <label>Hint</label>
+            <TextArea autoHeight placeholder='Hint' name='Hint' onChange={this.handleInputChange} />
           </Form.Field>
           <Button positive floated='left' type='submit'>Submit</Button>
           <Button negative floated='right' as={Link} to={this.state.backUrl}>Cancel</Button>

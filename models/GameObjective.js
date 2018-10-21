@@ -12,17 +12,18 @@ const GameObjectiveSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'GameObjective'
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  hint: String,
   index: {
     type: Number,
     default: 0
   },
   objective: {
     type: String,
-    required: true
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
     required: true
   },
   objective_id: {
