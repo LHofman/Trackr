@@ -49,6 +49,7 @@ export default class Items extends Component {
 
   onFilterChange(event) {
     this.handleValueChange(event.target.name, event.target.value);
+    this.setState({ activePage: 1 });
   }
 
   handleValueChange(name, value) {
