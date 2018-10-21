@@ -24,13 +24,20 @@ export default class AddItem extends Component {
       releaseDateDvdError: '',
       releaseDateDvdStatus: 'Date',
       description: undefined,
+      artists: [],
       artist: '',
       artistError: '',
       ongoing: false,
       redirect: undefined
     }
+
+    this.getArtists = this.getArtists.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+  }
+
+  componentWillMount() {
+    this.getArtists();
   }
 
   addItem(newItem) {
@@ -81,6 +88,12 @@ export default class AddItem extends Component {
     return isError;
   }
 
+  getArtists() {
+    fetch('/api/artists').then(artists => {
+      this.setState({ artists: artists.map(artist => { return {text: artist, value: artist}}) })
+    });
+  }
+
   handleInputChange(e) {
     const target = e.target;
     this.handleValueChange(target.name, target.value);
@@ -123,6 +136,10 @@ export default class AddItem extends Component {
     this.setState({ [field]: value });
   }
 
+  newArtist(e, { value }) {
+    this.setState({ artists: [{text: value, value}, ...this.state.artists]});
+  }
+
   render() {
     const redirect = this.state.redirect;
     if (redirect) return <Redirect to={redirect} />
@@ -149,7 +166,8 @@ export default class AddItem extends Component {
             extendedEquals(this.state.type, 'Album', 'Book') &&
             <Form.Field required>
               <label>{ getArtistType(this.state.type) }</label>
-              <input placeholder={ getArtistType(this.state.type) } name='artist' onChange={this.handleInputChange} />
+              <Dropdown name='artist' fluid selection search allowAdditions placeholder='Artist' options={this.state.artists} 
+                onAddItem={this.newArtist.bind(this)} value={this.state.artist} onChange={(param, data) => this.handleValueChange('artist', data.value)} />
               {
                 this.state.artistError &&
                 <Message error header={this.state.artistError} />

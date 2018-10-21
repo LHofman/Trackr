@@ -27,18 +27,21 @@ export default class EditItem extends Component {
       releaseDateDvdError: '',
       releaseDateDvdStatus: '',
       description: undefined,
+      artists: [],
       artist: '',
       artistError: '',
       ongoing: false,
       redirect: undefined
     }
 
+    this.getArtists = this.getArtists.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
   }
 
   componentWillMount() {
     this.getItemDetails();
+    this.getArtists();
   }
 
   checkForErrors() {
@@ -88,6 +91,12 @@ export default class EditItem extends Component {
     return fetch(`/api/items/${itemId}`, 'put', true, newItem).then(item => {
         this.setState({redirect: `/items/${item.title_id}`});
       }).catch(console.log);
+  }
+
+  getArtists() {
+    fetch('/api/artists').then(artists => {
+      this.setState({ artists: artists.map(artist => { return {text: artist, value: artist}}) });
+    });
   }
 
   getItemDetails() {
@@ -154,6 +163,10 @@ export default class EditItem extends Component {
     this.setState({ [field]: value });
   }
 
+  newArtist(e, { value }) {
+    this.setState({ artists: [{text: value, value}, ...this.state.artists]});
+  }
+
   render() {
     const redirect = this.state.redirect;
     if (redirect) return <Redirect to={redirect} />
@@ -180,7 +193,8 @@ export default class EditItem extends Component {
 						extendedEquals(this.state.type, 'Album', 'Book') &&
             <Form.Field required>
               <label>{ getArtistType(this.state.type) }</label>
-              <input placeholder={ getArtistType(this.state.type) } name='artist' value={this.state.artist} onChange={this.handleInputChange} />
+              <Dropdown name='artist' fluid selection search allowAdditions placeholder='Artist' options={this.state.artists} 
+                onAddItem={this.newArtist.bind(this)} value={this.state.artist} onChange={(param, data) => this.handleValueChange('artist', data.value)} />
               {
 								this.state.artistError &&
                 <Message error header={this.state.artistError} />
