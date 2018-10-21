@@ -12,6 +12,7 @@ const ItemSchema = mongoose.Schema({
     type: String,
     required: true
   },
+  description: String,
   title_id: {
     type: String,
     required: true

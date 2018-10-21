@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Form, Dropdown, Checkbox, Message } from 'semantic-ui-react';
+import { Button, Checkbox, Dropdown, Form, Message, TextArea } from 'semantic-ui-react';
 
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
@@ -18,6 +18,7 @@ export default class EditItem extends Component {
       titleError: '',
       releaseDate: '',
       releaseDateError: '',
+      description: undefined,
       author: '',
       authorError: '',
       ongoing: false,
@@ -41,6 +42,7 @@ export default class EditItem extends Component {
             id: details._id,
             type: details.type,
             title: details.title,
+            description: details.description,
             releaseDate: details.releaseDate
           });
           switch (details.type) {
@@ -100,11 +102,12 @@ export default class EditItem extends Component {
     e.preventDefault();
     const err = this.checkForErrors();
     if (err) return;
-    const type = this.state.type;
+    const { type, title, releaseDate, description } = this.state;
     const newItem = {
       type,
-      title: this.state.title,
-      releaseDate: new Date(this.state.releaseDate).toISOString()
+      title,
+      releaseDate: new Date(releaseDate).toISOString(),
+      description
     }
     switch (type) {
       case 'Book': newItem.author = this.state.author; break;
@@ -163,6 +166,10 @@ export default class EditItem extends Component {
 							this.state.releaseDateError && 
               <Message error header={this.state.releaseDateError} />
             }
+          </Form.Field>
+          <Form.Field>
+            <label>Description</label>
+            <TextArea autoHeight placeholder='Description' name='description' value={this.state.description} onChange={this.handleInputChange} />
           </Form.Field>
           {
 						this.state.type === 'TvShow' &&

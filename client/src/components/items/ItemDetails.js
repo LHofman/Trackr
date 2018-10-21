@@ -155,6 +155,13 @@ export default class ItemDetails extends Component {
 					<div><Button as={Link} to={`/objectives/${details.title_id}`} color='teal'>Objectives</Button><br /><br /></div>
 				}
 				{
+					details.description &&
+					<div>
+						{details.description}
+						<br/><br/><br/>
+					</div>
+				}
+				{
 					this.state.userItem &&
 					<div>
 						<Checkbox key='inCollection' label='In Collection' name='inCollection' checked={this.state.userItem.inCollection}
