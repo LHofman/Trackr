@@ -6,6 +6,7 @@ import { Button, Dropdown, Icon, Input, Label, List, Menu, Pagination, Sidebar }
 
 import UserItem from './UserItem';
 
+import extendedEquals from '../../utils/extendedEquals';
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';
 import isLoggedIn from '../../utils/isLoggedIn';
@@ -118,16 +119,16 @@ export default class Items extends Component {
         titleFilter.toString().toLowerCase()
       ) !== -1 &&
       //typeFilter
-      (typeFilter === '' || userItem.item.type === typeFilter) &&
+      extendedEquals(typeFilter, '', userItem.item.type) &&
       //releaseDateFilter
       (
         (releaseDateLowerLimit === '' || moment(releaseDateLowerLimit).isSameOrBefore(userItem.item.releaseDate)) &&
         (releaseDateUpperLimit === '' || moment(releaseDateUpperLimit).isSameOrAfter(userItem.item.releaseDate))
       ) &&
       //inCollectionFilter
-      (inCollectionFilter === '' || userItem.inCollection.toString() === inCollectionFilter) &&
+      extendedEquals(inCollectionFilter, '', userItem.inCollection.toString()) &&
       //statusFilter
-      (statusFilter === '' || userItem.status === statusFilter)
+      extendedEquals(statusFilter, '', userItem.status)
     ).sort(this.sort);
     
     const begin = (this.state.activePage - 1) * 100;

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Checkbox, Confirm, Dropdown, Header, Icon, Modal, Popup, Rating } from 'semantic-ui-react';
 
+import extendedEquals from '../../utils/extendedEquals';
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
 import getIcon from '../../utils/getIcon';
@@ -9,6 +10,7 @@ import getUser from '../../utils/getUser';
 import hasStarted from '../../utils/hasStarted';
 import isLoggedIn from '../../utils/isLoggedIn';
 import statusOptions from '../userItems/statusOptions';
+import getArtistType from './getArtistType';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -143,8 +145,8 @@ export default class ItemDetails extends Component {
 					onConfirm={this.confirmAlert.bind(this)}
 				/>
 				{
-					details.type === 'Book' &&
-					<h3>Author: {details.author}</h3>
+					extendedEquals(details.type, 'Album', 'Book') &&
+					<h3>{ getArtistType(details.type) }: {details.artist}</h3>
 				}
 				{
 					details.type === 'TvShow' &&

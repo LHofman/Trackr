@@ -7,6 +7,7 @@ import { Button, Dropdown, Icon, Input, Label, List, Menu, Pagination, Sidebar }
 
 import Item from './Item';
 
+import extendedEquals from '../../utils/extendedEquals';
 import fetch from '../../utils/fetch';
 import isLoggedIn from '../../utils/isLoggedIn';
 import typeOptions from './typeOptions';
@@ -117,7 +118,7 @@ export default class Items extends Component {
         titleFilter.toString().toLowerCase()
       ) !== -1 &&
       //typeFilter
-      (typeFilter === '' || item.type === typeFilter) &&
+      extendedEquals(typeFilter, '', item.type) &&
       //releaseDateFilter
       (
         (

@@ -3,8 +3,10 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Checkbox, Dropdown, Form, Message, TextArea } from 'semantic-ui-react';
 
+import extendedEquals from '../../utils/extendedEquals';
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
+import getArtistType from './getArtistType';
 import hasStarted from '../../utils/hasStarted';
 import releaseDateStatusOptions from './releaseDateStatusOptions';
 import typeOptions from './typeOptions';
@@ -22,8 +24,8 @@ export default class EditItem extends Component {
       releaseDateError: '',
       releaseDateStatus: '',
       description: undefined,
-      author: '',
-      authorError: '',
+      artist: '',
+      artistError: '',
       ongoing: false,
       redirect: undefined
     }
@@ -54,11 +56,11 @@ export default class EditItem extends Component {
       errors.releaseDateError = '';
     }
 
-    if (this.state.type === 'Book' && !this.state.author) {
+    if (extendedEquals(this.state.type, 'Album', 'Book') && !this.state.artist) {
       isError = true;
-      errors.authorError = 'Author is required';
+      errors.artistError = `${ getArtistType(this.state.type) } is required`;
     } else {
-      errors.authorError = '';
+      errors.artistError = '';
     }
 
     if (isError) {
@@ -90,7 +92,7 @@ export default class EditItem extends Component {
             description: details.description,
             releaseDate: details.releaseDate,
             releaseDateStatus: details.releaseDateStatus,
-            author: details.author,
+            artist: details.artist,
             ongoing: details.ongoing
           });
         } else this.setState({ redirect: `/items/${title_id}` });
@@ -117,7 +119,7 @@ export default class EditItem extends Component {
       description
     }
     switch (type) {
-      case 'Book': newItem.author = this.state.author; break;
+      case 'Album': case 'Book': newItem.artist = this.state.artist; break;
       case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
       default:
     }
@@ -151,13 +153,13 @@ export default class EditItem extends Component {
             }
           </Form.Field>
           {
-						this.state.type === 'Book' &&
+						extendedEquals(this.state.type, 'Album', 'Book') &&
             <Form.Field required>
-              <label>Author</label>
-              <input placeholder='Author' name='author' value={this.state.author} onChange={this.handleInputChange} />
+              <label>{ getArtistType(this.state.type) }</label>
+              <input placeholder={ getArtistType(this.state.type) } name='artist' value={this.state.artist} onChange={this.handleInputChange} />
               {
-								this.state.authorError &&
-                <Message error header={this.state.authorError} />
+								this.state.artistError &&
+                <Message error header={this.state.artistError} />
               }
             </Form.Field>
           }
