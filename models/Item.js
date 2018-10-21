@@ -4,28 +4,30 @@ import UserItem from './UserItem';
 import GameObjective from './GameObjective';
 
 const ItemSchema = mongoose.Schema({
-  type: {
+  author: String,
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  description: String,
+  ongoing: Boolean,
+  releaseDate: String,
+  releaseDateStatus: {
     type: String,
+    enum: ['Date', 'TBA', 'Unknown'],
     required: true
   },
   title: {
     type: String,
     required: true
   },
-  description: String,
   title_id: {
     type: String,
     required: true
   },
-  releaseDate: {
+  type: {
     type: String,
-    required: true
-  },
-  author: String,
-  ongoing: Boolean,
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
     required: true
   }
 });

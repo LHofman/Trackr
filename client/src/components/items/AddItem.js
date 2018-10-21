@@ -5,6 +5,7 @@ import { Button, Checkbox, Dropdown, Form, Message, TextArea } from 'semantic-ui
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';
 import hasStarted from '../../utils/hasStarted';
+import releaseDateStatusOptions from './releaseDateStatusOptions';
 import typeOptions from './typeOptions';
 
 export default class AddItem extends Component {
@@ -16,6 +17,7 @@ export default class AddItem extends Component {
       titleError: '',
       releaseDate: '',
       releaseDateError: '',
+      releaseDateStatus: 'Date',
       description: undefined,
       author: '',
       authorError: '',
@@ -43,7 +45,7 @@ export default class AddItem extends Component {
       errors.titleError = '';
     }
 
-    if (this.state.releaseDate === '') {
+    if (this.state.releaseDateStatus === 'Date' && this.state.releaseDate === '') {
       isError = true;
       errors.releaseDateError = 'ReleaseDate is required';
     } else {
@@ -76,17 +78,18 @@ export default class AddItem extends Component {
     e.preventDefault();
     const err = this.checkForErrors();
     if (err) return;
-    const { type, title, releaseDate, description } = this.state;
+    const { type, title, releaseDate, releaseDateStatus, description } = this.state;
     const newItem = {
       type,
       title,
       description,
-      releaseDate: new Date(releaseDate).toISOString(),
+      releaseDate: releaseDateStatus === 'Date' ? new Date(releaseDate).toISOString() : undefined,
+      releaseDateStatus,
       createdBy: getUser().id
     }
     switch (type) {
       case 'Book': newItem.author = this.state.author; break;
-      case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDate) ? this.state.ongoing : true; break;
+      case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
       default:
     }
     this.addItem(newItem);
@@ -129,20 +132,30 @@ export default class AddItem extends Component {
               }
             </Form.Field>
           }
-          <Form.Field required>
-            <label>Release Date</label>
-            <input type='date' name='releaseDate' onChange={this.handleInputChange} />
+          <Form.Group>
+            <Form.Field required width={3}>
+              <label>ReleaseDate Status</label>
+              <Dropdown name='releaseDateStatus' fluid selection value={this.state.releaseDateStatus}
+                options={releaseDateStatusOptions} onChange={(param, data) => this.handleValueChange('releaseDateStatus', data.value)} />
+            </Form.Field>
             {
-              this.state.releaseDateError &&
-              <Message error header={this.state.releaseDateError} />
+              this.state.releaseDateStatus === 'Date' &&
+              <Form.Field required width={13}>
+                <label>Release Date</label>
+                <input type='date' name='releaseDate' onChange={this.handleInputChange} />
+                {
+                  this.state.releaseDateError &&
+                  <Message error header={this.state.releaseDateError} />
+                }
+              </Form.Field>
             }
-          </Form.Field>
+          </Form.Group>
           <Form.Field>
             <label>Description</label>
             <TextArea autoHeight placeholder='Description' name='description' onChange={this.handleInputChange} />
           </Form.Field>
           {
-            (this.state.type === 'TvShow' && hasStarted(this.state.releaseDate)) &&
+            (this.state.type === 'TvShow' && hasStarted(this.state.releaseDateStatus, this.state.releaseDate)) &&
             <Form.Field required>
               <Checkbox label='Ongoing' name='ongoing' onChange={(param, data) => this.handleValueChange('ongoing', data.checked)} />
             </Form.Field>

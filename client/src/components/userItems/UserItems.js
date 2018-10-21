@@ -64,10 +64,17 @@ export default class Items extends Component {
   }
 
   sort(ui1, ui2) {
-    const asc = this.state.sort.order === 'asc' ? -1 : 1;
-    return ui1.item[this.state.sort.field].toString().toLowerCase() < 
-      ui2.item[this.state.sort.field].toString().toLowerCase() ?
-      asc: asc * -1;
+    const { field, order } = this.state.sort;
+    const asc = order === 'asc' ? -1 : 1;
+
+    const s1 = field === 'releaseDate' && ui1.item.releaseDateStatus !== 'Date' ? 
+      ui1.releaseDateStatus : 
+      ui1.item[field].toString().toLowerCase();
+    const s2 = field === 'releaseDate' && ui2.item.releaseDateStatus !== 'Date' ? 
+      ui2.releaseDateStatus : 
+      ui2.item[field].toString().toLowerCase();
+
+    return s1 < s2 || (s1 === s2 && ui1.item.title.toString().toLowerCase() < ui2.item.title.toString().toLowerCase()) ? asc : asc * -1;
   }
 
   handlePaginationChange(e, { activePage }) {

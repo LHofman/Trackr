@@ -18,7 +18,13 @@ export default class Item extends Component {
         {getIcon(item)}
         <List.Content>
         <List.Header as='a' href={`/items/${item.title_id}`}>{item.title}</List.Header>
-          <List.Description>Release Date: {new Date(item.releaseDate).toDateString()}</List.Description>
+          <List.Description>
+            Release Date: {
+              item.releaseDateStatus === 'Date' ? 
+              new Date(item.releaseDate).toDateString() :
+              item.releaseDateStatus
+            }
+          </List.Description>
         </List.Content>
       </List.Item>
     );

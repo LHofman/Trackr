@@ -148,9 +148,15 @@ export default class ItemDetails extends Component {
 				}
 				{
 					details.type === 'TvShow' &&
-					<h3>{hasStarted(details.releaeDate) ? (details.ongoing ? 'Ongoing' : 'Ended') : 'Upcoming'}</h3>
+					<h3>{hasStarted(details.releaseDateStatus, details.releaseDate) ? (details.ongoing ? 'Ongoing' : 'Ended') : 'Upcoming'}</h3>
 				}
-				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
+				<h3>
+					Release Date: {
+						details.releaseDateStatus === 'Date' ? 
+						new Date(details.releaseDate).toDateString() : 
+						details.releaseDateStatus
+					}
+				</h3>
 				{
 					details.type === 'Video Game' &&
 					<div><Button as={Link} to={`/objectives/${details.title_id}`} color='teal'>Objectives</Button><br /><br /></div>

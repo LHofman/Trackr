@@ -62,9 +62,16 @@ export default class Items extends Component {
   }
 
   sort(i1, i2) {
-    const asc = this.state.sort.order === 'asc' ? -1 : 1;
-    const s1 = i1[this.state.sort.field].toString().toLowerCase();
-    const s2 = i2[this.state.sort.field].toString().toLowerCase()
+    const { field, order } = this.state.sort;
+    const asc = order === 'asc' ? -1 : 1;
+
+    const s1 = field === 'releaseDate' && i1.releaseDateStatus !== 'Date' ? 
+      i1.releaseDateStatus : 
+      i1[field].toString().toLowerCase();
+    const s2 = field === 'releaseDate' && i2.releaseDateStatus !== 'Date' ? 
+      i2.releaseDateStatus : 
+        i2[field].toString().toLowerCase();
+
     return s1 < s2 || (s1 === s2 && i1.title.toString().toLowerCase() < i2.title.toString().toLowerCase()) ? asc : asc * -1;
   }
 
@@ -113,11 +120,21 @@ export default class Items extends Component {
       (typeFilter === '' || item.type === typeFilter) &&
       //releaseDateFilter
       (
-        (releaseDateLowerLimit === '' || moment(releaseDateLowerLimit).isSameOrBefore(item.releaseDate)) &&
-        (releaseDateUpperLimit === '' || moment(releaseDateUpperLimit).isSameOrAfter(item.releaseDate))
+        (
+          releaseDateLowerLimit === '' || 
+          item.releaseDateStatus !== 'Date' ||
+          moment(releaseDateLowerLimit).isSameOrBefore(item.releaseDate)
+        ) &&
+        (
+          releaseDateUpperLimit === '' || 
+          (
+            item.releaseDateStatus === 'Date' && 
+            moment(releaseDateUpperLimit).isSameOrAfter(item.releaseDate)
+          )
+        )
       )
     ).sort(this.sort);
-    
+
     const begin = (this.state.activePage - 1) * 100;
     const totalPages = Math.ceil(filteredItems.length / 100, 0);
     const items = filteredItems
