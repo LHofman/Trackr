@@ -2,6 +2,7 @@ import moment from 'moment';
 import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import { Link } from 'react-router-dom';
+import { animateScroll } from 'react-scroll';
 import { Button, Dropdown, Icon, Input, Label, List, Menu, Pagination, Sidebar } from 'semantic-ui-react';
 
 import Item from './Item';
@@ -69,6 +70,7 @@ export default class Items extends Component {
 
   handlePaginationChange(e, { activePage }) {
     this.setState({ activePage });
+    animateScroll.scrollToTop();
   }
 
   changePage(activePage) {
