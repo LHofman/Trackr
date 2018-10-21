@@ -6,6 +6,7 @@ import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
 import getIcon from '../../utils/getIcon';
 import getUser from '../../utils/getUser';
+import hasStarted from '../../utils/hasStarted';
 import isLoggedIn from '../../utils/isLoggedIn';
 import statusOptions from '../userItems/statusOptions';
 
@@ -147,7 +148,7 @@ export default class ItemDetails extends Component {
 				}
 				{
 					details.type === 'TvShow' &&
-					<h3>{details.ongoing ? 'Ongoing' : 'Ended'}</h3>
+					<h3>{hasStarted(details.releaeDate) ? (details.ongoing ? 'Ongoing' : 'Ended') : 'Upcoming'}</h3>
 				}
 				<h3>Release Date: {new Date(details.releaseDate).toDateString()}</h3><br />
 				{

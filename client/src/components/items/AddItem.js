@@ -4,6 +4,7 @@ import { Button, Checkbox, Dropdown, Form, Message, TextArea } from 'semantic-ui
 
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';
+import hasStarted from '../../utils/hasStarted';
 import typeOptions from './typeOptions';
 
 export default class AddItem extends Component {
@@ -66,6 +67,11 @@ export default class AddItem extends Component {
     return isError;
   }
 
+  handleInputChange(e) {
+    const target = e.target;
+    this.handleValueChange(target.name, target.value);
+  }
+
   handleSubmit(e) {
     e.preventDefault();
     const err = this.checkForErrors();
@@ -80,15 +86,10 @@ export default class AddItem extends Component {
     }
     switch (type) {
       case 'Book': newItem.author = this.state.author; break;
-      case 'TvShow': newItem.ongoing = this.state.ongoing; break;
+      case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDate) ? this.state.ongoing : true; break;
       default:
     }
     this.addItem(newItem);
-  }
-
-  handleInputChange(e) {
-    const target = e.target;
-    this.handleValueChange(target.name, target.value);
   }
 
   handleValueChange(field, value) {
@@ -141,7 +142,7 @@ export default class AddItem extends Component {
             <TextArea autoHeight placeholder='Description' name='description' onChange={this.handleInputChange} />
           </Form.Field>
           {
-            this.state.type === 'TvShow' &&
+            (this.state.type === 'TvShow' && hasStarted(this.state.releaseDate)) &&
             <Form.Field>
               <Checkbox label='Ongoing' name='ongoing' onChange={(param, data) => this.handleValueChange('ongoing', data.checked)} />
             </Form.Field>

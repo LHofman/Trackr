@@ -5,6 +5,7 @@ import { Button, Checkbox, Dropdown, Form, Message, TextArea } from 'semantic-ui
 
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
+import hasStarted from '../../utils/hasStarted';
 import typeOptions from './typeOptions';
 
 export default class EditItem extends Component {
@@ -31,36 +32,6 @@ export default class EditItem extends Component {
 
   componentWillMount() {
     this.getItemDetails();
-  }
-
-  getItemDetails() {
-    const title_id = this.props.match.params.titleId;
-    return fetch(`/api/items/title_id/${title_id}`).then(details => {
-        if (canEdit(details)) {
-          this.setState({
-            details,
-            id: details._id,
-            type: details.type,
-            title: details.title,
-            description: details.description,
-            releaseDate: details.releaseDate
-          });
-          switch (details.type) {
-            case 'Book': this.setState({ author: details.author }); break;
-            case 'TvShow': this.setState({ ongoing: details.ongoing }); break;
-            default:
-          }
-        } else this.setState({ redirect: `/items/${title_id}` });
-			}).catch(reason => 
-				this.setState({redirect: '/'})
-			);
-  }
-
-  editItem(newItem) {
-    const itemId = this.state.id;
-    return fetch(`/api/items/${itemId}`, 'put', true, newItem).then(item => {
-        this.setState({redirect: `/items/${item.title_id}`});
-      }).catch(console.log);
   }
 
   checkForErrors() {
@@ -98,6 +69,41 @@ export default class EditItem extends Component {
     return isError;
   }
 
+  editItem(newItem) {
+    const itemId = this.state.id;
+    return fetch(`/api/items/${itemId}`, 'put', true, newItem).then(item => {
+        this.setState({redirect: `/items/${item.title_id}`});
+      }).catch(console.log);
+  }
+
+  getItemDetails() {
+    const title_id = this.props.match.params.titleId;
+    return fetch(`/api/items/title_id/${title_id}`).then(details => {
+        if (canEdit(details)) {
+          this.setState({
+            details,
+            id: details._id,
+            type: details.type,
+            title: details.title,
+            description: details.description,
+            releaseDate: details.releaseDate
+          });
+          switch (details.type) {
+            case 'Book': this.setState({ author: details.author }); break;
+            case 'TvShow': this.setState({ ongoing: details.ongoing }); break;
+            default:
+          }
+        } else this.setState({ redirect: `/items/${title_id}` });
+			}).catch(reason => 
+				this.setState({redirect: '/'})
+			);
+  }
+
+  handleInputChange(e) {
+    const target = e.target;
+    this.handleValueChange(target.name, target.value);
+  }
+
   handleSubmit(e) {
     e.preventDefault();
     const err = this.checkForErrors();
@@ -111,15 +117,10 @@ export default class EditItem extends Component {
     }
     switch (type) {
       case 'Book': newItem.author = this.state.author; break;
-      case 'TvShow': newItem.ongoing = this.state.ongoing; break;
+      case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDate) ? this.state.ongoing : true; break;
       default:
     }
     this.editItem(newItem);
-  }
-
-  handleInputChange(e) {
-    const target = e.target;
-    this.handleValueChange(target.name, target.value);
   }
 
   handleValueChange(field, value) {
@@ -172,7 +173,7 @@ export default class EditItem extends Component {
             <TextArea autoHeight placeholder='Description' name='description' value={this.state.description} onChange={this.handleInputChange} />
           </Form.Field>
           {
-						this.state.type === 'TvShow' &&
+						(this.state.type === 'TvShow' && hasStarted(this.state.releaseDate)) &&
             <Form.Field>
               <Checkbox label='Ongoing' name='ongoing' checked={this.state.ongoing} onChange={(param, data) => this.handleValueChange('ongoing', data.checked)} />
             </Form.Field>
