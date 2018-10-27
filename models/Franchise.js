@@ -14,7 +14,11 @@ const FranchiseSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  }
+  },
+  items: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Item'
+  }]
 });
 
 const autoPopulate = function(next) {

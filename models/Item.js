@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
-import UserItem from './UserItem';
+import Franchise from './Franchise';
 import GameObjective from './GameObjective';
+import UserItem from './UserItem';
 
 const ItemSchema = mongoose.Schema({
   artist: String,
@@ -47,8 +48,9 @@ ItemSchema.pre('findById', autoPopulate);
 ItemSchema.pre('find', autoPopulate);
 
 ItemSchema.pre('remove', function (next) {
-  UserItem.remove({item: this._id}).exec();
+  Franchise.update({}, { $pull: { items: item_id } }, { multi: true}).exec();
   GameObjective.remove({game: this._id}).exec();
+  UserItem.remove({item: this._id}).exec();
   next();
 });
 

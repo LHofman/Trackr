@@ -370,6 +370,7 @@ router.get('/franchises', (req, res, next) => {
 
 router.get('/franchises/title_id/:title_id', (req, res, next) => {
   Franchise.findOne({ title_id: req.params.title_id })
+  .populate('items')
   .exec((err, franchise) => {
     if (err) return res.status(404).send('Franchise not found');
     res.json(franchise);
