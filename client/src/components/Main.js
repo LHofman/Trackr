@@ -1,6 +1,7 @@
 import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
+import AddFranchise from './franchises/AddFranchise';
 import AddGameObjective from './gameObjectives/AddGameObjective';
 import AddItem from './items/AddItem';
 import EditGameObjective from './gameObjectives/EditGameObjective';
@@ -24,6 +25,7 @@ export default () => (
         <Switch>
             <Route exact path="/" render={() => <Redirect to="/items" />} />
             <Route exact path='/franchises' component={Franchises} />
+            <Route exact path='/franchises/add' component={getAuthComponent(AddFranchise)} />
             <Route exact path='/franchises/:titleId' component={FranchiseDetails} />
             <Route exact path='/items' component={Items} />
             <Route exact path='/items/add' component={getAuthComponent(AddItem)} />

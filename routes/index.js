@@ -391,6 +391,17 @@ router.delete('/franchises/:id', auth, (req, res, next) => {
   });
 });
 
+router.post('/franchises', auth, (req, res, next) => {
+  return getTitleId(req.body.title).then(title_id => {
+    const franchise = new Franchise({ ...req.body, title_id });
+
+    franchise.save((err, franchise) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json(franchise);
+    });
+  });
+});
+
 //#endregion franchises
 
 export default router;

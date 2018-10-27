@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
+import { Link } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 import { Button, Input, Label, List, Pagination } from 'semantic-ui-react';
 
 import Franchise from './Franchise';
 
 import fetch from '../../utils/fetch';
+import isLoggedIn from '../../utils/isLoggedIn';
 
 export default class Franchises extends Component {
   constructor() {
@@ -102,6 +104,10 @@ export default class Franchises extends Component {
     return (
       <div>
         <h2>Franchises</h2>
+        {
+          isLoggedIn() && 
+          <Button positive circular floated='right' icon='plus' as={Link} to='/franchises/add' />
+        }
         <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' />&nbsp;&nbsp;&nbsp;
         <Button name='sort' onClick={this.toggleSort}>{'Sort by title ' + (sortOrder === 'asc' ? 'desc' : 'asc')}</Button><br/><br/>
         {this.getPagination(totalPages)}
