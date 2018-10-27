@@ -402,6 +402,31 @@ router.post('/franchises', auth, (req, res, next) => {
   });
 });
 
+router.put('/franchises/:id', auth, (req, res, next) => {
+  Franchise.findById(req.params.id, (err, franchise) => {
+    if (!isCreator(franchise, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+
+    const newFranchise = req.body;
+    const title = newFranchise.title;
+
+    const update = newFranchise => {
+      Franchise.findByIdAndUpdate(franchise._id, newFranchise, { new: true }).exec(
+        (err, franchise) => {
+          if (err) return res.status(500).send(STATUS_500_MESSAGE);
+          res.json(franchise);
+        }
+      );
+    };
+
+    if (title || title == franchise.title) {
+      return getTitleId(title).then(title_id => {
+        newFranchise.title_id = title_id;
+        update(newFranchise);
+      });
+    } else update(newFranchise);
+  });
+});
+
 //#endregion franchises
 
 export default router;

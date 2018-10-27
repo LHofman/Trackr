@@ -70,7 +70,8 @@ export default class FranchiseDetails extends Component {
 				{
           canEdit(details) && 
           [
-            <Button key='delete' negative floated='right' onClick={() => this.toggleConfirmationAlert('delete')}>Delete</Button>	
+            <Button key='edit' positive floated='left' as={Link} to={`/franchises/${details.title_id}/edit`}>Edit</Button>,
+						<Button key='delete' negative floated='right' onClick={() => this.toggleConfirmationAlert('delete')}>Delete</Button>	
           ]
         }
       </div>
