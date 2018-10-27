@@ -11,6 +11,9 @@ export default class Navbar extends Component {
         <Menu.Item as={Link} to='/'>
           Home
         </Menu.Item>
+        <Menu.Item as={Link} to='/franchises'>
+          Franchises
+        </Menu.Item>
         <Menu.Item as={Link} to='/myItems'>
           My Items
         </Menu.Item>

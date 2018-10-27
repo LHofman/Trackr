@@ -5,6 +5,7 @@ import AddGameObjective from './gameObjectives/AddGameObjective';
 import AddItem from './items/AddItem';
 import EditGameObjective from './gameObjectives/EditGameObjective';
 import EditItem from './items/EditItem';
+import Franchises from './franchises/Franchises';
 import GameObjectives from './gameObjectives/GameObjectives';
 import Items from './items/Items';
 import ItemDetails from './items/ItemDetails';
@@ -21,6 +22,7 @@ export default () => (
     <main>
         <Switch>
             <Route exact path="/" render={() => <Redirect to="/items" />} />
+            <Route exact path='/franchises' component={Franchises} />
             <Route exact path='/items' component={Items} />
             <Route exact path='/items/add' component={getAuthComponent(AddItem)} />
             <Route exact path='/items/:titleId' component={ItemDetails} />

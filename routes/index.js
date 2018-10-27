@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import passport from 'passport';
 
+import Franchise from '../models/Franchise';
 import Item from '../models/Item';
 import GameObjective from '../models/GameObjective';
 import UserGameObjective from '../models/UserGameObjective';
@@ -357,5 +358,16 @@ router.get('/artists', (req, res, next) => {
     );
   });
 });
+
+//#region franchises
+
+router.get('/franchises', (req, res, next) => {
+  Franchise.find((err, franchises) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    res.json(franchises);
+  });
+});
+
+//#endregion franchises
 
 export default router;
