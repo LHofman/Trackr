@@ -7,7 +7,7 @@ export default class Franchise extends Component {
     return (
       <List.Item>
         <List.Content>
-          <List.Header>{franchise.title}</List.Header>
+          <List.Header as='a' href={`/franchises/${franchise.title_id}`}>{franchise.title}</List.Header>
         </List.Content>
       </List.Item>
     );

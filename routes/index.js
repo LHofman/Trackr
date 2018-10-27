@@ -368,6 +368,29 @@ router.get('/franchises', (req, res, next) => {
   });
 });
 
+router.get('/franchises/title_id/:title_id', (req, res, next) => {
+  Franchise.findOne({ title_id: req.params.title_id })
+  .exec((err, franchise) => {
+    if (err) return res.status(404).send('Franchise not found');
+    res.json(franchise);
+  });
+});
+
+router.delete('/franchises/:id', auth, (req, res, next) => {
+  Franchise.findById(req.params.id, (err, franchise) => {
+    if (err) return res.status(500).send({success: false, msg: 'Franchise not found'});
+    if (!isCreator(franchise, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    
+    franchise.remove((err, franchise) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json({
+        success: true,
+        msg: `${franchise.title} has successfully been removed.`
+      });
+    });
+  });
+});
+
 //#endregion franchises
 
 export default router;

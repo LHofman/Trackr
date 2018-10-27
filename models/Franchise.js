@@ -22,8 +22,8 @@ const autoPopulate = function(next) {
   next();
 };
 
-ItemSchema.pre('findOne', autoPopulate);
-ItemSchema.pre('findById', autoPopulate);
-ItemSchema.pre('find', autoPopulate);
+FranchiseSchema.pre('findOne', autoPopulate);
+FranchiseSchema.pre('findById', autoPopulate);
+FranchiseSchema.pre('find', autoPopulate);
 
 export default mongoose.model('Franchise', FranchiseSchema);
