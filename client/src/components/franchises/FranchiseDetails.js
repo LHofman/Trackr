@@ -5,7 +5,7 @@ import { Link, Redirect } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 import { Button, Confirm, Dropdown, Icon, Input, Label, List, Menu, Pagination, Sidebar } from 'semantic-ui-react';
 
-import Item from '../items/Item';
+import FranchiseDetailsItem from './FranchiseDetailsItem';
 
 import canEdit from '../../utils/canEdit';
 import extendedEquals from '../../utils/extendedEquals';
@@ -31,10 +31,11 @@ export default class FranchiseDetails extends Component {
 			redirect: undefined
 		}
 
-    this.onFilterChange = this.onFilterChange.bind(this);
-    this.handleSortChange = this.handleSortChange.bind(this);
-    this.sort = this.sort.bind(this);
     this.changePage = this.changePage.bind(this);
+    this.handleSortChange = this.handleSortChange.bind(this);
+    this.onFilterChange = this.onFilterChange.bind(this);
+    this.removeItem = this.removeItem.bind(this);
+    this.sort = this.sort.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
 		this.toggleConfirmationAlert = this.toggleConfirmationAlert.bind(this);
 	}
@@ -136,6 +137,19 @@ export default class FranchiseDetails extends Component {
     if (event.key === 'Enter') this.onFilterChange(event);
   }
 
+  removeItem(item) {
+    fetch(`/api/franchises/${this.state.details._id}/items/remove`, 'put', true, [item._id]).then(completeItems => {
+      const { details, itemOptions } = this.state;
+      itemOptions.push({ key: item._id, value: item._id, text: item.title })
+      const completeItemsIds = completeItems.map(item => item._id);
+      details.items = details.items.filter(item => completeItemsIds.indexOf(item._id) === -1)
+      this.setState({ 
+        details, 
+        itemOptions
+      });
+    });
+  }
+
   sort(i1, i2) {
     const { field, order } = this.state.sort;
     const asc = order === 'asc' ? -1 : 1;
@@ -213,7 +227,7 @@ export default class FranchiseDetails extends Component {
 			const totalPages = Math.ceil(filteredItems.length / 100, 0);
 			const items = filteredItems
 				.slice(begin, begin + 100)
-				.map(item => <Item key={item._id} item={item} />);
+				.map(item => <FranchiseDetailsItem key={item._id} franchise={details} item={item} onDelete={this.removeItem} />);
 
 		return (
 			<div>

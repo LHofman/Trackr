@@ -442,6 +442,23 @@ router.put('/franchises/:id/items/add', auth, (req, res, next) => {
   );
 });
 
+router.put('/franchises/:id/items/remove', auth, (req, res, next) => {
+  const items = req.body;
+  console.log(items);
+  return Franchise.updateOne(
+    { _id: req.params.id }, 
+    { $pullAll: { items: items } },
+    (err, test) => {
+      console.log(err);
+      console.log(test);
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(items.map(itemId => 
+        Item.findById(itemId).exec()
+      )).then(completeItems => res.json(completeItems));
+    }
+  );
+});
+
 //#endregion franchises
 
 export default router;
