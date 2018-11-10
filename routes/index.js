@@ -428,6 +428,20 @@ router.put('/franchises/:id', auth, (req, res, next) => {
   });
 });
 
+router.put('/franchises/:id/items/add', auth, (req, res, next) => {
+  const items = req.body;
+  return Franchise.updateOne(
+    { _id: req.params.id }, 
+    { $push: { items: { $each: items } } },
+    (err, test) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(items.map(itemId => 
+        Item.findById(itemId).exec()
+      )).then(completeItems => res.json(completeItems));
+    }
+  );
+});
+
 //#endregion franchises
 
 export default router;

@@ -24,7 +24,10 @@ export default class FranchiseDetails extends Component {
       releaseDateUpperLimit: '',
       sort: { field: 'title', order: 'asc' },
       activePage: 1,
-      isSidebarVisible: false,
+			isSidebarVisible: false,
+      itemOptions: [],
+      itemOptionsLoaded: false,
+			addItems: [],
 			redirect: undefined
 		}
 
@@ -37,9 +40,22 @@ export default class FranchiseDetails extends Component {
 	}
 
   componentWillMount() {
-    this.getFranchise();
-  }
+    this.getFranchise().then(() => this.getItems());
+	}
 
+	addItems() {
+		fetch(`/api/franchises/${this.state.details._id}/items/add`, 'put', true, this.state.addItems).then(completeItems => {
+      const { details, itemOptions } = this.state;
+      details.items.push(...completeItems);
+      const completeItemsIds = completeItems.map(item => item._id);
+      this.setState({ 
+        details, 
+        itemOptions: itemOptions.filter(item => completeItemsIds.indexOf(item.key) === -1), 
+        addItems: [] 
+      });
+    });
+	}
+	
   changePage(activePage) {
     this.handlePaginationChange(null, { activePage });
   }
@@ -51,6 +67,18 @@ export default class FranchiseDetails extends Component {
 			this.setState({ details })
 		}).catch(reason => {
 			this.setState({redirect: '/'});
+		});
+	}
+
+	getItems() {
+		fetch('/api/items').then(items => {
+      if (!items || items === null) return;
+      this.setState({ itemOptions: 
+        items.filter(item => this.state.details.items.map(item => item._id).indexOf(item._id) === -1)
+				.sort((i1, i2) => i1.title.toLowerCase() < i2.title.toLowerCase() ? -1 : 1)
+        .map(item => { return { key: item._id, value: item._id, text: item.title } }),
+        itemOptionsLoaded: true
+      });
 		});
 	}
 
@@ -69,7 +97,11 @@ export default class FranchiseDetails extends Component {
         </MediaQuery>
       </div>
     )
-  }
+	}
+	
+	handleAddItemsChange(e, { value }) {
+		this.setState({ addItems: value })
+	}
 
   handlePaginationChange(e, { activePage }) {
     this.setState({ activePage });
@@ -201,8 +233,10 @@ export default class FranchiseDetails extends Component {
 						<br/><br/>
 					</div>
 				}
-				<Button onClick={this.toggleSidebar}><Icon name='bars' />Filter/Sort</Button>
-        <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' /><br/><br/><br/>
+				<Button onClick={this.toggleSidebar}><Icon name='bars' />Filter/Sort</Button>&nbsp;&nbsp;&nbsp;
+        <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' /><br/><br/>
+				<Dropdown placeholder='Add items' clearable={1} loading={!this.state.itemOptionsLoaded} multiple search minCharacters={2} selection options={this.state.itemOptions} onChange={this.handleAddItemsChange.bind(this)} value={this.state.addItems}/>&nbsp;&nbsp;&nbsp;
+				<Button onClick={this.addItems.bind(this)}>Add</Button><br/><br/>
         <Sidebar as={Menu}
           animation='overlay'
           onHide={this.hideSidebar.bind(this)}
