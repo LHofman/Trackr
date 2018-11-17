@@ -120,7 +120,7 @@ class GameObjective extends Component {
                   size='small'>
                   <Header icon='browser' content='Item updated' />
                   <Modal.Actions>
-                    <Button color='green' onClick={this.closeModal} inverted >
+                    <Button color='green' onClick={this.closeModals} inverted >
                       <Icon name='checkmark' /> Got it
                     </Button>
                   </Modal.Actions>
