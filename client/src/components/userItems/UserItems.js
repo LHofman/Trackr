@@ -71,13 +71,13 @@ export default class Items extends Component {
     const asc = order === 'asc' ? -1 : 1;
 
     const s1 = field === 'releaseDate' && ui1.item.releaseDateStatus !== 'Date' ? 
-      ui1.releaseDateStatus : (
+      ui1.item.releaseDateStatus : (
         field === 'releaseDateDvd' && ui1.item.releaseDateDvdStatus !== 'Date' ? 
         ui1.item.releaseDateDvdStatus : 
         ui1.item[field].toString().toLowerCase()
       );
     const s2 = field === 'releaseDate' && ui2.item.releaseDateStatus !== 'Date' ? 
-      ui2.releaseDateStatus : (
+      ui2.item.releaseDateStatus : (
         field === 'releaseDateDvd' && ui2.item.releaseDateDvdStatus !== 'Date' ? 
         ui2.item.releaseDateDvdStatus :
         ui2.item[field].toString().toLowerCase()
