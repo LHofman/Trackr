@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Checkbox, Confirm, Dropdown, Header, Icon, Modal, Popup, Rating } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Dropdown, Header, Icon, List, Modal, Popup, Rating } from 'semantic-ui-react';
+
+import ItemDetailsFranchise from './ItemDetailsFranchise';
 
 import extendedEquals from '../../utils/extendedEquals';
 import canEdit from '../../utils/canEdit';
@@ -27,6 +29,7 @@ export default class ItemDetails extends Component {
 		this.updateUserItem = this.updateUserItem.bind(this);
 		this.closeModal = this.closeModal.bind(this);
 		this.showConfirmationAlert = this.showConfirmationAlert.bind(this);
+		this.removeFromFranchise = this.removeFromFranchise.bind(this);
 	}
 
   componentWillMount() {
@@ -118,11 +121,21 @@ export default class ItemDetails extends Component {
       if (!franchises || franchises === null) return;
       this.setState({ franchises: 
         franchises.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
-        	.map(franchise => <li><a href={`/franchises/${franchise.title_id}`}>{franchise.title}</a></li>),
+        	.map(franchise => <ItemDetailsFranchise key={franchise._id} item={this.state.details} franchise={franchise} onDelete={this.removeFromFranchise} />),
         itemOptionsLoaded: true
       });
 		});
 	}
+
+  removeFromFranchise(franchise) {
+		console.log(franchise);
+    fetch(`/api/franchises/${franchise._id}/items/remove`, 'put', true, [this.state.details._id]).then(completeItems => {
+			this.setState({
+				franchises:
+				this.state.franchises.filter(franchise2 => franchise2._id === franchise._id)
+			});
+    });
+  }
 
 	render() {
 		const redirect = this.state.redirect;
@@ -226,9 +239,9 @@ export default class ItemDetails extends Component {
           ]
 				}<br/><br/>
 				<h2>In Franchises</h2>
-				<ul>
+				<List>
 					{this.state.franchises}
-				</ul>
+				</List>
       </div>
     );
   }
