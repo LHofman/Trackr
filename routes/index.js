@@ -455,6 +455,13 @@ router.put('/franchises/:id/items/remove', auth, (req, res, next) => {
   );
 });
 
+router.get('/franchises/byItem/:item', (req, res, next) => {
+  Franchise.find({ items: mongoose.Types.ObjectId(req.params.item) }, (err, franchises) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    return res.json(franchises);
+  })
+});
+
 //#endregion franchises
 
 export default router;

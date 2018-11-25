@@ -20,7 +20,8 @@ export default class ItemDetails extends Component {
 			confirmationAlert: '',
 			userItem: '',
 			modalOpen: false,
-			redirect: undefined
+			redirect: undefined,
+			franchises: []
 		}
 
 		this.updateUserItem = this.updateUserItem.bind(this);
@@ -39,7 +40,10 @@ export default class ItemDetails extends Component {
 			this.setState({ details })
 		}).catch(reason => {
 			this.setState({redirect: '/'});
-		}).then(() => this.getUserItem());
+		}).then(() => {
+			this.getFranchises();
+			this.getUserItem();
+		});
 	}
 
 	getUserItem() {
@@ -107,6 +111,17 @@ export default class ItemDetails extends Component {
 	
 	closeModal() {
 		this.setState({ modalOpen: false })
+	}
+
+	getFranchises() {
+		fetch(`/api/franchises/byItem/${this.state.details._id}`).then(franchises => {
+      if (!franchises || franchises === null) return;
+      this.setState({ franchises: 
+        franchises.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
+        	.map(franchise => <li><a href={`/franchises/${franchise.title_id}`}>{franchise.title}</a></li>),
+        itemOptionsLoaded: true
+      });
+		});
 	}
 
 	render() {
@@ -209,7 +224,11 @@ export default class ItemDetails extends Component {
             <Button key='edit' positive floated='left' as={Link} to={`/items/${details.title_id}/edit`}>Edit</Button>,
 						<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert('delete')}>Delete</Button>	
           ]
-        }
+				}<br/><br/>
+				<h2>In Franchises</h2>
+				<ul>
+					{this.state.franchises}
+				</ul>
       </div>
     );
   }
