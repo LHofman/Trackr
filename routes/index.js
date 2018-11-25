@@ -43,10 +43,10 @@ router.get('/items/title_id/:title_id', (req, res, next) => {
 
 //#region getTitle_id
 
-const getMaxItemsWithTitleId = title_id => 
+const getMaxItemsWithTitleId = (title_id, model) => 
   new Promise(resolve =>
     //find param, param_2...
-    Item.find({ title_id: new RegExp(`${title_id}(_[1-9][0-9]*)?$`) }).exec(
+    model.find({ title_id: new RegExp(`${title_id}(_[1-9][0-9]*)?$`) }).exec(
       (err, items) => 
         resolve(
           err || items.length === 0
@@ -78,9 +78,9 @@ const toSnakeCase = value =>
     .replace(/ /g, '_')
     .replace(/[^a-zA-Z0-9-_]/g, '');
 
-const getTitleId = title => {
+const getTitleId = (title, model) => {
   const title_id = toSnakeCase(title);
-  return getMaxItemsWithTitleId(toSnakeCase(title)).then(
+  return getMaxItemsWithTitleId(title_id, model).then(
     max => (max === 0 ? title_id : `${title_id}_${max + 1}`)
   );
 };
@@ -88,7 +88,7 @@ const getTitleId = title => {
 //#endregion
 
 router.post('/items', auth, (req, res, next) => {
-  return getTitleId(req.body.title).then(title_id => {
+  return getTitleId(req.body.title, Item).then(title_id => {
     const item = new Item({ ...req.body, title_id });
 
     item.save((err, item) => {
@@ -115,7 +115,7 @@ router.put('/items/:id', auth, (req, res, next) => {
     };
 
     if (title || title == item.title) {
-      return getTitleId(title).then(title_id => {
+      return getTitleId(title, Item).then(title_id => {
         newItem.title_id = title_id;
         update(newItem);
       });
@@ -393,7 +393,7 @@ router.delete('/franchises/:id', auth, (req, res, next) => {
 });
 
 router.post('/franchises', auth, (req, res, next) => {
-  return getTitleId(req.body.title).then(title_id => {
+  return getTitleId(req.body.title, Franchise).then(title_id => {
     const franchise = new Franchise({ ...req.body, title_id });
 
     franchise.save((err, franchise) => {
@@ -420,7 +420,7 @@ router.put('/franchises/:id', auth, (req, res, next) => {
     };
 
     if (title || title == franchise.title) {
-      return getTitleId(title).then(title_id => {
+      return getTitleId(title, Franchise).then(title_id => {
         newFranchise.title_id = title_id;
         update(newFranchise);
       });
