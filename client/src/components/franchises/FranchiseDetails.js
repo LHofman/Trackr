@@ -5,6 +5,7 @@ import { Link, Redirect } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 import { Button, Confirm, Dropdown, Icon, Input, Label, List, Menu, Pagination, Sidebar } from 'semantic-ui-react';
 
+import Franchise from './Franchise';
 import FranchiseDetailsItem from './FranchiseDetailsItem';
 
 import canEdit from '../../utils/canEdit';
@@ -28,7 +29,8 @@ export default class FranchiseDetails extends Component {
       itemOptions: [],
       itemOptionsLoaded: false,
 			addItems: [],
-			redirect: undefined
+      redirect: undefined,
+      subFranchises: []
 		}
 
     this.changePage = this.changePage.bind(this);
@@ -185,7 +187,7 @@ export default class FranchiseDetails extends Component {
 
 
 		const { 
-			details,
+      details,
 			typeFilter,
 			titleFilter,
 			releaseDateLowerLimit,
@@ -223,12 +225,19 @@ export default class FranchiseDetails extends Component {
 				.sort(this.sort);
 		}
 
-			const begin = (this.state.activePage - 1) * 100;
-			const totalPages = Math.ceil(filteredItems.length / 100, 0);
-			const items = filteredItems
-				.slice(begin, begin + 100)
-				.map(item => <FranchiseDetailsItem key={item._id} franchise={details} item={item} onDelete={this.removeItem} />);
+    const begin = (this.state.activePage - 1) * 100;
+    const totalPages = Math.ceil(filteredItems.length / 100, 0);
+    const items = filteredItems
+      .slice(begin, begin + 100)
+      .map(item => <FranchiseDetailsItem key={item._id} franchise={details} item={item} onDelete={this.removeItem} />);
 
+    let subFranchises = [];
+    if (details.subFranchises) {
+      subFranchises = details.subFranchises
+        .sort((f1, f2) => f1.toLowerCase().title < f2.toLowerCase().title ? -1 : 1)
+        .map(franchise => <Franchise key={franchise._id} franchise={franchise}/>);
+    }
+    
 		return (
 			<div>
 				<Button labelPosition='left' icon='left chevron' content='Back' as={Link} to={'/franchises'} />
@@ -246,7 +255,12 @@ export default class FranchiseDetails extends Component {
 						{details.description}
 						<br/><br/>
 					</div>
-				}
+        }
+        <h2>Sub Franchises</h2>
+        <List bulleted>
+          {subFranchises}
+        </List>
+        <h2>Items</h2>
 				<Button onClick={this.toggleSidebar}><Icon name='bars' />Filter/Sort</Button>&nbsp;&nbsp;&nbsp;
         <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' /><br/><br/>
 				<Dropdown placeholder='Add items' clearable={1} loading={!this.state.itemOptionsLoaded} multiple search minCharacters={2} selection options={this.state.itemOptions} onChange={this.handleAddItemsChange.bind(this)} value={this.state.addItems}/>&nbsp;&nbsp;&nbsp;

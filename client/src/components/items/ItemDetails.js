@@ -270,7 +270,7 @@ export default class ItemDetails extends Component {
 				<h2>In Franchises</h2>
 				<Dropdown placeholder='Add to franchises' clearable={1} multiple search selection options={this.state.franchiseOptions} onChange={this.handleAddFranchisesChange.bind(this)} value={this.state.addFranchises}/>&nbsp;&nbsp;&nbsp;
 				<Button onClick={this.addFranchises.bind(this)}>Add</Button><br/><br/>
-				<List>
+				<List bulleted>
 					{franchises}
 				</List>
       </div>

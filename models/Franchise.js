@@ -18,6 +18,10 @@ const FranchiseSchema = mongoose.Schema({
   items: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Item'
+  }],
+  subFranchises: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Franchise'
   }]
 });
 
@@ -29,5 +33,10 @@ const autoPopulate = function(next) {
 FranchiseSchema.pre('findOne', autoPopulate);
 FranchiseSchema.pre('findById', autoPopulate);
 FranchiseSchema.pre('find', autoPopulate);
+
+FranchiseSchema.pre('remove', function (next) {
+  Franchise.update({}, { $pull: { subFranchises: this._id } }, { multi: true}).exec();
+  next();
+});
 
 export default mongoose.model('Franchise', FranchiseSchema);

@@ -29,7 +29,6 @@ export default class ItemDetailsFranchise extends Component {
       <List.Item>
         <List.Content>
           <List.Header>
-            &#8226;&nbsp;
             <a href={`/franchises/${franchise.title_id}`}>{franchise.title}</a>
             {
               canEdit(item) &&
