@@ -17,7 +17,8 @@ class GameObjectives extends Component {
       parent: '',
       following: false,
       gameObjectives: [],
-      redirect: undefined
+      redirect: undefined,
+      loading: true
     }
 
     this.onDelete = this.onDelete.bind(this);
@@ -76,7 +77,7 @@ class GameObjectives extends Component {
       this.setState({ gameObjectives });
     }).catch(reason => {
       this.setState({redirect: `/items/${this.state.game.title_id}`});
-    });
+    }).then(() => this.setState({ loading: false }));
   }
 
   onDelete(gameObjective) {
@@ -139,7 +140,7 @@ class GameObjectives extends Component {
         <h1>{this.state.game.title} objectives</h1>
         {this.getBreadCrumbs()}
         {
-          isLoggedIn() &&
+          isLoggedIn() && !this.state.loading &&
           <Button positive circular floated='right' icon='plus' as={Link} 
             to={this.getAddUrl()} 
           />
