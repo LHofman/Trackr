@@ -72,7 +72,8 @@ class AddObjective extends Component {
     let isError = false;
     const errors = {};
 
-    if (!this.state.index) {
+
+    if (isNaN(this.state.index)) {
       isError = true;
       errors.indexError = 'Index is required (enter 0 or a negative number if you want it to show up at the top)';
     } else {
