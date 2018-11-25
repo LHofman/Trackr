@@ -23,7 +23,9 @@ export default class ItemDetails extends Component {
 			userItem: '',
 			modalOpen: false,
 			redirect: undefined,
-			franchises: []
+			franchises: [],
+			franchiseOptions: [],
+			addFranchises: []
 		}
 
 		this.updateUserItem = this.updateUserItem.bind(this);
@@ -44,7 +46,7 @@ export default class ItemDetails extends Component {
 		}).catch(reason => {
 			this.setState({redirect: '/'});
 		}).then(() => {
-			this.getFranchises();
+			this.getFranchises().then(() => this.getAllFranchises());
 			this.getUserItem();
 		});
 	}
@@ -117,31 +119,58 @@ export default class ItemDetails extends Component {
 	}
 
 	getFranchises() {
-		fetch(`/api/franchises/byItem/${this.state.details._id}`).then(franchises => {
+		return fetch(`/api/franchises/byItem/${this.state.details._id}`).then(franchises => {
       if (!franchises || franchises === null) return;
-      this.setState({ franchises: 
-        franchises.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
-        	.map(franchise => <ItemDetailsFranchise key={franchise._id} item={this.state.details} franchise={franchise} onDelete={this.removeFromFranchise} />),
-        itemOptionsLoaded: true
-      });
+      this.setState({ franchises });
 		});
 	}
 
   removeFromFranchise(franchise) {
-		console.log(franchise);
     fetch(`/api/franchises/${franchise._id}/items/remove`, 'put', true, [this.state.details._id]).then(completeItems => {
-			this.setState({
-				franchises:
-				this.state.franchises.filter(franchise2 => franchise2._id === franchise._id)
-			});
+			let { franchises, franchiseOptions } = this.state;
+      franchiseOptions.push({ key: franchise._id, value: franchise._id, text: franchise.title })
+      franchises = franchises.filter(franchise2 => franchise2._id !== franchise._id)
+      this.setState({ 
+        franchises, 
+        franchiseOptions
+      });
     });
   }
+
+	handleAddFranchisesChange(e, { value }) {
+		this.setState({ addFranchises: value })
+	}
+
+	addFranchises() {
+		fetch(`/api/franchises/addItemToMultiple/${this.state.details._id}`, 'put', true, this.state.addFranchises).then(completeFranchises => {
+      const { franchises, franchiseOptions } = this.state;
+      franchises.push(...completeFranchises);
+      const completeFranchisesIds = completeFranchises.map(franchise => franchise._id);
+      this.setState({ 
+        franchises, 
+        franchiseOptions: franchiseOptions.filter(franchise => completeFranchisesIds.indexOf(franchise.key) === -1), 
+        addFranchises: [] 
+      });
+    });
+	}
+	
+	getAllFranchises() {
+		fetch('/api/franchises').then(franchises => {
+      if (!franchises || franchises === null) return;
+      this.setState({ franchiseOptions: 
+        franchises.filter(franchise => this.state.franchises.map(franchise => franchise._id).indexOf(franchise._id) === -1)
+					.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
+        	.map(franchise => { return { key: franchise._id, value: franchise._id, text: franchise.title } })
+      });
+		});
+	}
 
 	render() {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
 		
-
+		const franchises = this.state.franchises.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
+			.map(franchise => <ItemDetailsFranchise key={franchise._id} item={this.state.details} franchise={franchise} onDelete={this.removeFromFranchise} />)
 
 		const details = this.state.details;
 		return (
@@ -239,8 +268,10 @@ export default class ItemDetails extends Component {
           ]
 				}<br/><br/>
 				<h2>In Franchises</h2>
+				<Dropdown placeholder='Add to franchises' clearable={1} multiple search selection options={this.state.franchiseOptions} onChange={this.handleAddFranchisesChange.bind(this)} value={this.state.addFranchises}/>&nbsp;&nbsp;&nbsp;
+				<Button onClick={this.addFranchises.bind(this)}>Add</Button><br/><br/>
 				<List>
-					{this.state.franchises}
+					{franchises}
 				</List>
       </div>
     );

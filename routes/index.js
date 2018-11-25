@@ -462,6 +462,21 @@ router.get('/franchises/byItem/:item', (req, res, next) => {
   })
 });
 
+router.put('/franchises/addItemToMultiple/:item', (req, res, next) => {
+  const franchises = req.body;
+  return Franchise.update(
+    { '_id': { $in: franchises } }, 
+    { $push: { items: req.params.item } },
+    { multi: true },
+    (err, test) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(franchises.map(franchiseId => 
+        Franchise.findById(franchiseId).exec()
+      )).then(completeFranchises => res.json(completeFranchises));
+    }
+  );
+});
+
 //#endregion franchises
 
 export default router;
