@@ -128,7 +128,7 @@ router.delete('/items/:id', auth, (req, res, next) => {
     if (err) return res.status(500).send({success: false, msg: 'Item not found'});
     if (!isCreator(item, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this item'});
     
-    item.remove((err, item) => {
+    item.remove((err, item) => {  
       if (err) return res.status(500).send('Something went wrong');
       res.json({
         success: true,
@@ -300,7 +300,6 @@ router.delete('/gameObjectives/:id', auth, (req, res, next) => {
 router.put('/gameObjectives/:id', auth, (req, res, next) => {
   const gameObjectiveId = req.params.id;
   GameObjective.findById(gameObjectiveId, (err, gameObjective) => {
-    console.log(gameObjective);
     if (!isCreator(gameObjective, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this gameObjective'});
 
     GameObjective.findByIdAndUpdate(gameObjectiveId, req.body, { new: true }).exec(
@@ -444,13 +443,10 @@ router.put('/franchises/:id/items/add', auth, (req, res, next) => {
 
 router.put('/franchises/:id/items/remove', auth, (req, res, next) => {
   const items = req.body;
-  console.log(items);
   return Franchise.updateOne(
     { _id: req.params.id }, 
     { $pullAll: { items: items } },
     (err, test) => {
-      console.log(err);
-      console.log(test);
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
       return Promise.all(items.map(itemId => 
         Item.findById(itemId).exec()

@@ -48,7 +48,7 @@ ItemSchema.pre('findById', autoPopulate);
 ItemSchema.pre('find', autoPopulate);
 
 ItemSchema.pre('remove', function (next) {
-  Franchise.update({}, { $pull: { items: item_id } }, { multi: true}).exec();
+  Franchise.update({}, { $pull: { items: this._id } }, { multi: true}).exec();
   GameObjective.remove({game: this._id}).exec();
   UserItem.remove({item: this._id}).exec();
   next();
