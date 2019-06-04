@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import { Link, Redirect } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import { Button, Confirm, Dropdown, Icon, Input, Label, List, Menu, Pagination, Sidebar } from 'semantic-ui-react';
+import { Button, Confirm, Container, Dropdown, Grid, Icon, Input, Label, List, Menu, Pagination, Sidebar } from 'semantic-ui-react';
 
 import Franchise from './Franchise';
 import FranchiseDetailsItem from './FranchiseDetailsItem';
@@ -17,20 +17,21 @@ export default class FranchiseDetails extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			details: '',
-			confirmationAlert: false,
-      typeFilter: '',
-      titleFilter: '',
-      releaseDateLowerLimit: '',
-      releaseDateUpperLimit: '',
-      sort: { field: 'title', order: 'asc' },
       activePage: 1,
+      addItems: [],
+      addSubFranchises: [],
+			confirmationAlert: false,
+			details: '',
 			isSidebarVisible: false,
       itemOptions: [],
       itemOptionsLoaded: false,
-			addItems: [],
       redirect: undefined,
-      subFranchises: []
+      releaseDateLowerLimit: '',
+      releaseDateUpperLimit: '',
+      sort: { field: 'title', order: 'asc' },
+      subFranchisesOptions: [],
+      typeFilter: '',
+      titleFilter: ''
 		}
 
     this.changePage = this.changePage.bind(this);
@@ -44,7 +45,10 @@ export default class FranchiseDetails extends Component {
 	}
 
   componentWillMount() {
-    this.getFranchise().then(() => this.getItems());
+    this.getFranchise().then(() => {
+      this.getItems();
+      this.getSubFranchises();
+    });
 	}
 
 	addItems() {
@@ -56,6 +60,19 @@ export default class FranchiseDetails extends Component {
         details, 
         itemOptions: itemOptions.filter(item => completeItemsIds.indexOf(item.key) === -1), 
         addItems: [] 
+      });
+    });
+	}
+	
+	addSubFranchises() {
+		fetch(`/api/franchises/${this.state.details._id}/subFranchises/add`, 'put', true, this.state.addSubFranchises).then(completeSubFranchises => {
+      const { details, subFranchisesOptions } = this.state;
+      details.subFranchises.push(...completeSubFranchises);
+      const completeSubFranchisesIds = completeSubFranchises.map(subFranchise => subFranchise._id);
+      this.setState({ 
+        details, 
+        subFranchisesOptions: subFranchisesOptions.filter(subFranchise => completeSubFranchisesIds.indexOf(subFranchise.key) === -1), 
+        addSubFranchises: [] 
       });
     });
 	}
@@ -103,8 +120,26 @@ export default class FranchiseDetails extends Component {
     )
 	}
 	
+	getSubFranchises() {
+		fetch('/api/franchises').then(subFranchises => {
+      if (!subFranchises || subFranchises === null) return;
+      this.setState({ subFranchiseOptions: 
+        subFranchises.filter(subFranchise => 
+          this.state.details.subFranchises.map(subFranchise => subFranchise._id).indexOf(subFranchise._id) === -1 &&
+          this.state.details._id !== subFranchise._id
+        )
+				.sort((i1, i2) => i1.title.toLowerCase() < i2.title.toLowerCase() ? -1 : 1)
+        .map(subFranchise => { return { key: subFranchise._id, value: subFranchise._id, text: subFranchise.title } })
+      });
+		});
+	}
+
 	handleAddItemsChange(e, { value }) {
 		this.setState({ addItems: value })
+	}
+
+	handleAddSubFranchisesChange(e, { value }) {
+		this.setState({ addSubFranchises: value })
 	}
 
   handlePaginationChange(e, { activePage }) {
@@ -208,8 +243,8 @@ export default class FranchiseDetails extends Component {
 			releaseDateLowerLimit,
 			releaseDateUpperLimit,
 			sort
-		  } = this.state;
-		
+    } = this.state;
+	
 
 		let filteredItems = [];
 		if (this.state.details.items) {
@@ -249,12 +284,12 @@ export default class FranchiseDetails extends Component {
     let subFranchises = [];
     if (details.subFranchises) {
       subFranchises = details.subFranchises
-        .sort((f1, f2) => f1.toLowerCase().title < f2.toLowerCase().title ? -1 : 1)
+        .sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
         .map(franchise => <Franchise key={franchise._id} franchise={franchise} parent={details} onDelete={this.removeSubFranchise}/>);
     }
     
 		return (
-			<div>
+			<Container>
 				<Button labelPosition='left' icon='left chevron' content='Back' as={Link} to={'/franchises'} />
 				<h1>{details.title}</h1>
 				<Confirm
@@ -271,104 +306,112 @@ export default class FranchiseDetails extends Component {
 						<br/><br/>
 					</div>
         }
-        <h2>Sub Franchises</h2>
-        <List bulleted>
-          {subFranchises}
-        </List>
-        <h2>Items</h2>
-				<Button onClick={this.toggleSidebar}><Icon name='bars' />Filter/Sort</Button>&nbsp;&nbsp;&nbsp;
-        <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' /><br/><br/>
-				<Dropdown placeholder='Add items' clearable={1} loading={!this.state.itemOptionsLoaded} multiple search minCharacters={2} selection options={this.state.itemOptions} onChange={this.handleAddItemsChange.bind(this)} value={this.state.addItems}/>&nbsp;&nbsp;&nbsp;
-				<Button onClick={this.addItems.bind(this)}>Add</Button><br/><br/>
-        <Sidebar as={Menu}
-          animation='overlay'
-          onHide={this.hideSidebar.bind(this)}
-          vertical
-          visible={this.state.isSidebarVisible}
-          width='wide'
-        >
-          <Menu.Item header>Filter By</Menu.Item>
-          <Menu.Item>
-            <Label>Type</Label>
-            <Dropdown placeholder='Type' name='typeFilter' selection value={''}
-              options={[{ text: '---No Filter---', value: '' }, ...typeOptions]}
-              onChange={(param, data) => this.handleValueChange('typeFilter', data.value)} /><br/>
-          </Menu.Item>
-          <Menu.Item>
-            <Label>Release Date Lower Limit</Label>
-            <Input type='date' name='releaseDateLowerLimit' value={moment(this.state.releaseDateLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
-          </Menu.Item>
-          <Menu.Item>
-            <Label>Release Date Upper Limit</Label>
-            <Input type='date' name='releaseDateUpperLimit' value={moment(this.state.releaseDateUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
-          </Menu.Item>
-          {
-            this.state.typeFilter === 'Movie' &&
-            <div>
+        <Grid>
+          <Grid.Column style={{width: "45%", minWidth: "250px;"}}>
+            <h2>Items</h2>
+            <Button onClick={this.toggleSidebar}><Icon name='bars' />Filter/Sort</Button>&nbsp;&nbsp;&nbsp;
+            <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' /><br/><br/>
+            <Dropdown placeholder='Add items' clearable={1} loading={!this.state.itemOptionsLoaded} multiple search minCharacters={2} selection options={this.state.itemOptions} onChange={this.handleAddItemsChange.bind(this)} value={this.state.addItems}/>&nbsp;&nbsp;&nbsp;
+            <Button onClick={this.addItems.bind(this)}>Add</Button><br/><br/>
+            <Sidebar as={Menu}
+              animation='overlay'
+              onHide={this.hideSidebar.bind(this)}
+              vertical
+              visible={this.state.isSidebarVisible}
+              width='wide'
+            >
+              <Menu.Item header>Filter By</Menu.Item>
               <Menu.Item>
-                <Label>Dvd Release Date Lower Limit</Label>
-                <Input type='date' name='releaseDateDvdLowerLimit' value={moment(this.state.releaseDateDvdLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+                <Label>Type</Label>
+                <Dropdown placeholder='Type' name='typeFilter' selection value={''}
+                  options={[{ text: '---No Filter---', value: '' }, ...typeOptions]}
+                  onChange={(param, data) => this.handleValueChange('typeFilter', data.value)} /><br/>
               </Menu.Item>
               <Menu.Item>
-                <Label>Dvd Release Date Upper Limit</Label>
-                <Input type='date' name='releaseDateDvdUpperLimit' value={moment(this.state.releaseDateDvdUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+                <Label>Release Date Lower Limit</Label>
+                <Input type='date' name='releaseDateLowerLimit' value={moment(this.state.releaseDateLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
               </Menu.Item>
-            </div>
-          }
-          <Menu.Item header>Sort By</Menu.Item>
-          <Menu.Item 
-            name='title'
-            value='asc'
-            active={sort.field === 'title' && sort.order === 'asc'}
-            onClick={this.handleSortChange}>
-            Title (asc)
-          </Menu.Item>
-          <Menu.Item 
-            name='title'
-            value='desc'
-            active={sort.field === 'title' && sort.order === 'desc'}
-            onClick={this.handleSortChange}>
-            Title (desc)
-          </Menu.Item>
-          <Menu.Item 
-            name='releaseDate'
-            value='asc'
-            active={sort.field === 'releaseDate' && sort.order === 'asc'}
-            onClick={this.handleSortChange}>
-            Release Date (asc)
-          </Menu.Item>
-          <Menu.Item 
-            name='releaseDate'
-            value='desc'
-            active={sort.field === 'releaseDate' && sort.order === 'desc'}
-            onClick={this.handleSortChange}>
-            Release Date (desc)
-          </Menu.Item>
-          {
-            this.state.typeFilter === 'Movie' &&
-            <div>
+              <Menu.Item>
+                <Label>Release Date Upper Limit</Label>
+                <Input type='date' name='releaseDateUpperLimit' value={moment(this.state.releaseDateUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+              </Menu.Item>
+              {
+                this.state.typeFilter === 'Movie' &&
+                <div>
+                  <Menu.Item>
+                    <Label>Dvd Release Date Lower Limit</Label>
+                    <Input type='date' name='releaseDateDvdLowerLimit' value={moment(this.state.releaseDateDvdLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <Label>Dvd Release Date Upper Limit</Label>
+                    <Input type='date' name='releaseDateDvdUpperLimit' value={moment(this.state.releaseDateDvdUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
+                  </Menu.Item>
+                </div>
+              }
+              <Menu.Item header>Sort By</Menu.Item>
               <Menu.Item 
-                name='releaseDateDvd'
+                name='title'
                 value='asc'
-                active={sort.field === 'releaseDateDvd' && sort.order === 'asc'}
+                active={sort.field === 'title' && sort.order === 'asc'}
                 onClick={this.handleSortChange}>
-                Dvd Release Date (asc)
+                Title (asc)
               </Menu.Item>
               <Menu.Item 
-                name='releaseDateDvd'
+                name='title'
                 value='desc'
-                active={sort.field === 'releaseDateDvd' && sort.order === 'desc'}
+                active={sort.field === 'title' && sort.order === 'desc'}
                 onClick={this.handleSortChange}>
-                Dvd Release Date (desc)
+                Title (desc)
               </Menu.Item>
-            </div>
-          }
-        </Sidebar>
-        {this.getPagination(totalPages)}
-				<List>
-					{items}
-				</List>
-        {this.getPagination(totalPages)}
+              <Menu.Item 
+                name='releaseDate'
+                value='asc'
+                active={sort.field === 'releaseDate' && sort.order === 'asc'}
+                onClick={this.handleSortChange}>
+                Release Date (asc)
+              </Menu.Item>
+              <Menu.Item 
+                name='releaseDate'
+                value='desc'
+                active={sort.field === 'releaseDate' && sort.order === 'desc'}
+                onClick={this.handleSortChange}>
+                Release Date (desc)
+              </Menu.Item>
+              {
+                this.state.typeFilter === 'Movie' &&
+                <div>
+                  <Menu.Item 
+                    name='releaseDateDvd'
+                    value='asc'
+                    active={sort.field === 'releaseDateDvd' && sort.order === 'asc'}
+                    onClick={this.handleSortChange}>
+                    Dvd Release Date (asc)
+                  </Menu.Item>
+                  <Menu.Item 
+                    name='releaseDateDvd'
+                    value='desc'
+                    active={sort.field === 'releaseDateDvd' && sort.order === 'desc'}
+                    onClick={this.handleSortChange}>
+                    Dvd Release Date (desc)
+                  </Menu.Item>
+                </div>
+              }
+            </Sidebar>
+            {this.getPagination(totalPages)}
+            <List>
+              {items}
+            </List>
+            {this.getPagination(totalPages)}
+          </Grid.Column>
+          <Grid.Column style={{width: "45%", minWidth: "250px;"}}>
+            <h2>Sub Franchises</h2>
+            <Dropdown placeholder='Add subfranchises' clearable={1} multiple search minCharacters={2} selection options={this.state.subFranchiseOptions} onChange={this.handleAddSubFranchisesChange.bind(this)} value={this.state.addSubFranchises}/>&nbsp;&nbsp;&nbsp;
+            <Button onClick={this.addSubFranchises.bind(this)}>Add</Button><br/><br/>
+            <List bulleted>
+              {subFranchises}
+            </List>
+          </Grid.Column>
+        </Grid>
 				<br/>
 				{
           canEdit(details) && 
@@ -377,7 +420,7 @@ export default class FranchiseDetails extends Component {
 						<Button key='delete' negative floated='right' onClick={() => this.toggleConfirmationAlert('delete')}>Delete</Button>	
           ]
 				}
-      </div>
+      </Container>
     );
   }
 }
