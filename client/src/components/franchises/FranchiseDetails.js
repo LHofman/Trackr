@@ -19,17 +19,19 @@ export default class FranchiseDetails extends Component {
 		this.state = {
       activePage: 1,
       addItems: [],
+      addParentFranchises: [],
       addSubFranchises: [],
 			confirmationAlert: false,
 			details: '',
+      franchisesOptions: [],
 			isSidebarVisible: false,
       itemOptions: [],
       itemOptionsLoaded: false,
+			parentFranchises: [],
       redirect: undefined,
       releaseDateLowerLimit: '',
       releaseDateUpperLimit: '',
       sort: { field: 'title', order: 'asc' },
-      subFranchisesOptions: [],
       typeFilter: '',
       titleFilter: ''
 		}
@@ -42,12 +44,15 @@ export default class FranchiseDetails extends Component {
     this.toggleSidebar = this.toggleSidebar.bind(this);
 		this.toggleConfirmationAlert = this.toggleConfirmationAlert.bind(this);
     this.removeSubFranchise = this.removeSubFranchise.bind(this);
+    this.removeFromParentFranchise = this.removeFromParentFranchise.bind(this);
 	}
 
   componentWillMount() {
     this.getFranchise().then(() => {
       this.getItems();
-      this.getSubFranchises();
+      this.getParentFranchises().then(() => {
+        this.getAllFranchises();
+      });
     });
 	}
 
@@ -64,14 +69,27 @@ export default class FranchiseDetails extends Component {
     });
 	}
 	
+	addParentFranchises() {
+		fetch(`/api/franchises/addFranchiseToMultiple/${this.state.details._id}`, 'put', true, this.state.addParentFranchises).then(completeParentFranchises => {
+      const { parentFranchises, franchisesOptions } = this.state;
+      parentFranchises.push(...completeParentFranchises);
+      const completeParentFranchisesIds = completeParentFranchises.map(franchise => franchise._id);
+      this.setState({ 
+        parentFranchises, 
+        franchisesOptions: franchisesOptions.filter(franchise => completeParentFranchisesIds.indexOf(franchise.key) === -1), 
+        addParentFranchises: [] 
+      });
+    });
+	}
+	
 	addSubFranchises() {
 		fetch(`/api/franchises/${this.state.details._id}/subFranchises/add`, 'put', true, this.state.addSubFranchises).then(completeSubFranchises => {
-      const { details, subFranchisesOptions } = this.state;
+      const { details, franchisesOptions } = this.state;
       details.subFranchises.push(...completeSubFranchises);
       const completeSubFranchisesIds = completeSubFranchises.map(subFranchise => subFranchise._id);
       this.setState({ 
         details, 
-        subFranchisesOptions: subFranchisesOptions.filter(subFranchise => completeSubFranchisesIds.indexOf(subFranchise.key) === -1), 
+        franchisesOptions: franchisesOptions.filter(franchise => completeSubFranchisesIds.indexOf(franchise.key) === -1), 
         addSubFranchises: [] 
       });
     });
@@ -81,6 +99,14 @@ export default class FranchiseDetails extends Component {
     this.handlePaginationChange(null, { activePage });
   }
 
+  filterFranchisesOptions(franchises) {
+    return franchises.filter(franchise => 
+      this.state.details.subFranchises.map(subFranchise => subFranchise._id).indexOf(franchise._id) === -1 &&
+      this.state.parentFranchises.map(parentFranchise => parentFranchise._id).indexOf(franchise._id) === -1 &&
+      this.state.details._id !== franchise._id
+    );
+  }
+
 	getFranchise() {
 		const title_id = this.props.match.params.titleId;
 		return fetch(`/api/franchises/title_id/${title_id}`).then(details => {
@@ -88,6 +114,21 @@ export default class FranchiseDetails extends Component {
 			this.setState({ details })
 		}).catch(reason => {
 			this.setState({redirect: '/'});
+		});
+  }
+
+	getAllFranchises() {
+		fetch('/api/franchises').then(franchises => {
+      if (!franchises || franchises === null) return;
+      this.setState({ franchisesOptions: 
+        franchises.filter(franchise => 
+          this.state.details.subFranchises.map(subFranchise => subFranchise._id).indexOf(franchise._id) === -1 &&
+          this.state.parentFranchises.map(parentFranchise => parentFranchise._id).indexOf(franchise._id) === -1 &&
+          this.state.details._id !== franchise._id
+        )
+				.sort((i1, i2) => i1.title.toLowerCase() < i2.title.toLowerCase() ? -1 : 1)
+        .map(franchise => { return { key: franchise._id, value: franchise._id, text: franchise.title } })
+      });
 		});
 	}
 
@@ -120,22 +161,19 @@ export default class FranchiseDetails extends Component {
     )
 	}
 	
-	getSubFranchises() {
-		fetch('/api/franchises').then(subFranchises => {
-      if (!subFranchises || subFranchises === null) return;
-      this.setState({ subFranchiseOptions: 
-        subFranchises.filter(subFranchise => 
-          this.state.details.subFranchises.map(subFranchise => subFranchise._id).indexOf(subFranchise._id) === -1 &&
-          this.state.details._id !== subFranchise._id
-        )
-				.sort((i1, i2) => i1.title.toLowerCase() < i2.title.toLowerCase() ? -1 : 1)
-        .map(subFranchise => { return { key: subFranchise._id, value: subFranchise._id, text: subFranchise.title } })
-      });
+	getParentFranchises() {
+		return fetch(`/api/franchises/bySubFranchise/${this.state.details._id}`).then(parentFranchises => {
+      if (!parentFranchises || parentFranchises === null) return;
+      this.setState({ parentFranchises });
 		});
 	}
 
 	handleAddItemsChange(e, { value }) {
 		this.setState({ addItems: value })
+	}
+
+	handleAddParentFranchisesChange(e, { value }) {
+		this.setState({ addParentFranchises: value })
 	}
 
 	handleAddSubFranchisesChange(e, { value }) {
@@ -188,16 +226,26 @@ export default class FranchiseDetails extends Component {
     });
   }
 
+  removeFromParentFranchise(franchise) {
+    fetch(`/api/franchises/${franchise._id}/subFranchises/remove`, 'put', true, [this.state.details._id]).then(completeFranchise => {
+			let { parentFranchises, franchisesOptions } = this.state;
+      franchisesOptions.push({ key: franchise._id, value: franchise._id, text: franchise.title })
+      parentFranchises = parentFranchises.filter(parentFranchise => parentFranchise._id !== franchise._id)
+      this.setState({ 
+        parentFranchises, 
+        franchisesOptions
+      });
+    });
+  }
+
   removeSubFranchise(franchise) {
-    fetch(`/api/franchises/${this.state.details._id}/subFranchises/remove`, 'put', true, [franchise._id]).then(completeFranchises => {
-      const details = this.state.details;
-      // const { details, franchiseOptions } = this.state;
-      // franchiseOptions.push({ key: item._id, value: item._id, text: item.title })
-      const completeFranchisesIds = completeFranchises.map(franchise => franchise._id);
-      details.subFranchises = details.subFranchises.filter(franchise => completeFranchisesIds.indexOf(franchise._id) === -1)
+    fetch(`/api/franchises/${this.state.details._id}/subFranchises/remove`, 'put', true, [franchise._id]).then(completeFranchise => {
+      const { details, franchisesOptions } = this.state;
+      franchisesOptions.push({ key: franchise._id, value: franchise._id, text: franchise.title })
+      details.subFranchises = details.subFranchises.filter(subFranchise => subFranchise._id !== franchise._id);
       this.setState({ 
         details, 
-        // franchiseOptions
+        franchisesOptions
       });
     });
   }
@@ -238,11 +286,12 @@ export default class FranchiseDetails extends Component {
 
 		const { 
       details,
-			typeFilter,
-			titleFilter,
+      parentFranchises,
 			releaseDateLowerLimit,
 			releaseDateUpperLimit,
-			sort
+			sort,
+			titleFilter,
+			typeFilter
     } = this.state;
 	
 
@@ -286,6 +335,13 @@ export default class FranchiseDetails extends Component {
       subFranchises = details.subFranchises
         .sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
         .map(franchise => <Franchise key={franchise._id} franchise={franchise} parent={details} onDelete={this.removeSubFranchise}/>);
+    }
+    
+    let parentFranchisesList = [];
+    if (parentFranchises) {
+      parentFranchisesList = parentFranchises
+        .sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
+        .map(franchise => <Franchise key={franchise._id} franchise={franchise} parent={details} onDelete={this.removeFromParentFranchise}/>);
     }
     
 		return (
@@ -405,10 +461,16 @@ export default class FranchiseDetails extends Component {
           </Grid.Column>
           <Grid.Column style={{width: "45%", minWidth: "250px;"}}>
             <h2>Sub Franchises</h2>
-            <Dropdown placeholder='Add subfranchises' clearable={1} multiple search minCharacters={2} selection options={this.state.subFranchiseOptions} onChange={this.handleAddSubFranchisesChange.bind(this)} value={this.state.addSubFranchises}/>&nbsp;&nbsp;&nbsp;
+            <Dropdown placeholder='Add subfranchises' clearable={1} multiple search minCharacters={2} selection options={this.state.franchisesOptions} onChange={this.handleAddSubFranchisesChange.bind(this)} value={this.state.addSubFranchises}/>&nbsp;&nbsp;&nbsp;
             <Button onClick={this.addSubFranchises.bind(this)}>Add</Button><br/><br/>
             <List bulleted>
               {subFranchises}
+            </List>
+            <h2>Parent Franchises</h2>
+            <Dropdown placeholder='Add parentfranchises' clearable={1} multiple search minCharacters={2} selection options={this.state.franchisesOptions} onChange={this.handleAddParentFranchisesChange.bind(this)} value={this.state.addParentFranchises}/>&nbsp;&nbsp;&nbsp;
+            <Button onClick={this.addParentFranchises.bind(this)}>Add</Button><br/><br/>
+            <List bulleted>
+              {parentFranchisesList}
             </List>
           </Grid.Column>
         </Grid>

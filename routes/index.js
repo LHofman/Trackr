@@ -463,6 +463,28 @@ router.get('/franchises/byItem/:item', (req, res, next) => {
   })
 });
 
+router.get('/franchises/bySubFranchise/:subFranchise', (req, res, next) => {
+  Franchise.find({ subFranchises: mongoose.Types.ObjectId(req.params.subFranchise) }, (err, franchises) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    return res.json(franchises);
+  })
+});
+
+router.put('/franchises/addFranchiseToMultiple/:subFranchise', (req, res, next) => {
+  const franchises = req.body;
+  return Franchise.update(
+    { '_id': { $in: franchises } }, 
+    { $push: { subFranchises: req.params.subFranchise } },
+    { multi: true },
+    (err, test) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(franchises.map(franchiseId => 
+        Franchise.findById(franchiseId).exec()
+      )).then(completeFranchises => res.json(completeFranchises));
+    }
+  );
+});
+
 router.put('/franchises/addItemToMultiple/:item', (req, res, next) => {
   const franchises = req.body;
   return Franchise.update(

@@ -11,11 +11,17 @@ export default class Franchise extends Component {
       confirmationAlert: false
     }
 
+    this.onDelete = this.onDelete.bind(this);
     this.showConfirmationAlert = this.showConfirmationAlert.bind(this);
   }
 
   hideConfirmationAlert() {
     this.setState({ confirmationAlert: false });
+  }
+
+  onDelete(franchise) {
+    this.hideConfirmationAlert();
+    this.props.onDelete(franchise);
   }
 
   showConfirmationAlert() {
@@ -39,7 +45,7 @@ export default class Franchise extends Component {
                   header={`confirm removal`}
                   content={`Are you sure you want to remove ${franchise.title} from ${parent.title}?`}
                   onCancel={this.hideConfirmationAlert.bind(this)}
-                  onConfirm={() => this.props.onDelete(franchise)}
+                  onConfirm={() => this.onDelete(franchise)}
                 />
               ]
             }
