@@ -40,6 +40,7 @@ export default class FranchiseDetails extends Component {
     this.sort = this.sort.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
 		this.toggleConfirmationAlert = this.toggleConfirmationAlert.bind(this);
+    this.removeSubFranchise = this.removeSubFranchise.bind(this);
 	}
 
   componentWillMount() {
@@ -152,6 +153,20 @@ export default class FranchiseDetails extends Component {
     });
   }
 
+  removeSubFranchise(franchise) {
+    fetch(`/api/franchises/${this.state.details._id}/subFranchises/remove`, 'put', true, [franchise._id]).then(completeFranchises => {
+      const details = this.state.details;
+      // const { details, franchiseOptions } = this.state;
+      // franchiseOptions.push({ key: item._id, value: item._id, text: item.title })
+      const completeFranchisesIds = completeFranchises.map(franchise => franchise._id);
+      details.subFranchises = details.subFranchises.filter(franchise => completeFranchisesIds.indexOf(franchise._id) === -1)
+      this.setState({ 
+        details, 
+        // franchiseOptions
+      });
+    });
+  }
+
   sort(i1, i2) {
     const { field, order } = this.state.sort;
     const asc = order === 'asc' ? -1 : 1;
@@ -235,7 +250,7 @@ export default class FranchiseDetails extends Component {
     if (details.subFranchises) {
       subFranchises = details.subFranchises
         .sort((f1, f2) => f1.toLowerCase().title < f2.toLowerCase().title ? -1 : 1)
-        .map(franchise => <Franchise key={franchise._id} franchise={franchise}/>);
+        .map(franchise => <Franchise key={franchise._id} franchise={franchise} parent={details} onDelete={this.removeSubFranchise}/>);
     }
     
 		return (
