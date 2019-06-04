@@ -18,9 +18,7 @@ router.post('/authenticate', (req, res, next) => {
       if (!isMatch)
         return res.json({ success: false, msg: 'Incorrect password' });
 
-      const token = jwt.sign(user.toJSON(), process.env.DB_SECRET, {
-        expiresIn: 7 * 24 * 60 * 60 //1 week
-      });
+      const token = jwt.sign(user.toJSON(), process.env.DB_SECRET);
 
       res.json({
         success: true,
