@@ -14,23 +14,26 @@ export default class AddItem extends Component {
   constructor() {
     super();
     this.state = {
-      type: 'Movie',
-      title: '',
-      titleError: '',
+      allPlatforms: [],
+      artist: '',
+      artistError: '',
+      artists: [],
+      description: undefined,
+      ongoing: false,
+      platforms: [],
+      redirect: undefined,
       releaseDate: '',
       releaseDateError: '',
       releaseDateStatus: 'Date',
       releaseDateDvd: '',
       releaseDateDvdError: '',
       releaseDateDvdStatus: 'Date',
-      description: undefined,
-      artists: [],
-      artist: '',
-      artistError: '',
-      ongoing: false,
-      redirect: undefined
+      title: '',
+      titleError: '',
+      type: 'Movie'
     }
 
+    this.getAllPlatforms = this.getAllPlatforms.bind(this);
     this.getArtists = this.getArtists.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -38,6 +41,7 @@ export default class AddItem extends Component {
 
   componentWillMount() {
     this.getArtists();
+    this.getAllPlatforms();
   }
 
   addItem(newItem) {
@@ -88,6 +92,12 @@ export default class AddItem extends Component {
     return isError;
   }
 
+  getAllPlatforms() {
+    fetch('/api/platforms').then(platforms => {
+      this.setState({ allPlatforms: platforms.map(platform => { return {text: platform, value: platform}; } ) });
+    });
+  }
+
   getArtists() {
     fetch('/api/artists').then(artists => {
       this.setState({ artists: artists.map(artist => { return {text: artist, value: artist}}) })
@@ -104,13 +114,14 @@ export default class AddItem extends Component {
     const err = this.checkForErrors();
     if (err) return;
     const { 
-      type, 
-      title, 
+      description,
+      platforms,
       releaseDate, 
       releaseDateStatus, 
       releaseDateDvd, 
       releaseDateDvdStatus, 
-      description 
+      title, 
+      type
     } = this.state;
     const newItem = {
       type,
@@ -127,8 +138,10 @@ export default class AddItem extends Component {
         newItem.releaseDateDvdStatus = releaseDateDvdStatus;
         break;
       case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
+      case 'Video Game': newItem.platforms = platforms;
       default:
     }
+    console.log(newItem);
     this.addItem(newItem);
   }
 
@@ -140,15 +153,19 @@ export default class AddItem extends Component {
     this.setState({ artists: [{text: value, value}, ...this.state.artists]});
   }
 
+  newPlatform(e, {value}) {
+    this.setState({allPlatforms: [{text: value, value}, ...this.state.allPlatforms]});
+  }
+
   render() {
     const redirect = this.state.redirect;
     if (redirect) return <Redirect to={redirect} />
-
 
     return (
       <div>
         <h1>Add Item</h1>
         <Form error onSubmit={this.handleSubmit.bind(this)}>
+
           <Form.Field required>
             <label>Type</label>
             <Dropdown name='type' fluid selection value={this.state.type}
@@ -221,6 +238,13 @@ export default class AddItem extends Component {
             (this.state.type === 'TvShow' && hasStarted(this.state.releaseDateStatus, this.state.releaseDate)) &&
             <Form.Field required>
               <Checkbox label='Ongoing' name='ongoing' onChange={(param, data) => this.handleValueChange('ongoing', data.checked)} />
+            </Form.Field>
+          }
+          {
+            this.state.type === 'Video Game' &&
+            <Form.Field>
+              <Dropdown name='platformers' placeholder='Platforms' clearable={1} fluid search multiple selection allowAdditions options={this.state.allPlatforms} 
+                onAddItem={this.newPlatform.bind(this)} onChange={(param, data) => this.handleValueChange('platforms', data.value)}/>
             </Form.Field>
           }
           <Button positive floated='left' type='submit'>Create Item</Button>

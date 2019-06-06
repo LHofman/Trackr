@@ -17,29 +17,47 @@ export default class Items extends Component {
   constructor() {
     super();
     this.state = {
-      userItems: [],
-      typeFilter: '',
-      titleFilter: '',
+      activePage: 1,
+      artistFilter: '',
+      artists: [],
+      inCollectionFilter: '',
+      isSidebarVisible: false,
+      platformFilter: '',
+      platforms: [],
       releaseDateLowerLimit: '',
       releaseDateUpperLimit: '',
       releaseDateDvdLowerLimit: '',
       releaseDateDvdUpperLimit: '',
-      inCollectionFilter: '',
-      statusFilter: '',
       sort: { field: 'title', order: 'asc' },
-      activePage: 1,
-      isSidebarVisible: false
+      statusFilter: '',
+      titleFilter: '',
+      typeFilter: '',
+      userItems: [],
     }
 
-    this.onFilterChange = this.onFilterChange.bind(this);
-    this.handleSortChange = this.handleSortChange.bind(this);
-    this.sort = this.sort.bind(this);
     this.changePage = this.changePage.bind(this);
+    this.handleSortChange = this.handleSortChange.bind(this);
+    this.onFilterChange = this.onFilterChange.bind(this);
+    this.sort = this.sort.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
   }
 
   componentWillMount() {
+    this.getArtists();
+    this.getPlatforms();
     this.getUser();
+  }
+
+  getArtists() {
+    fetch('/api/artists').then(artists => {
+      this.setState({ artists: artists.map(artist => { return {text: artist, value: artist}}) });
+    });
+  }
+
+  getPlatforms() {
+    fetch('/api/platforms').then(allPlatforms => {
+      this.setState({platforms: allPlatforms.map(platform => {return {text: platform, value: platform}})});
+    });
   }
 
   getUser() {
@@ -121,15 +139,17 @@ export default class Items extends Component {
 
   render() {
     const {
-      typeFilter, 
-      titleFilter, 
+      artistFilter,
+      inCollectionFilter, 
+      platformFilter,
       releaseDateLowerLimit, 
       releaseDateUpperLimit, 
-      inCollectionFilter, 
       releaseDateDvdLowerLimit, 
       releaseDateDvdUpperLimit, 
+      sort,
       statusFilter, 
-      sort
+      titleFilter, 
+      typeFilter
     } = this.state;
     let filteredUserItems = this.state.userItems.filter(userItem => 
       //titleFilter
@@ -146,7 +166,11 @@ export default class Items extends Component {
       //inCollectionFilter
       extendedEquals(inCollectionFilter, '', userItem.inCollection.toString()) &&
       //statusFilter
-      extendedEquals(statusFilter, '', userItem.status)
+      extendedEquals(statusFilter, '', userItem.status) &&
+      //artistFilter
+      ((this.state.typeFilter !== 'Album' && this.state.typeFilter !== 'Book') || userItem.item.artist === artistFilter || artistFilter === '') &&
+      //platformFilter
+      (this.state.typeFilter !== 'Video Game' || userItem.item.platforms.indexOf(platformFilter) >= 0 || platformFilter === '')
     ).sort(this.sort);
     //releaseDateDvdFilter
     if (this.state.typeFilter === 'Movie') {
@@ -215,6 +239,24 @@ export default class Items extends Component {
                 <Input type='date' name='releaseDateDvdUpperLimit' value={moment(this.state.releaseDateDvdUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
               </Menu.Item>
             </div>
+          }
+          {
+            (typeFilter === 'Album' || typeFilter === 'Book') &&
+            <Menu.Item>
+              <Label>{typeFilter === 'Album' ? 'Artist' : 'Author'}</Label>
+              <Dropdown placeholder={typeFilter === 'Album' ? 'Artist' : 'Author'} name='artistFilter' selection value={''}
+                options={[{ text: '', value: '' }, ...this.state.artists]}
+                onChange={(param, data) => this.handleValueChange('artistFilter', data.value)} /><br/>
+            </Menu.Item>
+          }
+          {
+            typeFilter === 'Video Game' &&
+            <Menu.Item>
+              <Label>Platform</Label>
+              <Dropdown placeholder='Platform' name='platformFilter' selection value={''}
+                options={[{ text: '', value: '' }, ...this.state.platforms]}
+                onChange={(param, data) => this.handleValueChange('platformFilter', data.value)} /><br/>
+            </Menu.Item>
           }
           <Menu.Item>
             <Label>In Collection</Label>

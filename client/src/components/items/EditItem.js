@@ -15,26 +15,29 @@ export default class EditItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      allPlatforms: [],
+      artists: [],
+      artist: '',
+      artistError: '',
+      description: undefined,
       details: {},
       id: '',
-      type: '',
-      title: '',
-      titleError: '',
+      ongoing: false,
+      platforms: [],
       releaseDate: '',
       releaseDateError: '',
       releaseDateStatus: '',
       releaseDateDvd: '',
       releaseDateDvdError: '',
       releaseDateDvdStatus: '',
-      description: undefined,
-      artists: [],
-      artist: '',
-      artistError: '',
-      ongoing: false,
-      redirect: undefined
+      redirect: undefined,
+      title: '',
+      titleError: '',
+      type: '',
     }
 
     this.getArtists = this.getArtists.bind(this);
+    this.getAllPlatforms = this.getAllPlatforms.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
   }
@@ -42,6 +45,7 @@ export default class EditItem extends Component {
   componentWillMount() {
     this.getItemDetails();
     this.getArtists();
+    this.getAllPlatforms();
   }
 
   checkForErrors() {
@@ -89,8 +93,14 @@ export default class EditItem extends Component {
   editItem(newItem) {
     const itemId = this.state.id;
     return fetch(`/api/items/${itemId}`, 'put', true, newItem).then(item => {
-        this.setState({redirect: `/items/${item.title_id}`});
-      }).catch(console.log);
+      this.setState({redirect: `/items/${item.title_id}`});
+    }).catch(console.log);
+  }
+
+  getAllPlatforms() {
+    fetch('/api/platforms').then(allPlatforms => {
+      this.setState({allPlatforms: allPlatforms.map(platform => {return {text: platform, value: platform}})});
+    });
   }
 
   getArtists() {
@@ -104,17 +114,18 @@ export default class EditItem extends Component {
     return fetch(`/api/items/title_id/${title_id}`).then(details => {
         if (canEdit(details)) {
           this.setState({
-            details,
             id: details._id,
-            type: details.type,
-            title: details.title,
+            artist: details.artist,
+            details,
             description: details.description,
+            ongoing: details.ongoing,
+            platforms: details.platforms,
             releaseDate: details.releaseDate,
             releaseDateStatus: details.releaseDateStatus,
-            artist: details.artist,
-            ongoing: details.ongoing,
             releaseDateDvd: details.releaseDateDvd,
             releaseDateDvdStatus: details.releaseDateDvdStatus,
+            title: details.title,
+            type: details.type,
           });
         } else this.setState({ redirect: `/items/${title_id}` });
 			}).catch(reason => 
@@ -132,13 +143,14 @@ export default class EditItem extends Component {
     const err = this.checkForErrors();
     if (err) return;
     const { 
-      type, 
-      title, 
+      description,
+      platforms,
       releaseDate, 
       releaseDateStatus, 
       releaseDateDvd, 
       releaseDateDvdStatus, 
-      description
+      title, 
+      type
     } = this.state;
     const newItem = {
       type,
@@ -154,6 +166,7 @@ export default class EditItem extends Component {
         newItem.releaseDateDvdStatus = releaseDateDvdStatus;
         break;
       case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
+      case 'Video Game': newItem.platforms = platforms;
       default:
     }
     this.editItem(newItem);
@@ -167,11 +180,13 @@ export default class EditItem extends Component {
     this.setState({ artists: [{text: value, value}, ...this.state.artists]});
   }
 
+  newPlatform(e, {value}) {
+    this.setState({allPlatforms: [{text: value, value}, ...this.state.allPlatforms]});
+  }
+
   render() {
     const redirect = this.state.redirect;
     if (redirect) return <Redirect to={redirect} />
-
-
 
     return (
       <div>
@@ -246,6 +261,13 @@ export default class EditItem extends Component {
 						(this.state.type === 'TvShow' && hasStarted(this.state.releaseDateStatus, this.state.releaseDate)) &&
             <Form.Field required>
               <Checkbox label='Ongoing' name='ongoing' checked={this.state.ongoing} onChange={(param, data) => this.handleValueChange('ongoing', data.checked)} />
+            </Form.Field>
+          }
+          {
+            this.state.type === 'Video Game' &&
+            <Form.Field>
+              <Dropdown name='platformers' placeholder='Platforms' clearable={1} fluid search multiple selection allowAdditions options={this.state.allPlatforms} value={this.state.platforms}
+                onAddItem={this.newPlatform.bind(this)} onChange={(param, data) => this.handleValueChange('platforms', data.value)}/>
             </Form.Field>
           }
           <Button positive floated='left' type='submit'>Save Item</Button>

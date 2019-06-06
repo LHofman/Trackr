@@ -375,6 +375,23 @@ router.get('/artists', (req, res, next) => {
   });
 });
 
+router.get('/platforms', (req, res, next) => {
+  Item.find({ platforms : {'$exists': true}}, (err, items) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+
+    let allPlatforms = [];
+    items.map(item => item.platforms).forEach(itemPlatforms => {
+      itemPlatforms.forEach(platform => {
+        if (allPlatforms.indexOf(platform) === -1) {
+          allPlatforms.push(platform);
+        }
+      });
+    });
+
+    res.json(allPlatforms.sort());
+  });
+});
+
 //#region franchises
 
 router.get('/franchises', (req, res, next) => {

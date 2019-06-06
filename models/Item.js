@@ -13,6 +13,7 @@ const ItemSchema = mongoose.Schema({
   },
   description: String,
   ongoing: Boolean,
+  platforms: [String],
   releaseDate: String,
   releaseDateStatus: {
     type: String,

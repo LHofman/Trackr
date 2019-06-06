@@ -16,27 +16,39 @@ export default class Items extends Component {
   constructor() {
     super();
     this.state = {
+      activePage: 1,
+      artistFilter: '',
+      artists: [],
+      isSidebarVisible: false,
       items: [],
-      typeFilter: '',
-      titleFilter: '',
+      platformFilter: '',
+      platforms: [],
       releaseDateLowerLimit: '',
       releaseDateUpperLimit: '',
       releaseDateDvdLowerLimit: '',
       releaseDateDvdUpperLimit: '',
       sort: { field: 'title', order: 'asc' },
-      activePage: 1,
-      isSidebarVisible: false
+      titleFilter: '',
+      typeFilter: ''
     }
-
-    this.onFilterChange = this.onFilterChange.bind(this);
-    this.handleSortChange = this.handleSortChange.bind(this);
-    this.sort = this.sort.bind(this);
+    
     this.changePage = this.changePage.bind(this);
+    this.handleSortChange = this.handleSortChange.bind(this);
+    this.onFilterChange = this.onFilterChange.bind(this);
+    this.sort = this.sort.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
   }
 
   componentWillMount() {
+    this.getArtists();
+    this.getPlatforms();
     this.getItems();
+  }
+
+  getArtists() {
+    fetch('/api/artists').then(artists => {
+      this.setState({ artists: artists.map(artist => { return {text: artist, value: artist}}) });
+    });
   }
 
   getItems() {
@@ -45,6 +57,12 @@ export default class Items extends Component {
       items.sort((i1, i2) => i1.title < i2.title ? -1 : 1);
       this.setState({ items })
     }).catch(console.log);
+  }
+
+  getPlatforms() {
+    fetch('/api/platforms').then(allPlatforms => {
+      this.setState({platforms: allPlatforms.map(platform => {return {text: platform, value: platform}})});
+    });
   }
 
   onTitleFilterChange(event) {
@@ -120,13 +138,15 @@ export default class Items extends Component {
 
   render() {
     const {
-      typeFilter, 
-      titleFilter, 
+      artistFilter,
+      platformFilter,
       releaseDateLowerLimit, 
       releaseDateUpperLimit, 
       releaseDateDvdLowerLimit, 
       releaseDateDvdUpperLimit, 
-      sort
+      sort,
+      titleFilter, 
+      typeFilter, 
     } = this.state;
     let filteredItems = this.state.items.filter(item => 
       //titleFilter
@@ -149,7 +169,11 @@ export default class Items extends Component {
             moment(releaseDateUpperLimit).isSameOrAfter(item.releaseDate)
           )
         )
-      )
+      ) &&
+      //artistFilter
+      ((this.state.typeFilter !== 'Album' && this.state.typeFilter !== 'Book') || item.artist === artistFilter || artistFilter === '') &&
+      //platformFilter
+      (this.state.typeFilter !== 'Video Game' || item.platforms.indexOf(platformFilter) >= 0 || platformFilter === '')
     ).sort(this.sort);
     //releaseDateDvdFilter
     if (this.state.typeFilter === 'Movie') {
@@ -210,7 +234,7 @@ export default class Items extends Component {
             <Input type='date' name='releaseDateUpperLimit' value={moment(this.state.releaseDateUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
           </Menu.Item>
           {
-            this.state.typeFilter === 'Movie' &&
+            typeFilter === 'Movie' &&
             <div>
               <Menu.Item>
                 <Label>Dvd Release Date Lower Limit</Label>
@@ -221,6 +245,24 @@ export default class Items extends Component {
                 <Input type='date' name='releaseDateDvdUpperLimit' value={moment(this.state.releaseDateDvdUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
               </Menu.Item>
             </div>
+          }
+          {
+            (typeFilter === 'Album' || typeFilter === 'Book') &&
+            <Menu.Item>
+              <Label>{typeFilter === 'Album' ? 'Artist' : 'Author'}</Label>
+              <Dropdown placeholder={typeFilter === 'Album' ? 'Artist' : 'Author'} name='artistFilter' selection value={''}
+                options={[{ text: '', value: '' }, ...this.state.artists]}
+                onChange={(param, data) => this.handleValueChange('artistFilter', data.value)} /><br/>
+            </Menu.Item>
+          }
+          {
+            typeFilter === 'Video Game' &&
+            <Menu.Item>
+              <Label>Platform</Label>
+              <Dropdown placeholder='Platform' name='platformFilter' selection value={''}
+                options={[{ text: '', value: '' }, ...this.state.platforms]}
+                onChange={(param, data) => this.handleValueChange('platformFilter', data.value)} /><br/>
+            </Menu.Item>
           }
           <Menu.Item header>Sort By</Menu.Item>
           <Menu.Item 

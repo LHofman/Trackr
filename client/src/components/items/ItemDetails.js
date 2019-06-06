@@ -229,7 +229,10 @@ export default class ItemDetails extends Component {
 				<br />
 				{
 					details.type === 'Video Game' &&
-					<div><Button as={Link} to={`/objectives/${details.title_id}`} color='teal'>Objectives</Button><br /><br /></div>
+					<div>
+						{details.platforms.sort().join(', ')}<br/><br/>
+						<Button as={Link} to={`/objectives/${details.title_id}`} color='teal'>Objectives</Button><br /><br />
+					</div>
 				}
 				{
 					details.description &&
