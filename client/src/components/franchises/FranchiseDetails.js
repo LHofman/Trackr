@@ -138,7 +138,7 @@ export default class FranchiseDetails extends Component {
       this.setState({ itemOptions: 
         items.filter(item => this.state.details.items.map(item => item._id).indexOf(item._id) === -1)
 				.sort((i1, i2) => i1.title.toLowerCase() < i2.title.toLowerCase() ? -1 : 1)
-        .map(item => { return { key: item._id, value: item._id, text: item.title } }),
+        .map(item => { return { key: item._id, value: item._id, text: `${item.title} (${new Date(item.releaseDate).getFullYear()})` } }),
         itemOptionsLoaded: true
       });
 		});
