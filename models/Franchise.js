@@ -34,9 +34,11 @@ FranchiseSchema.pre('findOne', autoPopulate);
 FranchiseSchema.pre('findById', autoPopulate);
 FranchiseSchema.pre('find', autoPopulate);
 
+const Franchise = mongoose.model('Franchise', FranchiseSchema);
+
 FranchiseSchema.pre('remove', function (next) {
   Franchise.update({}, { $pull: { subFranchises: this._id } }, { multi: true}).exec();
   next();
 });
 
-export default mongoose.model('Franchise', FranchiseSchema);
+export default Franchise;
