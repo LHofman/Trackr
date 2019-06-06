@@ -316,6 +316,23 @@ router.put('/gameObjectives/:id', auth, (req, res, next) => {
 
 //#region userGameObjectives
 
+router.get('/userGameObjectives/:user/game/:game', (req, res, next) => {
+  GameObjective.find({game: req.params.game}).exec((err, gameObjectives) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+
+    const gameObjectivesIds = gameObjectives.map(gameObjective => gameObjective._id);
+
+    UserGameObjective.find({
+      user: req.params.user,
+      gameObjective: { $in: gameObjectivesIds }
+    }).exec((err, userGameObjectives) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json(userGameObjectives);
+    });
+  });
+});
+
+
 router.get('/userGameObjectives/:user/:gameObjective', (req, res, next) => {
   UserGameObjective.findOne({
     gameObjective: req.params.gameObjective,

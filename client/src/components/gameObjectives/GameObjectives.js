@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Redirect from 'react-router-dom/Redirect';
-import { Breadcrumb, Button, List } from 'semantic-ui-react';
+import { Breadcrumb, Button, Checkbox, List } from 'semantic-ui-react';
 
 import GameObjective from './GameObjective';
 
@@ -22,6 +22,8 @@ class GameObjectives extends Component {
     }
 
     this.onDelete = this.onDelete.bind(this);
+    this.refresh = this.refresh.bind(this);
+    this.selectAll = this.selectAll.bind(this);
   }
 
   componentWillReceiveProps(newProps) {
@@ -38,10 +40,14 @@ class GameObjectives extends Component {
 
     this.getGame(params.titleId).then(() => {
       if (!parentId)
-        this.getGameObjectives(`/api/gameObjectives/byGame/${this.state.game._id}`);
+        this.getGameObjectives(`/api/gameObjectives/byGame/${this.state.game._id}`).then(() => {
+          this.getUserGameObjectives();
+        });
       else {
         this.getParent(parentId).then(() => {
-          this.getGameObjectives(`/api/gameObjectives/byParent/${this.state.parent._id}`);
+          this.getGameObjectives(`/api/gameObjectives/byParent/${this.state.parent._id}`).then(() => {
+            this.getUserGameObjectives();
+          });
         });
       }
     });
@@ -78,6 +84,22 @@ class GameObjectives extends Component {
     }).catch(reason => {
       this.setState({redirect: `/items/${this.state.game.title_id}`});
     }).then(() => this.setState({ loading: false }));
+  }
+
+  getUserGameObjectives() {
+    const user = getUser();
+    if (!user) return;
+    return fetch(`/api/userGameObjectives/${user.id}/game/${this.state.game._id}`).then(userGameObjectives => {
+      const gameObjectives = this.state.gameObjectives;
+      userGameObjectives.forEach(userGameObjective => {
+        for (let i = 0; i < gameObjectives.length; i++) {
+          if (gameObjectives[i]._id === userGameObjective.gameObjective) {
+            gameObjectives[i].userGameObjective = userGameObjective;
+          }
+        }
+      })
+      this.setState({gameObjectives});
+    }).catch(console.log);
   }
 
   onDelete(gameObjective) {
@@ -119,18 +141,48 @@ class GameObjectives extends Component {
     return addUrl.concat('/add');
   }
 
+  refresh() {
+    this.forceUpdate();
+  }
+
+  selectAll(data) {
+    const gameObjectives = this.state.gameObjectives;
+    const promises = [];
+
+    for (let i = 0; i < gameObjectives.length; i++) {
+      if (data.checked && !gameObjectives.userGameObjective) {
+        gameObjectives[i].userGameObjective = {
+          gameObjective: gameObjectives[i]._id,
+          user: getUser().id,
+          completed: true
+        }
+        promises.push(fetch(`/api/userGameObjectives`, 'post', true, gameObjectives[i].userGameObjective));
+      } else if (!data.checked && gameObjectives[i].userGameObjective) {
+        let userGameObjectiveId = gameObjectives[i].userGameObjective._id;
+        delete gameObjectives[i].userGameObjective;
+        promises.push(fetch(`/api/userGameObjectives/${userGameObjectiveId}`, 'delete', true))
+      }
+    }
+    Promise.all(promises).then(res => {
+      this.setState({ gameObjectives });
+    });
+  }
+
   render() {
     const redirect = this.state.redirect;
     if (redirect) return <Redirect to={redirect} />
 
+    let gameObjectives = this.state.gameObjectives;
+    const all = gameObjectives.reduce((all, gameObjective) => all && typeof gameObjective.userGameObjective !== 'undefined', true);
 
-    const gameObjectives = this.state.gameObjectives.sort((o1, o2) => o1.index - o2.index).map(gameObjective => 
+    gameObjectives = gameObjectives.sort((o1, o2) => o1.index - o2.index).map(gameObjective => 
       <GameObjective 
         key={gameObjective._id} 
         gameObjective={gameObjective} 
         onDelete={this.onDelete} 
         following={this.state.following}
         count={this.state.gameObjectives.length}
+        refreshParent={this.refresh}
       />
     );
 
@@ -145,7 +197,9 @@ class GameObjectives extends Component {
             to={this.getAddUrl()} 
           />
         }
-        <br />
+        <br /><br />
+        <Checkbox key='all' name='all' checked={all} onChange={(e, data) => this.selectAll(data)} label="(De)select all"/>
+        <br/><br />
         <List>
           {gameObjectives}
         </List>

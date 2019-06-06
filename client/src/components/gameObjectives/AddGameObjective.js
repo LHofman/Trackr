@@ -147,7 +147,7 @@ class AddObjective extends Component {
           </Form.Field>
           <Form.Field>
             <label>Hint</label>
-            <TextArea autoHeight placeholder='Hint' name='Hint' onChange={this.handleInputChange} />
+            <TextArea autoHeight placeholder='Hint' name='hint' onChange={this.handleInputChange} />
           </Form.Field>
           <Button positive floated='left' type='submit'>Submit</Button>
           <Button negative floated='right' as={Link} to={this.state.backUrl}>Cancel</Button>

@@ -15,9 +15,7 @@ class GameObjective extends Component {
       following: props.following,
       gameObjective: props.gameObjective,
       hasSubObjectives: false,
-      modalFollowingOpen: false,
-      modalHintOpen: false,
-      userGameObjective: undefined
+      modalHintOpen: false
     }
 
     this.closeModals = this.closeModals.bind(this);
@@ -25,7 +23,6 @@ class GameObjective extends Component {
 
   componentWillMount() {
     this.hasSubObjectives();
-    if (this.state.following) this.getUserGameObjective();
   }
 
   getEditUrl() {
@@ -33,14 +30,6 @@ class GameObjective extends Component {
     let editUrl = `/objectives/${game.title_id}`;
     if (parent) editUrl += `/subObjectives/${parent.objective_id}`;
     return editUrl.concat(`/${this.state.gameObjective.objective_id}/edit`);
-  }
-
-  getUserGameObjective() {
-    const user = getUser();
-    if (!user) return;
-    return fetch(`/api/userGameObjectives/${user.id}/${this.state.gameObjective._id}`, 'get', true).then(userGameObjective => {
-      if (userGameObjective) this.setState({ userGameObjective });
-    }).catch(reason => {});
   }
 
   hasSubObjectives() {
@@ -67,7 +56,8 @@ class GameObjective extends Component {
   }
 
   updateUserObjective() {
-    let userGameObjective = this.state.userGameObjective;
+    let gameObjective = this.state.gameObjective;
+    let userGameObjective = gameObjective.userGameObjective;
     new Promise(resolve => {
       if (userGameObjective) {
         fetch(`/api/userGameObjectives/${userGameObjective._id}`, 'delete', true).then(newUserGameObjective => {
@@ -86,12 +76,14 @@ class GameObjective extends Component {
         });
       }
     }).then(() => {
-      this.setState({ userGameObjective, modalFollowingOpen: true });
+      gameObjective.userGameObjective = userGameObjective;
+      this.setState({ gameObjective });
+      this.props.refreshParent();
     });
   }
 
   closeModals() {
-    this.setState({ modalFollowingOpen: false, modalHintOpen: false });
+    this.setState({ modalHintOpen: false });
   }
 
   render() {
@@ -111,20 +103,8 @@ class GameObjective extends Component {
             {
               this.state.following &&
               <div style={{ float: 'left', marginRight:'1em'}}>
-                <Checkbox key='completed' name='completed' checked={(this.state.userGameObjective || { completed: false }).completed} 
+                <Checkbox key='completed' name='completed' checked={(gameObjective.userGameObjective || { completed: false }).completed} 
                   onChange={this.updateUserObjective.bind(this)} />
-                <Modal key='message'
-                  open={this.state.modalFollowingOpen}
-                  onClose={this.closeModal}
-                  basic
-                  size='small'>
-                  <Header icon='browser' content='Item updated' />
-                  <Modal.Actions>
-                    <Button color='green' onClick={this.closeModals} inverted >
-                      <Icon name='checkmark' /> Got it
-                    </Button>
-                  </Modal.Actions>
-                </Modal>
               </div>
             }
             {

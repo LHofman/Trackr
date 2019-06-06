@@ -51,8 +51,8 @@ class EditGameObjective extends Component {
   }
 
   getGameObjective(objective_id) {
-    return fetch(`/api/gameObjectives/objective_id/${this.state.game._id}/${objective_id}`).then(({_id, index, objective}) => {
-      this.setState({id: _id, index, objective});
+    return fetch(`/api/gameObjectives/objective_id/${this.state.game._id}/${objective_id}`).then(({_id, hint, index, objective}) => {
+      this.setState({id: _id, hint, index, objective});
     }).catch(console.log);
   }
 
