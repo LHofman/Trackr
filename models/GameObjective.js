@@ -29,7 +29,8 @@ const GameObjectiveSchema = mongoose.Schema({
   objective_id: {
     type: String,
     required: true
-  }
+  },
+  spoiler: Boolean
 });
 
 const autoPopulate = function (next) {

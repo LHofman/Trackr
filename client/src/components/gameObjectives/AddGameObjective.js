@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Form, Message, TextArea } from 'semantic-ui-react';
+import { Button, Checkbox, Form, Message, TextArea } from 'semantic-ui-react';
 
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';
@@ -11,13 +11,14 @@ class AddObjective extends Component {
     this.state = {
       backUrl: '',
       game: undefined,
-      parent: undefined,
       hint: undefined,
       index: 0,
       indexError: '',
       objective: '',
       objectiveError: '',
-      redirect: undefined
+      parent: undefined,
+      redirect: undefined,
+      spoiler: false
     }
     this.handleInputChange = this.handleInputChange.bind(this);
   }
@@ -102,13 +103,14 @@ class AddObjective extends Component {
     const err = this.checkForErrors();
     if (err) return;
 
-    const { game, parent, hint, index, objective } = this.state;
+    const { game, hint, index, objective, parent, spoiler } = this.state;
     const newObjective = {
-      game,
       createdBy: getUser().id,
+      game,
       hint,
       index,
       objective,
+      spoiler
     }
     if (parent) newObjective.parent = parent._id;
 
@@ -118,6 +120,10 @@ class AddObjective extends Component {
   handleInputChange(e) {
     const target = e.target;
     this.setState({[target.name]: target.value});
+  }
+
+  toggleSpoiler() {
+    this.setState({spoiler: !this.state.spoiler});
   }
 
   render() {
@@ -144,6 +150,9 @@ class AddObjective extends Component {
               this.state.objectiveError &&
               <Message error header={this.state.objectiveError} />
             }
+          </Form.Field>
+          <Form.Field>
+            <Checkbox label='name contains spoilers' name='spoiler' onChange={this.toggleSpoiler.bind(this)} />
           </Form.Field>
           <Form.Field>
             <label>Hint</label>

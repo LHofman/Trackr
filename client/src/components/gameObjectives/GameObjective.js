@@ -15,7 +15,8 @@ class GameObjective extends Component {
       following: props.following,
       gameObjective: props.gameObjective,
       hasSubObjectives: false,
-      modalHintOpen: false
+      modalHintOpen: false,
+      viewTitle: false,
     }
 
     this.closeModals = this.closeModals.bind(this);
@@ -55,6 +56,10 @@ class GameObjective extends Component {
     this.setState({ modalHintOpen: true });
   }
 
+  viewTitle() {
+    this.setState({viewTitle: true})
+  }
+
   updateUserObjective() {
     let gameObjective = this.state.gameObjective;
     let userGameObjective = gameObjective.userGameObjective;
@@ -88,6 +93,9 @@ class GameObjective extends Component {
 
   render() {
     const gameObjective = this.state.gameObjective;
+    const spoiler = gameObjective.spoiler && !this.state.viewTitle;
+    const name = spoiler ? 'spoilers' : gameObjective.objective;
+
     return (
       <List.Item>
         <List.Content>
@@ -96,9 +104,8 @@ class GameObjective extends Component {
             {
               this.state.hasSubObjectives ?
                 <a href={`/objectives/${gameObjective.game.title_id}/subObjectives/${gameObjective.objective_id}`}>
-                  { gameObjective.objective }
-                </a> :
-                gameObjective.objective
+                  { name }
+                </a> : name
             }
             {
               this.state.following &&
@@ -106,6 +113,10 @@ class GameObjective extends Component {
                 <Checkbox key='completed' name='completed' checked={(gameObjective.userGameObjective || { completed: false }).completed} 
                   onChange={this.updateUserObjective.bind(this)} />
               </div>
+            }
+            {
+              spoiler &&
+              <Icon name='eye' onClick={this.viewTitle.bind(this)} />
             }
             {
               isLoggedIn() && !this.state.hasSubObjectives &&
