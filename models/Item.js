@@ -12,6 +12,11 @@ const ItemSchema = mongoose.Schema({
     required: true
   },
   description: String,
+  links: [{
+    index: {type: Number, required: true},
+    title: {type: String, required: true},
+    url: {type: String, required: true}
+  }],
   ongoing: Boolean,
   platforms: [String],
   releaseDate: String,

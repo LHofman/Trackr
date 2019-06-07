@@ -173,6 +173,11 @@ export default class ItemDetails extends Component {
 			.map(franchise => <ItemDetailsFranchise key={franchise._id} item={this.state.details} franchise={franchise} onDelete={this.removeFromFranchise} />)
 
 		const details = this.state.details;
+
+		const links = (details.links && details.links.length > 0) ? details.links.map(link => <li key={link.index}>
+			<a href={link.url} target='_blank'>{link.title}</a>
+		</li>) : undefined;
+				
 		return (
 			<div>
 				<Button labelPosition='left' icon='left chevron' content='Back' as={Link} to={'/'} />
@@ -239,6 +244,15 @@ export default class ItemDetails extends Component {
 					<div>
 						{details.description}
 						<br/><br/><br/>
+					</div>
+				}
+				{
+					links &&
+					<div>
+						<h3>Links</h3>
+						<ul>
+							{links}
+						</ul>
 					</div>
 				}
 				{

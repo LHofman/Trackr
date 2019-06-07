@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Checkbox, Dropdown, Form, Message, TextArea } from 'semantic-ui-react';
+import { Button, Checkbox, Dropdown, Form, Icon, Message, TextArea } from 'semantic-ui-react';
 
 import extendedEquals from '../../utils/extendedEquals';
 import fetch from '../../utils/fetch';
@@ -19,6 +19,10 @@ export default class AddItem extends Component {
       artistError: '',
       artists: [],
       description: undefined,
+      links: [],
+      newLinkTitle: '',
+      newLinkUrl: '',
+      newLinkError: '',
       ongoing: false,
       platforms: [],
       redirect: undefined,
@@ -37,11 +41,29 @@ export default class AddItem extends Component {
     this.getArtists = this.getArtists.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.removeLink = this.removeLink.bind(this);
   }
 
   componentWillMount() {
     this.getArtists();
     this.getAllPlatforms();
+  }
+
+  addLink() {
+    const title = this.state.newLinkTitle;
+    const url = this.state.newLinkUrl;
+    
+    if (!title || !url) {
+      this.setState({newLinkError: 'Please enter a title and url'});
+      return;
+    }
+
+    this.setState({
+      links: [...this.state.links, {title, url, index: this.state.links.length}], 
+      newLinkError: '',
+      newLinkTitle: '',
+      newLinkUrl: ''
+    });
   }
 
   addItem(newItem) {
@@ -116,6 +138,7 @@ export default class AddItem extends Component {
     const { 
       description,
       platforms,
+      links,
       releaseDate, 
       releaseDateStatus, 
       releaseDateDvd, 
@@ -124,12 +147,13 @@ export default class AddItem extends Component {
       type
     } = this.state;
     const newItem = {
-      type,
-      title,
+      createdBy: getUser().id,
       description,
+      links,
       releaseDate: releaseDateStatus === 'Date' ? new Date(releaseDate).toISOString() : undefined,
       releaseDateStatus,
-      createdBy: getUser().id
+      title,
+      type
     }
     switch (type) {
       case 'Album': case 'Book': newItem.artist = this.state.artist; break;
@@ -138,10 +162,9 @@ export default class AddItem extends Component {
         newItem.releaseDateDvdStatus = releaseDateDvdStatus;
         break;
       case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
-      case 'Video Game': newItem.platforms = platforms;
+      case 'Video Game': newItem.platforms = platforms; break;
       default:
     }
-    console.log(newItem);
     this.addItem(newItem);
   }
 
@@ -157,9 +180,45 @@ export default class AddItem extends Component {
     this.setState({allPlatforms: [{text: value, value}, ...this.state.allPlatforms]});
   }
 
+  removeLink(e, data) {
+    const index = data.name.substring(5);
+    let found = false;
+    const links = [];
+
+    for (let i = 0; i < this.state.links.length; i++) {
+      let link = this.state.links[i];
+      if (link.index == index) {
+        found = true;
+        continue;
+      }
+      if (found) {
+        link.index--;
+      }
+      links.push(link);
+    }
+    this.setState({links});
+  }
+
   render() {
     const redirect = this.state.redirect;
     if (redirect) return <Redirect to={redirect} />
+
+    const links = this.state.links.map(link => <Form.Group key={link.index}>
+      <Form.Field width={3}>
+        <input disabled value={link.title}/>
+      </Form.Field>
+      <Form.Field width={7}>
+        <input disabled value={link.url}/>
+      </Form.Field>
+      <Form.Field>
+        <Button color='orange' type='button' onClick={(e, data) => this.removeLink(e, data)} animated name={`link_${link.index}`}>
+          <Button.Content visible>Remove Link</Button.Content>
+          <Button.Content hidden>
+            <Icon name='arrow down' />
+          </Button.Content>
+        </Button>
+      </Form.Field>
+    </Form.Group>)
 
     return (
       <div>
@@ -246,6 +305,28 @@ export default class AddItem extends Component {
               <Dropdown name='platformers' placeholder='Platforms' clearable={1} fluid search multiple selection allowAdditions options={this.state.allPlatforms} 
                 onAddItem={this.newPlatform.bind(this)} onChange={(param, data) => this.handleValueChange('platforms', data.value)}/>
             </Form.Field>
+          }
+          <Form.Field><label>Links</label></Form.Field>
+          {links}
+          <Form.Group>
+            <Form.Field required width={3}>
+              <input placeholder='Title' name='newLinkTitle' value={this.state.newLinkTitle} onChange={this.handleInputChange}/>
+            </Form.Field>
+            <Form.Field required width={7}>
+              <input placeholder='Url' name='newLinkUrl' value={this.state.newLinkUrl} onChange={this.handleInputChange}/>
+            </Form.Field>
+            <Form.Field>
+              <Button type='button' onClick={this.addLink.bind(this)} animated>
+                <Button.Content visible>Add Link</Button.Content>
+                <Button.Content hidden>
+                  <Icon name='arrow up' />
+                </Button.Content>
+              </Button>
+            </Form.Field>
+          </Form.Group>
+          {
+            this.state.newLinkError &&
+            <Message error header={this.state.newLinkError} />
           }
           <Button positive floated='left' type='submit'>Create Item</Button>
           <Button negative floated='right' as={Link} to={'/'}>Cancel</Button>
