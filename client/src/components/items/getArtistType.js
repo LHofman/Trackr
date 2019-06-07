@@ -1,7 +1,9 @@
 export default type => {
   switch(type) {
+    case 'Album': return 'Artist';
     case 'Book': return 'Author';
     case 'Movie': return 'Director';
-    default: return 'Artist';
+    case 'TvShow': return 'Creator';
+    default: return null;
   }
 }

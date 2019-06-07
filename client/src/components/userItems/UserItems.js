@@ -169,7 +169,7 @@ export default class Items extends Component {
       //statusFilter
       extendedEquals(statusFilter, '', userItem.status) &&
       //artistFilter
-      ((this.state.typeFilter !== 'Album' && this.state.typeFilter !== 'Book' && this.state.typeFilter !== 'Movie') || userItem.item.artists.indexOf(artistFilter) >= 0 || artistFilter === '') &&
+      (getArtistType(typeFilter) === null || userItem.item.artists.indexOf(artistFilter) >= 0 || artistFilter === '') &&
       //platformFilter
       (this.state.typeFilter !== 'Video Game' || userItem.item.platforms.indexOf(platformFilter) >= 0 || platformFilter === '')
     ).sort(this.sort);
@@ -242,7 +242,7 @@ export default class Items extends Component {
             </div>
           }
           {
-            (typeFilter === 'Album' || typeFilter === 'Book' || typeFilter === 'Movie') &&
+            getArtistType(typeFilter) !== null &&
             <Menu.Item>
               <Label>{getArtistType(typeFilter)}</Label>
               <Dropdown search placeholder={getArtistType(typeFilter)} name='artistFilter' selection value={''}

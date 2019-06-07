@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Checkbox, Dropdown, Form, Icon, Message, TextArea } from 'semantic-ui-react';
 
-import extendedEquals from '../../utils/extendedEquals';
 import fetch from '../../utils/fetch';
 import getArtistType from './getArtistType';
 import getUser from '../../utils/getUser';
@@ -97,7 +96,7 @@ export default class AddItem extends Component {
       errors.releaseDateDvdError = '';
     }
 
-    if (extendedEquals(this.state.type, 'Album', 'Book', 'Movie') && this.state.artists.length === 0) {
+    if (getArtistType(this.state.type) !== null && this.state.artists.length === 0) {
       isError = true;
       errors.artistsError = `at least 1 ${getArtistType(this.state.type)} is required`;
     } else {
@@ -162,7 +161,10 @@ export default class AddItem extends Component {
         newItem.releaseDateDvdStatus = releaseDateDvdStatus;
         newItem.artists = this.state.artists;
         break;
-      case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
+      case 'TvShow': 
+        newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; 
+        newItem.artists = this.state.artists;
+        break;
       case 'Video Game': newItem.platforms = platforms; break;
       default:
     }
@@ -221,6 +223,8 @@ export default class AddItem extends Component {
       </Form.Field>
     </Form.Group>)
 
+    console.log(getArtistType(this.state.type));
+
     return (
       <div>
         <h1>Add Item</h1>
@@ -240,7 +244,7 @@ export default class AddItem extends Component {
             }
           </Form.Field>
           {
-            extendedEquals(this.state.type, 'Album', 'Book', 'Movie') &&
+            getArtistType(this.state.type) !== null &&
             <Form.Field required>
               <label>{ getArtistType(this.state.type) }</label>
               <Dropdown name='artists' fluid selection search multiple allowAdditions placeholder='Artists' options={this.state.allArtists} 

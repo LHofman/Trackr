@@ -4,7 +4,6 @@ import { Button, Checkbox, Confirm, Dropdown, Header, Icon, List, Modal, Popup, 
 
 import ItemDetailsFranchise from './ItemDetailsFranchise';
 
-import extendedEquals from '../../utils/extendedEquals';
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
 import getIcon from '../../utils/getIcon';
@@ -207,7 +206,7 @@ export default class ItemDetails extends Component {
 					onConfirm={this.confirmAlert.bind(this)}
 				/>
 				{
-					extendedEquals(details.type, 'Album', 'Book', 'Movie') &&
+					getArtistType(details.type) !== null &&
 					(
 						details.artists.length === 1 ?
 							<h3>{getArtistType(details.type)}: {details.artists[0]}</h3> : 
