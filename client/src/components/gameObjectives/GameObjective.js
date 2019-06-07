@@ -16,6 +16,7 @@ class GameObjective extends Component {
       gameObjective: props.gameObjective,
       hasSubObjectives: false,
       modalHintOpen: false,
+      showHint: false,
       viewTitle: false,
     }
 
@@ -43,6 +44,10 @@ class GameObjective extends Component {
     this.setState({ confirmationAlert: false });
   }
 
+  hideHint() {
+    this.setState({showHint: false});
+  }
+
   onDelete() {
     this.hideConfirmationAlert();
     this.props.onDelete(this.state.gameObjective);
@@ -53,7 +58,8 @@ class GameObjective extends Component {
   }
 
   showHint() {
-    this.setState({ modalHintOpen: true });
+    // this.setState({ modalHintOpen: true });
+    this.setState({showHint: true});
   }
 
   viewTitle() {
@@ -119,6 +125,18 @@ class GameObjective extends Component {
               <Icon name='eye' onClick={this.viewTitle.bind(this)} />
             }
             {
+              this.state.gameObjective.hint &&
+              <div style={{ display: 'inline' }}
+                onMouseEnter={this.showHint.bind(this)}
+                onMouseLeave={this.hideHint.bind(this)}>
+                <Icon name='help' />
+                {
+                  this.state.showHint &&
+                  <div><br/>{this.state.gameObjective.hint}</div>
+                }
+              </div>
+            }
+            {
               isLoggedIn() && !this.state.hasSubObjectives &&
               <Link to={`/objectives/${gameObjective.game.title_id}/subObjectives/${gameObjective.objective_id}/add`}>
                 <Icon name='angle double down' color='green' />
@@ -131,24 +149,6 @@ class GameObjective extends Component {
                   <Icon name='edit' color='orange' />
                 </Link>
                 <Icon name='trash' color='red' onClick={this.showConfirmationAlert.bind(this)} />
-              </div>
-            }
-            {
-              this.state.gameObjective.hint &&
-              <div>
-                <a onClick={this.showHint.bind(this)}>Show Hint</a>
-                <Modal key='hint'
-                  open={this.state.modalHintOpen}
-                  onClose={this.closeModals}
-                  basic
-                  size='small'>
-                  <Header icon='browser' content={this.state.gameObjective.hint} />
-                  <Modal.Actions>
-                    <Button color='green' onClick={this.closeModals} inverted >
-                      <Icon name='checkmark' /> Got it
-                    </Button>
-                  </Modal.Actions>
-                </Modal>
               </div>
             }
             <Confirm
