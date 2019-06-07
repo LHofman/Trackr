@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Checkbox, Confirm, Header, Icon, List, Modal } from 'semantic-ui-react';
+import { Checkbox, Confirm, Icon, List } from 'semantic-ui-react';
 
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
@@ -15,12 +15,9 @@ class GameObjective extends Component {
       following: props.following,
       gameObjective: props.gameObjective,
       hasSubObjectives: false,
-      modalHintOpen: false,
       showHint: false,
       viewTitle: false,
     }
-
-    this.closeModals = this.closeModals.bind(this);
   }
 
   componentWillMount() {
@@ -58,7 +55,6 @@ class GameObjective extends Component {
   }
 
   showHint() {
-    // this.setState({ modalHintOpen: true });
     this.setState({showHint: true});
   }
 
@@ -91,10 +87,6 @@ class GameObjective extends Component {
       this.setState({ gameObjective });
       this.props.refreshParent();
     });
-  }
-
-  closeModals() {
-    this.setState({ modalHintOpen: false });
   }
 
   render() {

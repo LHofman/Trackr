@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Checkbox, Confirm, Dropdown, Header, Icon, List, Modal, Popup, Rating } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Dropdown, Icon, List, Popup, Rating } from 'semantic-ui-react';
 
 import ItemDetailsFranchise from './ItemDetailsFranchise';
 
@@ -20,7 +20,6 @@ export default class ItemDetails extends Component {
 			details: '',
 			confirmationAlert: '',
 			userItem: '',
-			modalOpen: false,
 			redirect: undefined,
 			franchises: [],
 			franchiseOptions: [],
@@ -28,7 +27,6 @@ export default class ItemDetails extends Component {
 		}
 
 		this.updateUserItem = this.updateUserItem.bind(this);
-		this.closeModal = this.closeModal.bind(this);
 		this.showConfirmationAlert = this.showConfirmationAlert.bind(this);
 		this.removeFromFranchise = this.removeFromFranchise.bind(this);
 	}
@@ -110,13 +108,9 @@ export default class ItemDetails extends Component {
 					console.log(body);
 				});
 			});
-    this.setState({ userItem, modalOpen: true });
+    this.setState({ userItem });
 	}
 	
-	closeModal() {
-		this.setState({ modalOpen: false })
-	}
-
 	getFranchises() {
 		return fetch(`/api/franchises/byItem/${this.state.details._id}`).then(franchises => {
       if (!franchises || franchises === null) return;
@@ -266,18 +260,6 @@ export default class ItemDetails extends Component {
 						<Rating icon='star' defaultRating={this.state.userItem.rating} maxRating={10} clearable onRate={(param, data) => this.updateUserItem('rating', data.rating)} /><br/><br/>
 						<Dropdown key='status' placeholder='Status' selection options={statusOptions(details)} name='status' value={this.state.userItem.status} 
 							onChange={(param, data) => this.updateUserItem('status', data.value)} /><br /><br />
-						<Modal key='message'
-							open={this.state.modalOpen}
-							onClose={this.closeModal}
-							basic
-							size='small'>
-							<Header icon='browser' content='Item updated' />
-							<Modal.Actions>
-								<Button color='green' onClick={this.closeModal} inverted>
-									<Icon name='checkmark' /> Got it
-          			</Button>
-              </Modal.Actions>
-            </Modal>
           </div>
         }
 				{
