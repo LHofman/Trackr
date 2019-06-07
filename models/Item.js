@@ -5,7 +5,7 @@ import GameObjective from './GameObjective';
 import UserItem from './UserItem';
 
 const ItemSchema = mongoose.Schema({
-  artist: String,
+  artists: [String],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

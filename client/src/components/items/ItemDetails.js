@@ -207,8 +207,12 @@ export default class ItemDetails extends Component {
 					onConfirm={this.confirmAlert.bind(this)}
 				/>
 				{
-					extendedEquals(details.type, 'Album', 'Book') &&
-					<h3>{ getArtistType(details.type) }: {details.artist}</h3>
+					extendedEquals(details.type, 'Album', 'Book', 'Movie') &&
+					(
+						details.artists.length === 1 ?
+							<h3>{getArtistType(details.type)}: {details.artists[0]}</h3> : 
+							<h3>{getArtistType(details.type)}s: {details.artists.sort().join(', ')}</h3>
+					)
 				}
 				{
 					details.type === 'TvShow' &&

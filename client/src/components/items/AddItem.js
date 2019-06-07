@@ -15,9 +15,9 @@ export default class AddItem extends Component {
     super();
     this.state = {
       allPlatforms: [],
-      artist: '',
-      artistError: '',
       artists: [],
+      artistsError: '',
+      allArtists: [],
       description: undefined,
       links: [],
       newLinkTitle: '',
@@ -38,14 +38,14 @@ export default class AddItem extends Component {
     }
 
     this.getAllPlatforms = this.getAllPlatforms.bind(this);
-    this.getArtists = this.getArtists.bind(this);
+    this.getAllArtists = this.getAllArtists.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.removeLink = this.removeLink.bind(this);
   }
 
   componentWillMount() {
-    this.getArtists();
+    this.getAllArtists();
     this.getAllPlatforms();
   }
 
@@ -97,11 +97,11 @@ export default class AddItem extends Component {
       errors.releaseDateDvdError = '';
     }
 
-    if (extendedEquals(this.state.type, 'Album', 'Book') && !this.state.artist) {
+    if (extendedEquals(this.state.type, 'Album', 'Book', 'Movie') && this.state.artists.length === 0) {
       isError = true;
-      errors.artistError = `${getArtistType(this.state.type)} is required`;
+      errors.artistsError = `at least 1 ${getArtistType(this.state.type)} is required`;
     } else {
-      errors.artistError = '';
+      errors.artistsError = '';
     }
 
     if (isError) {
@@ -120,9 +120,9 @@ export default class AddItem extends Component {
     });
   }
 
-  getArtists() {
+  getAllArtists() {
     fetch('/api/artists').then(artists => {
-      this.setState({ artists: artists.map(artist => { return {text: artist, value: artist}}) })
+      this.setState({ allArtists: artists.map(artist => { return {text: artist, value: artist}}) })
     });
   }
 
@@ -156,10 +156,11 @@ export default class AddItem extends Component {
       type
     }
     switch (type) {
-      case 'Album': case 'Book': newItem.artist = this.state.artist; break;
+      case 'Album': case 'Book': newItem.artists = this.state.artists; break;
       case 'Movie': 
         newItem.releaseDateDvd = releaseDateDvdStatus !== 'Date' ? undefined : new Date(releaseDateDvd).toISOString();
         newItem.releaseDateDvdStatus = releaseDateDvdStatus;
+        newItem.artists = this.state.artists;
         break;
       case 'TvShow': newItem.ongoing = hasStarted(this.state.releaseDateStatus, this.state.releaseDate) ? this.state.ongoing : true; break;
       case 'Video Game': newItem.platforms = platforms; break;
@@ -173,7 +174,7 @@ export default class AddItem extends Component {
   }
 
   newArtist(e, { value }) {
-    this.setState({ artists: [{text: value, value}, ...this.state.artists]});
+    this.setState({ allArtists: [{text: value, value}, ...this.state.allArtists]});
   }
 
   newPlatform(e, {value}) {
@@ -239,14 +240,14 @@ export default class AddItem extends Component {
             }
           </Form.Field>
           {
-            extendedEquals(this.state.type, 'Album', 'Book') &&
+            extendedEquals(this.state.type, 'Album', 'Book', 'Movie') &&
             <Form.Field required>
               <label>{ getArtistType(this.state.type) }</label>
-              <Dropdown name='artist' fluid selection search allowAdditions placeholder='Artist' options={this.state.artists} 
-                onAddItem={this.newArtist.bind(this)} value={this.state.artist} onChange={(param, data) => this.handleValueChange('artist', data.value)} />
+              <Dropdown name='artists' fluid selection search multiple allowAdditions placeholder='Artists' options={this.state.allArtists} 
+                onAddItem={this.newArtist.bind(this)} value={this.state.artists} onChange={(param, data) => this.handleValueChange('artists', data.value)} />
               {
-                this.state.artistError &&
-                <Message error header={this.state.artistError} />
+                this.state.artistsError &&
+                <Message error header={this.state.artistsError} />
               }
             </Form.Field>
           }

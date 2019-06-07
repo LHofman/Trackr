@@ -365,13 +365,19 @@ router.delete('/userGameObjectives/:id', auth, (req, res, next) => {
 //#endregion userGameObjectives
 
 router.get('/artists', (req, res, next) => {
-  Item.find({ artist : {'$exists': true}}, (err, items) => {
+  Item.find({ artists : {'$exists': true}}, (err, items) => {
     if (err) return res.status(500).send(STATUS_500_MESSAGE);
-    res.json(
-      items.map(item => item.artist)
-        .filter((artist, index, artists) => artists.indexOf(artist) === index)
-        .sort()
-    );
+
+    let allArtists = [];
+    items.map(item => item.artists).forEach(itemArtists => {
+      itemArtists.forEach(artist => {
+        if (allArtists.indexOf(artist) === -1) {
+          allArtists.push(artist);
+        }
+      });
+    });
+
+    res.json(allArtists.sort());
   });
 });
 

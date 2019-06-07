@@ -12,6 +12,7 @@ import getUser from '../../utils/getUser';
 import isLoggedIn from '../../utils/isLoggedIn';
 import statusOptions from './statusOptions';
 import typeOptions from '../items/typeOptions';
+import getArtistType from '../items/getArtistType'
 
 export default class Items extends Component {
   constructor() {
@@ -19,7 +20,7 @@ export default class Items extends Component {
     this.state = {
       activePage: 1,
       artistFilter: '',
-      artists: [],
+      allArtists: [],
       inCollectionFilter: '',
       isSidebarVisible: false,
       platformFilter: '',
@@ -43,14 +44,14 @@ export default class Items extends Component {
   }
 
   componentWillMount() {
-    this.getArtists();
+    this.getAllArtists();
     this.getPlatforms();
     this.getUser();
   }
 
-  getArtists() {
+  getAllArtists() {
     fetch('/api/artists').then(artists => {
-      this.setState({ artists: artists.map(artist => { return {text: artist, value: artist}}) });
+      this.setState({ allArtists: artists.map(artist => { return {text: artist, value: artist}}) });
     });
   }
 
@@ -168,7 +169,7 @@ export default class Items extends Component {
       //statusFilter
       extendedEquals(statusFilter, '', userItem.status) &&
       //artistFilter
-      ((this.state.typeFilter !== 'Album' && this.state.typeFilter !== 'Book') || userItem.item.artist === artistFilter || artistFilter === '') &&
+      ((this.state.typeFilter !== 'Album' && this.state.typeFilter !== 'Book' && this.state.typeFilter !== 'Movie') || userItem.item.artists.indexOf(artistFilter) >= 0 || artistFilter === '') &&
       //platformFilter
       (this.state.typeFilter !== 'Video Game' || userItem.item.platforms.indexOf(platformFilter) >= 0 || platformFilter === '')
     ).sort(this.sort);
@@ -241,11 +242,11 @@ export default class Items extends Component {
             </div>
           }
           {
-            (typeFilter === 'Album' || typeFilter === 'Book') &&
+            (typeFilter === 'Album' || typeFilter === 'Book' || typeFilter === 'Movie') &&
             <Menu.Item>
-              <Label>{typeFilter === 'Album' ? 'Artist' : 'Author'}</Label>
-              <Dropdown placeholder={typeFilter === 'Album' ? 'Artist' : 'Author'} name='artistFilter' selection value={''}
-                options={[{ text: '', value: '' }, ...this.state.artists]}
+              <Label>{getArtistType(typeFilter)}</Label>
+              <Dropdown search placeholder={getArtistType(typeFilter)} name='artistFilter' selection value={''}
+                options={[{ text: '', value: '' }, ...this.state.allArtists]}
                 onChange={(param, data) => this.handleValueChange('artistFilter', data.value)} /><br/>
             </Menu.Item>
           }
