@@ -114,7 +114,7 @@ router.put('/items/:id', auth, (req, res, next) => {
       );
     };
 
-    if (title || title !== item.title) {
+    if (title && title !== item.title) {
       return getTitleId(title, Item).then(title_id => {
         newItem.title_id = title_id;
         update(newItem);
@@ -459,7 +459,7 @@ router.put('/franchises/:id', auth, (req, res, next) => {
       );
     };
 
-    if (title || title !== franchise.title) {
+    if (title && title !== franchise.title) {
       return getTitleId(title, Franchise).then(title_id => {
         newFranchise.title_id = title_id;
         update(newFranchise);
