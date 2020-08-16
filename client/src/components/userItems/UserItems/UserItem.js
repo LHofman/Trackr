@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Icon, List } from 'semantic-ui-react';
 
-import getIcon from '../../utils/getIcon';
+import getIcon from '../../../utils/getIcon';
 
 export default class Item extends Component {
   constructor(props) {
@@ -32,11 +32,13 @@ export default class Item extends Component {
             }<br />
             {
               userItem.item.type === 'Movie' && userItem.item.releaseDateDvd ?
-              `Dvd Release Date: ${
-                userItem.item.releaseDateDvdStatus === 'Date' ? 
-                new Date(userItem.item.releaseDateDvd).toDateString() :
-                userItem.item.releaseDateStatusDvd
-              }` : ''
+              <div>
+                {`Dvd Release Date: ${
+                  userItem.item.releaseDateDvdStatus === 'Date' ? 
+                  new Date(userItem.item.releaseDateDvd).toDateString() :
+                  userItem.item.releaseDateStatusDvd
+                }`}<br />
+              </div> : ''
             }
             Status: {userItem.status}
           </List.Description>

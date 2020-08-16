@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { List } from 'semantic-ui-react';
 
-import getIcon from '../../utils/getIcon';
+import getIcon from '../../../utils/getIcon';
 
 export default class Item extends Component {
   constructor(props) {

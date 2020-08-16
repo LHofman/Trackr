@@ -8,15 +8,15 @@ import EditFranchise from './franchises/EditFranchise'
 import EditGameObjective from './gameObjectives/EditGameObjective';
 import EditItem from './items/EditItem';
 import Franchises from './franchises/Franchises';
-import FranchiseDetails from './franchises/FranchiseDetails';
+import FranchiseDetails from './franchises/FranchiseDetails/FranchiseDetails';
 import GameObjectives from './gameObjectives/GameObjectives';
-import Items from './items/Items';
+import Items from './items/Items/Items';
 import ItemDetails from './items/ItemDetails';
 import Login from './authentication/Login';
 import Logout from './authentication/Logout';
 import PageNotFound from './PageNotFound';
 import Register from './authentication/Register';
-import UserItems from './userItems/UserItems';
+import UserItems from './userItems/UserItems/UserItems';
 
 import getAuthComponent from '../utils/getAuthComponent';
 import getNonAuthComponent from '../utils/getNonAuthComponent';
@@ -39,7 +39,7 @@ export default () => (
             <Route exact path='/objectives/:titleId/subObjectives/:parentId/add' component={getAuthComponent(AddGameObjective)} />
             <Route exact path='/objectives/:titleId/subObjectives/:parentId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
             <Route exact path='/objectives/:titleId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
-            <Route exact path='/myItems' component={UserItems} />
+            <Route exact path='/myItems' component={getAuthComponent(UserItems)} />
             <Route exact path='/login' component={getNonAuthComponent(Login)} />
             <Route exact path='/logout' component={getAuthComponent(Logout)} />
             <Route exact path='/register' component={getNonAuthComponent(Register)} />

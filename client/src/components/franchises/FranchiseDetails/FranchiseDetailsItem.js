@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Confirm, Icon, List } from 'semantic-ui-react';
 
-import canEdit from '../../utils/canEdit';
-import getIcon from '../../utils/getIcon';
+import canEdit from '../../../utils/canEdit';
+import getIcon from '../../../utils/getIcon';
 
 export default class FranchiseDetailsItem extends Component {
   constructor(props) {

@@ -1,17 +1,20 @@
-import moment from 'moment';
 import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import { Link, Redirect } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import { Button, Confirm, Container, Dropdown, Grid, Icon, Input, Label, List, Menu, Pagination, Sidebar } from 'semantic-ui-react';
+import { Button, Confirm, Container, Dropdown, Grid, Icon, Input, Label, List, Pagination } from 'semantic-ui-react';
 
-import Franchise from './Franchise';
+import FilterMenu from '../../UI/FilterMenu/FilterMenu';
+import Franchise from '../Franchise';
 import FranchiseDetailsItem from './FranchiseDetailsItem';
 
-import canEdit from '../../utils/canEdit';
-import extendedEquals from '../../utils/extendedEquals';
-import fetch from '../../utils/fetch';
-import typeOptions from '../items/typeOptions';
+import canEdit from '../../../utils/canEdit';
+import fetch from '../../../utils/fetch';
+import filterItem from '../../items/Items/filterItem';
+import getItemsFilterControls from '../../items/Items/getItemsFilterControls';
+import getItemsFilterDefaults from '../../items/Items/getItemsFilterDefaults';
+import getItemsSortControls from '../../items/Items/getItemsSortControls';
+import sortItems from '../../items/Items/sortItems';
 
 export default class FranchiseDetails extends Component {
 	constructor(props) {
@@ -24,24 +27,20 @@ export default class FranchiseDetails extends Component {
 			confirmationAlert: false,
 			details: '',
       franchisesOptions: [],
-			isSidebarVisible: false,
       itemOptions: [],
       itemOptionsLoaded: false,
 			parentFranchises: [],
       redirect: undefined,
-      releaseDateLowerLimit: '',
-      releaseDateUpperLimit: '',
-      sort: { field: 'title', order: 'asc' },
-      typeFilter: '',
-      titleFilter: ''
+      allArtists: [],
+      allPlatforms: [],
+      filters: getItemsFilterDefaults(),
+      sort: { field: 'title', order: 'asc' }
 		}
 
     this.changePage = this.changePage.bind(this);
+    this.handleFilterChange = this.handleFilterChange.bind(this);
     this.handleSortChange = this.handleSortChange.bind(this);
-    this.onFilterChange = this.onFilterChange.bind(this);
     this.removeItem = this.removeItem.bind(this);
-    this.sort = this.sort.bind(this);
-    this.toggleSidebar = this.toggleSidebar.bind(this);
 		this.toggleConfirmationAlert = this.toggleConfirmationAlert.bind(this);
     this.removeSubFranchise = this.removeSubFranchise.bind(this);
     this.removeFromParentFranchise = this.removeFromParentFranchise.bind(this);
@@ -54,6 +53,8 @@ export default class FranchiseDetails extends Component {
         this.getAllFranchises();
       });
     });
+    this.getAllArtists();
+    this.getAllPlatforms();
 	}
 
 	addItems() {
@@ -97,14 +98,6 @@ export default class FranchiseDetails extends Component {
 	
   changePage(activePage) {
     this.handlePaginationChange(null, { activePage });
-  }
-
-  filterFranchisesOptions(franchises) {
-    return franchises.filter(franchise => 
-      this.state.details.subFranchises.map(subFranchise => subFranchise._id).indexOf(franchise._id) === -1 &&
-      this.state.parentFranchises.map(parentFranchise => parentFranchise._id).indexOf(franchise._id) === -1 &&
-      this.state.details._id !== franchise._id
-    );
   }
 
 	getFranchise() {
@@ -168,6 +161,18 @@ export default class FranchiseDetails extends Component {
 		});
 	}
 
+  getAllArtists() {
+    fetch('/api/artists').then(artists => {
+      this.setState({ allArtists: artists.map(artist => { return { text: artist, value: artist } }) });
+    });
+  }
+
+  getAllPlatforms() {
+    fetch('/api/platforms').then(platforms => {
+      this.setState({allPlatforms: platforms.map(platform => { return { text: platform, value: platform } }) });
+    });
+  }
+
 	handleAddItemsChange(e, { value }) {
 		this.setState({ addItems: value })
 	}
@@ -185,16 +190,18 @@ export default class FranchiseDetails extends Component {
     animateScroll.scrollToTop();
   }
 
-  handleSortChange(event, { name, value }) {
-    this.handleValueChange('sort', { field: name, order: value });
+  handleFilterChange(filter, value) {
+    const filters = {
+      ...this.state.filters,
+      [filter]: value
+    };
+
+    this.setState({ filters });
+    this.setState({ activePage: 1 });
   }
 
-  handleValueChange(name, value) {
-    this.setState({ [name]: value });
-  }
-
-  hideSidebar() {
-    this.setState({ isSidebarVisible: false });
+  handleSortChange(field, order) {
+    this.setState({ sort: { field, order } });
   }
 
 	onDelete() {
@@ -203,15 +210,6 @@ export default class FranchiseDetails extends Component {
 			this.setState({redirect: '/franchises'})
 		);
 	}
-
-  onFilterChange(event) {
-    this.handleValueChange(event.target.name, event.target.value);
-    this.setState({ activePage: 1 });
-  }
-
-  onTitleFilterChange(event) {
-    if (event.key === 'Enter') this.onFilterChange(event);
-  }
 
   removeItem(item) {
     fetch(`/api/franchises/${this.state.details._id}/items/remove`, 'put', true, [item._id]).then(completeItems => {
@@ -250,78 +248,25 @@ export default class FranchiseDetails extends Component {
     });
   }
 
-  sort(i1, i2) {
-    const { field, order } = this.state.sort;
-    const asc = order === 'asc' ? -1 : 1;
-
-    const s1 = field === 'releaseDate' && i1.releaseDateStatus !== 'Date' ? 
-      i1.releaseDateStatus : (
-        field === 'releaseDateDvd' && i1.releaseDateDvdStatus !== 'Date' ? 
-        i1.releaseDateDvdStatus : 
-        i1[field].toString().toLowerCase()
-      );
-    const s2 = field === 'releaseDate' && i2.releaseDateStatus !== 'Date' ? 
-      i2.releaseDateStatus : (
-        field === 'releaseDateDvd' && i2.releaseDateDvdStatus !== 'Date' ? 
-        i2.releaseDateDvdStatus :
-        i2[field].toString().toLowerCase()
-      );
-
-    return s1 < s2 || (s1 === s2 && i1.title.toString().toLowerCase() < i2.title.toString().toLowerCase()) ? asc : asc * -1;
-  }
-
 	toggleConfirmationAlert() {
 		this.setState({ confirmationAlert: !this.state.confirmationAlert });
 	}
-
-  toggleSidebar() {
-    this.setState({ isSidebarVisible: !this.state.isSidebarVisible });
-  }
 
 	render() {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
 		
-
-
 		const { 
       details,
       parentFranchises,
-			releaseDateLowerLimit,
-			releaseDateUpperLimit,
-			sort,
-			titleFilter,
-			typeFilter
     } = this.state;
 	
 
 		let filteredItems = [];
 		if (this.state.details.items) {
-			filteredItems = this.state.details.items
-				.filter(item => 
-					//titleFilter
-					item.title.toString().toLowerCase().indexOf(
-						titleFilter.toString().toLowerCase()
-					) !== -1 &&
-					//typeFilter
-					extendedEquals(typeFilter, '', item.type) &&
-					//releaseDateFilter
-					(
-						(
-							releaseDateLowerLimit === '' || 
-							item.releaseDateStatus !== 'Date' ||
-							moment(releaseDateLowerLimit).isSameOrBefore(item.releaseDate)
-						) &&
-						(
-							releaseDateUpperLimit === '' || 
-							(
-								item.releaseDateStatus === 'Date' && 
-								moment(releaseDateUpperLimit).isSameOrAfter(item.releaseDate)
-							)
-						)
-					)
-				)
-				.sort(this.sort);
+      filteredItems = this.state.details.items
+        .filter(item => filterItem(item, this.state.filters))
+        .sort(sortItems(this.state.sort));
 		}
 
     const begin = (this.state.activePage - 1) * 100;
@@ -365,94 +310,19 @@ export default class FranchiseDetails extends Component {
         <Grid>
           <Grid.Column style={{width: "45%", minWidth: "250px;"}}>
             <h2>Items</h2>
-            <Button onClick={this.toggleSidebar}><Icon name='bars' />Filter/Sort</Button>&nbsp;&nbsp;&nbsp;
-            <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' /><br/><br/>
+            <FilterMenu
+              defaultFilters={this.state.filters}
+              defaultSort={this.state.sort}
+              handleFilterChange={this.handleFilterChange}
+              handleSortChange={this.handleSortChange}
+              getFilterControlsFunction={getItemsFilterControls}
+              getFilterControlsFunctionExtraParams={{
+                allArtists: this.state.allArtists,
+                allPlatforms: this.state.allPlatforms
+              }}
+              getSortControlsFunction={getItemsSortControls} />
             <Dropdown placeholder='Add items' clearable={1} loading={!this.state.itemOptionsLoaded} multiple search minCharacters={2} selection options={this.state.itemOptions} onChange={this.handleAddItemsChange.bind(this)} value={this.state.addItems}/>&nbsp;&nbsp;&nbsp;
             <Button onClick={this.addItems.bind(this)}>Add</Button><br/><br/>
-            <Sidebar as={Menu}
-              animation='overlay'
-              onHide={this.hideSidebar.bind(this)}
-              vertical
-              visible={this.state.isSidebarVisible}
-              width='wide'
-            >
-              <Menu.Item header>Filter By</Menu.Item>
-              <Menu.Item>
-                <Label>Type</Label>
-                <Dropdown placeholder='Type' name='typeFilter' selection value={''}
-                  options={[{ text: '---No Filter---', value: '' }, ...typeOptions]}
-                  onChange={(param, data) => this.handleValueChange('typeFilter', data.value)} /><br/>
-              </Menu.Item>
-              <Menu.Item>
-                <Label>Release Date Lower Limit</Label>
-                <Input type='date' name='releaseDateLowerLimit' value={moment(this.state.releaseDateLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
-              </Menu.Item>
-              <Menu.Item>
-                <Label>Release Date Upper Limit</Label>
-                <Input type='date' name='releaseDateUpperLimit' value={moment(this.state.releaseDateUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
-              </Menu.Item>
-              {
-                this.state.typeFilter === 'Movie' &&
-                <div>
-                  <Menu.Item>
-                    <Label>Dvd Release Date Lower Limit</Label>
-                    <Input type='date' name='releaseDateDvdLowerLimit' value={moment(this.state.releaseDateDvdLowerLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
-                  </Menu.Item>
-                  <Menu.Item>
-                    <Label>Dvd Release Date Upper Limit</Label>
-                    <Input type='date' name='releaseDateDvdUpperLimit' value={moment(this.state.releaseDateDvdUpperLimit).format('YYYY-MM-DD')} onChange={this.onFilterChange} /><br/>
-                  </Menu.Item>
-                </div>
-              }
-              <Menu.Item header>Sort By</Menu.Item>
-              <Menu.Item 
-                name='title'
-                value='asc'
-                active={sort.field === 'title' && sort.order === 'asc'}
-                onClick={this.handleSortChange}>
-                Title (asc)
-              </Menu.Item>
-              <Menu.Item 
-                name='title'
-                value='desc'
-                active={sort.field === 'title' && sort.order === 'desc'}
-                onClick={this.handleSortChange}>
-                Title (desc)
-              </Menu.Item>
-              <Menu.Item 
-                name='releaseDate'
-                value='asc'
-                active={sort.field === 'releaseDate' && sort.order === 'asc'}
-                onClick={this.handleSortChange}>
-                Release Date (asc)
-              </Menu.Item>
-              <Menu.Item 
-                name='releaseDate'
-                value='desc'
-                active={sort.field === 'releaseDate' && sort.order === 'desc'}
-                onClick={this.handleSortChange}>
-                Release Date (desc)
-              </Menu.Item>
-              {
-                this.state.typeFilter === 'Movie' &&
-                <div>
-                  <Menu.Item 
-                    name='releaseDateDvd'
-                    value='asc'
-                    active={sort.field === 'releaseDateDvd' && sort.order === 'asc'}
-                    onClick={this.handleSortChange}>
-                    Dvd Release Date (asc)
-                  </Menu.Item>
-                  <Menu.Item 
-                    name='releaseDateDvd'
-                    value='desc'
-                    active={sort.field === 'releaseDateDvd' && sort.order === 'desc'}
-                    onClick={this.handleSortChange}>
-                    Dvd Release Date (desc)
-                  </Menu.Item>
-                </div>
-              }
-            </Sidebar>
             {this.getPagination(totalPages)}
             <List>
               {items}
