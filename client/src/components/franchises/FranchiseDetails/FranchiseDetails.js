@@ -1,19 +1,20 @@
 import React, { Component } from 'react';
-import MediaQuery from 'react-responsive';
 import { Link, Redirect } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import { Button, Confirm, Container, Dropdown, Grid, Icon, Input, Label, List, Pagination } from 'semantic-ui-react';
+import { Button, Confirm, Container, Dropdown, Grid, List } from 'semantic-ui-react';
 
-import FilterMenu from '../../UI/FilterMenu/FilterMenu';
 import Franchise from '../Franchise';
 import FranchiseDetailsItem from './FranchiseDetailsItem';
+import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
 import filterItem from '../../items/Items/filterItem';
 import getItemsFilterControls from '../../items/Items/getItemsFilterControls';
+import getItemsFilterControlsExtraParams from '../../items/Items/getItemsFilterControlsExtraParams';
 import getItemsFilterDefaults from '../../items/Items/getItemsFilterDefaults';
 import getItemsSortControls from '../../items/Items/getItemsSortControls';
+import itemsSortDefault from '../../items/Items/itemsSortDefault';
 import sortItems from '../../items/Items/sortItems';
 
 export default class FranchiseDetails extends Component {
@@ -21,7 +22,6 @@ export default class FranchiseDetails extends Component {
 		super(props);
 		this.state = {
       activePage: 1,
-      addItems: [],
       addParentFranchises: [],
       addSubFranchises: [],
 			confirmationAlert: false,
@@ -31,15 +31,9 @@ export default class FranchiseDetails extends Component {
       itemOptionsLoaded: false,
 			parentFranchises: [],
       redirect: undefined,
-      allArtists: [],
-      allPlatforms: [],
-      filters: getItemsFilterDefaults(),
-      sort: { field: 'title', order: 'asc' }
+      filterControlsExtraFields: {}
 		}
 
-    this.changePage = this.changePage.bind(this);
-    this.handleFilterChange = this.handleFilterChange.bind(this);
-    this.handleSortChange = this.handleSortChange.bind(this);
     this.removeItem = this.removeItem.bind(this);
 		this.toggleConfirmationAlert = this.toggleConfirmationAlert.bind(this);
     this.removeSubFranchise = this.removeSubFranchise.bind(this);
@@ -53,19 +47,20 @@ export default class FranchiseDetails extends Component {
         this.getAllFranchises();
       });
     });
-    this.getAllArtists();
-    this.getAllPlatforms();
+
+    getItemsFilterControlsExtraParams().then(filterControlsExtraFields => {
+      this.setState({ filterControlsExtraFields });
+    });
 	}
 
-	addItems() {
-		fetch(`/api/franchises/${this.state.details._id}/items/add`, 'put', true, this.state.addItems).then(completeItems => {
+	addItems(itemsToAdd) {
+		fetch(`/api/franchises/${this.state.details._id}/items/add`, 'put', true, itemsToAdd).then(completeItems => {
       const { details, itemOptions } = this.state;
       details.items.push(...completeItems);
       const completeItemsIds = completeItems.map(item => item._id);
       this.setState({ 
         details, 
-        itemOptions: itemOptions.filter(item => completeItemsIds.indexOf(item.key) === -1), 
-        addItems: [] 
+        itemOptions: itemOptions.filter(item => completeItemsIds.indexOf(item.key) === -1)
       });
     });
 	}
@@ -130,51 +125,18 @@ export default class FranchiseDetails extends Component {
       if (!items || items === null) return;
       this.setState({ itemOptions: 
         items.filter(item => this.state.details.items.map(item => item._id).indexOf(item._id) === -1)
-				.sort((i1, i2) => i1.title.toLowerCase() < i2.title.toLowerCase() ? -1 : 1)
+				.sort(sortItems(itemsSortDefault))
         .map(item => { return { key: item._id, value: item._id, text: `${item.title} (${new Date(item.releaseDate).getFullYear()})` } }),
         itemOptionsLoaded: true
       });
 		});
 	}
 
-  getPagination(totalPages) {
-    return (
-      <div>
-        <MediaQuery query='(max-width: 550px)'>
-          <Button icon='fast backward' onClick={() => this.changePage(1)} />
-          <Button icon='step backward' onClick={() => this.changePage(this.state.activePage-1)} />
-          <Label content={`${this.state.activePage}/${totalPages}`} color='teal' />
-          <Button icon='step forward' onClick={() => this.changePage(this.state.activePage+1)} />
-          <Button icon='fast forward' onClick={() => this.changePage(totalPages)} />
-        </MediaQuery>
-        <MediaQuery query='(min-width: 550px)'>
-          <Pagination activePage={this.state.activePage} totalPages={totalPages} onPageChange={this.handlePaginationChange.bind(this)} />
-        </MediaQuery>
-      </div>
-    )
-	}
-	
 	getParentFranchises() {
 		return fetch(`/api/franchises/bySubFranchise/${this.state.details._id}`).then(parentFranchises => {
       if (!parentFranchises || parentFranchises === null) return;
       this.setState({ parentFranchises });
 		});
-	}
-
-  getAllArtists() {
-    fetch('/api/artists').then(artists => {
-      this.setState({ allArtists: artists.map(artist => { return { text: artist, value: artist } }) });
-    });
-  }
-
-  getAllPlatforms() {
-    fetch('/api/platforms').then(platforms => {
-      this.setState({allPlatforms: platforms.map(platform => { return { text: platform, value: platform } }) });
-    });
-  }
-
-	handleAddItemsChange(e, { value }) {
-		this.setState({ addItems: value })
 	}
 
 	handleAddParentFranchisesChange(e, { value }) {
@@ -188,20 +150,6 @@ export default class FranchiseDetails extends Component {
   handlePaginationChange(e, { activePage }) {
     this.setState({ activePage });
     animateScroll.scrollToTop();
-  }
-
-  handleFilterChange(filter, value) {
-    const filters = {
-      ...this.state.filters,
-      [filter]: value
-    };
-
-    this.setState({ filters });
-    this.setState({ activePage: 1 });
-  }
-
-  handleSortChange(field, order) {
-    this.setState({ sort: { field, order } });
   }
 
 	onDelete() {
@@ -256,26 +204,9 @@ export default class FranchiseDetails extends Component {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
 		
-		const { 
-      details,
-      parentFranchises,
-    } = this.state;
+		const { details, parentFranchises } = this.state;
 	
-
-		let filteredItems = [];
-		if (this.state.details.items) {
-      filteredItems = this.state.details.items
-        .filter(item => filterItem(item, this.state.filters))
-        .sort(sortItems(this.state.sort));
-		}
-
-    const begin = (this.state.activePage - 1) * 100;
-    const totalPages = Math.ceil(filteredItems.length / 100, 0);
-    const items = filteredItems
-      .slice(begin, begin + 100)
-      .map(item => <FranchiseDetailsItem key={item._id} franchise={details} item={item} onDelete={this.removeItem} />);
-
-    let subFranchises = [];
+		let subFranchises = [];
     if (details.subFranchises) {
       subFranchises = details.subFranchises
         .sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
@@ -308,28 +239,31 @@ export default class FranchiseDetails extends Component {
 					</div>
         }
         <Grid>
-          <Grid.Column style={{width: "45%", minWidth: "250px;"}}>
-            <h2>Items</h2>
-            <FilterMenu
-              defaultFilters={this.state.filters}
-              defaultSort={this.state.sort}
-              handleFilterChange={this.handleFilterChange}
-              handleSortChange={this.handleSortChange}
-              getFilterControlsFunction={getItemsFilterControls}
-              getFilterControlsFunctionExtraParams={{
-                allArtists: this.state.allArtists,
-                allPlatforms: this.state.allPlatforms
+          <Grid.Column style={{width: "45%", minWidth: "250px"}}>
+            <PaginatedList
+              title='Items'
+              items={this.state.details.items}
+              createItemComponent={(item) => 
+                <FranchiseDetailsItem key={item._id} franchise={details} item={item} onDelete={this.removeItem} />
+              }
+              addItemToList={{
+                isLoading: !this.state.itemOptionsLoaded,
+                options: this.state.itemOptions,
+                addItems: this.addItems.bind(this)
               }}
-              getSortControlsFunction={getItemsSortControls} />
-            <Dropdown placeholder='Add items' clearable={1} loading={!this.state.itemOptionsLoaded} multiple search minCharacters={2} selection options={this.state.itemOptions} onChange={this.handleAddItemsChange.bind(this)} value={this.state.addItems}/>&nbsp;&nbsp;&nbsp;
-            <Button onClick={this.addItems.bind(this)}>Add</Button><br/><br/>
-            {this.getPagination(totalPages)}
-            <List>
-              {items}
-            </List>
-            {this.getPagination(totalPages)}
+              filtersConfig={{
+                defaults: getItemsFilterDefaults(),
+                getControls: getItemsFilterControls,
+                getControlsExtraParams: this.state.filterControlsExtraFields,
+                filterItem: filterItem
+              }}
+              sortConfig={{
+                defaults: itemsSortDefault,
+                getControls: getItemsSortControls,
+                sortItems: sortItems
+              }} />
           </Grid.Column>
-          <Grid.Column style={{width: "45%", minWidth: "250px;"}}>
+          <Grid.Column style={{width: "45%", minWidth: "250px"}}>
             <h2>Sub Franchises</h2>
             <Dropdown placeholder='Add subfranchises' clearable={1} multiple search minCharacters={2} selection options={this.state.franchisesOptions} onChange={this.handleAddSubFranchisesChange.bind(this)} value={this.state.addSubFranchises}/>&nbsp;&nbsp;&nbsp;
             <Button onClick={this.addSubFranchises.bind(this)}>Add</Button><br/><br/>

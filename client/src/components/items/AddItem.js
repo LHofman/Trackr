@@ -4,10 +4,10 @@ import { Button, Checkbox, Dropdown, Form, Icon, Message, TextArea } from 'seman
 
 import fetch from '../../utils/fetch';
 import getArtistType from './getArtistType';
+import { getTypeOptions } from './getFieldOptions';
 import getUser from '../../utils/getUser';
 import hasStarted from '../../utils/hasStarted';
 import releaseDateStatusOptions from './releaseDateStatusOptions';
-import typeOptions from './typeOptions';
 
 export default class AddItem extends Component {
   constructor() {
@@ -190,7 +190,7 @@ export default class AddItem extends Component {
 
     for (let i = 0; i < this.state.links.length; i++) {
       let link = this.state.links[i];
-      if (link.index == index) {
+      if (link.index === index) {
         found = true;
         continue;
       }
@@ -233,7 +233,7 @@ export default class AddItem extends Component {
           <Form.Field required>
             <label>Type</label>
             <Dropdown name='type' fluid selection value={this.state.type}
-              options={typeOptions} onChange={(param, data) => this.handleValueChange('type', data.value)} />
+              options={getTypeOptions()} onChange={(param, data) => this.handleValueChange('type', data.value)} />
           </Form.Field>
           <Form.Field required>
             <label>Title</label>

@@ -1,13 +1,13 @@
 import React from 'react';
 
 import getFilterControl from '../../UI/FilterMenu/getFilterControl';
-import typeOptions from '../typeOptions';
 import getArtistType from '../getArtistType';
+import { getTypeOptions } from '../getFieldOptions';
 
 export default (filters, handleFilterChange, extraParams = {}) => (
   <div>
     { getFilterControl('type', 'Select', handleFilterChange, {
-      options: typeOptions,
+      options: getTypeOptions(),
       value: filters.type
     }) }
     { getFilterControl('releaseDateLowerLimit', 'Date', handleFilterChange, {

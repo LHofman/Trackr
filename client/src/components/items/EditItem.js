@@ -6,9 +6,9 @@ import { Button, Checkbox, Dropdown, Form, Icon, Message, TextArea } from 'seman
 import canEdit from '../../utils/canEdit';
 import fetch from '../../utils/fetch';
 import getArtistType from './getArtistType';
+import { getTypeOptions } from './getFieldOptions';
 import hasStarted from '../../utils/hasStarted';
 import releaseDateStatusOptions from './releaseDateStatusOptions';
-import typeOptions from './typeOptions';
 
 export default class EditItem extends Component {
   constructor(props) {
@@ -218,7 +218,7 @@ export default class EditItem extends Component {
 
     for (let i = 0; i < this.state.links.length; i++) {
       let link = this.state.links[i];
-      if (link.index == index) {
+      if (link.index === index) {
         found = true;
         continue;
       }
@@ -257,7 +257,7 @@ export default class EditItem extends Component {
         <Form error onSubmit={this.handleSubmit.bind(this)}>
           <Form.Field required>
             <label>Type</label>
-            <Dropdown fluid selection options={typeOptions} name='type' value={this.state.type} onChange={(param, data) => this.handleValueChange('type', data.value)} />
+            <Dropdown fluid selection options={getTypeOptions()} name='type' value={this.state.type} onChange={(param, data) => this.handleValueChange('type', data.value)} />
           </Form.Field>
           <Form.Field required>
             <label>Title</label>

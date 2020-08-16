@@ -6,10 +6,13 @@ import statusOptions from '../statusOptions';
 
 export default (filters, handleFilterChange, extraParams = {}) => (
   <div>
-    {getItemsFilterControls(filters, handleFilterChange, extraParams)}
-    {getFilterControl('inCollection', 'Select', handleFilterChange, {
+    { getItemsFilterControls(filters, handleFilterChange, extraParams) }
+    { getFilterControl('inCollection', 'Select', handleFilterChange, {
       options: [{ text: 'In Collection', value: 'true' }, { text: 'Not In Collection', value: 'false' }]
-    })}
-    {getFilterControl('status', 'Select', handleFilterChange, { options: statusOptions({ type: filters.type }) })}
+    }) }
+    {
+      filters.type &&
+      getFilterControl('status', 'Select', handleFilterChange, { options: statusOptions({ type: filters.type }) })
+    }
   </div>
 );

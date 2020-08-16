@@ -11,9 +11,8 @@ export default (type, value, filter) => {
     case 'List': return value.indexOf(filter) >= 0;
     case 'Select': return valueString === filterString;
     case 'Text': return valueString.includes(filterString);
+    default: return true;
   }
-
-  return true;
 }
 
 const checkDateFilter = (value, filter) => {
