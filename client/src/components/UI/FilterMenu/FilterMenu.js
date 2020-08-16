@@ -10,9 +10,21 @@ export default class FilterMenu extends Component {
       sort: props.defaultSort
     }
 
+    this.clearAll = this.clearAll.bind(this);
     this.handleSortChange = this.handleSortChange.bind(this);
     this.handleFilterChange = this.handleFilterChange.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
+  }
+
+  clearAll() {
+    const defaultFilters = this.props.defaultFilters;
+    const defaultSort = this.props.defaultSort;
+    this.setState({
+      filters: defaultFilters,
+      sort: defaultSort
+    });
+    this.props.handleFilterChange(defaultFilters);
+    this.props.handleSortChange(defaultSort);
   }
 
   onTitleFilterChange(event) {
@@ -26,12 +38,13 @@ export default class FilterMenu extends Component {
     };
 
     this.setState({ filters });
-    this.props.handleFilterChange(filter, value);
+    this.props.handleFilterChange(filters);
   }
 
   handleSortChange(name, value) {
-    this.setState({ sort: { field: name, order: value } });
-    this.props.handleSortChange(name, value);
+    const newSort = { field: name, order: value };
+    this.setState({ sort: newSort });
+    this.props.handleSortChange(newSort);
   }
 
   toggleSidebar() {
@@ -55,6 +68,8 @@ export default class FilterMenu extends Component {
           visible={this.state.isSidebarVisible}
           width='wide'
         >
+          <Menu.Item header></Menu.Item>
+          <Menu.Item><Button primary onClick={() => this.clearAll()}>Clear All</Button></Menu.Item>
           <Menu.Item header>Filter By</Menu.Item>
           { this.props.getFilterControlsFunction(
             this.state.filters,

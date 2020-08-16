@@ -61,18 +61,13 @@ export default class PaginatedList extends Component {
     animateScroll.scrollToTop();
   }
 
-  handleFilterChange(filter, value) {
-    const filters = {
-      ...this.state.filters,
-      [filter]: value
-    };
-
+  handleFilterChange(filters) {
     this.setState({ filters });
     this.setState({ activePage: 1 });
   }
 
-  handleSortChange(field, order) {
-    this.setState({ sort: { field, order } });
+  handleSortChange(newSort) {
+    this.setState({ sort: newSort });
   }
 
   render() {
@@ -97,8 +92,8 @@ export default class PaginatedList extends Component {
           <Button positive circular floated='right' icon='plus' as={Link} to={this.props.createItemUrl} />
         }
         <FilterMenu
-          defaultFilters={this.state.filters}
-          defaultSort={this.state.sort}
+          defaultFilters={this.props.filtersConfig.defaults}
+          defaultSort={this.props.sortConfig.defaults}
           handleFilterChange={this.handleFilterChange}
           handleSortChange={this.handleSortChange}
           getFilterControlsFunction={this.props.filtersConfig.getControls}
