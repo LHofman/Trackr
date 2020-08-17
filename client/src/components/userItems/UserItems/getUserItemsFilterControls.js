@@ -4,9 +4,9 @@ import getFilterControl from '../../UI/FilterMenu/getFilterControl';
 import getItemsFilterControls from '../../items/Items/getItemsFilterControls';
 import statusOptions from '../statusOptions';
 
-export default (filters, handleFilterChange, extraParams = {}) => (
+export default (extraParams) => (filters, handleFilterChange) => (
   <div>
-    { getItemsFilterControls(filters, handleFilterChange, extraParams) }
+    { getItemsFilterControls(extraParams)(filters, handleFilterChange) }
     { getFilterControl('inCollection', 'Select', handleFilterChange, {
       options: [{ text: 'In Collection', value: 'true' }, { text: 'Not In Collection', value: 'false' }]
     }) }

@@ -97,7 +97,6 @@ export default class PaginatedList extends Component {
           handleFilterChange={this.handleFilterChange}
           handleSortChange={this.handleSortChange}
           getFilterControlsFunction={this.props.filtersConfig.getControls}
-          getFilterControlsFunctionExtraParams={this.props.filtersConfig.getControlsExtraParams}
           getSortControlsFunction={this.props.sortConfig.getControls} />
         {
           this.props.addItemToList &&

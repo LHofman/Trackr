@@ -47,8 +47,7 @@ export default class Items extends Component {
         createItemComponent={(item) => <Item key={item._id} item={item}></Item>}
         filtersConfig={{
           defaults: getItemsFilterDefaults(),
-          getControls: getItemsFilterControls,
-          getControlsExtraParams: this.state.filterControlsExtraFields,
+          getControls: getItemsFilterControls(this.state.filterControlsExtraFields),
           filterItem: filterItem
         }}
         sortConfig={{

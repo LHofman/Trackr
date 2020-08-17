@@ -8,7 +8,7 @@ import filterUserItem from './filterUserItem';
 import getItemsFilterControlsExtraParams from '../../items/Items/getItemsFilterControlsExtraParams';
 import getUser from '../../../utils/getUser';
 import getUserItemsFilterControls from './getUserItemsFilterControls';
-import getUserItemsSortControls from './getUserItemsSortControls';
+import getItemsSortControls from '../../items/Items/getItemsSortControls';
 import getUserItemsFilterDefaults from './getUserItemsFilterDefaults';
 import itemsSortDefault from '../../items/Items/itemsSortDefault';
 import sortUserItems from './sortUserItems';
@@ -47,13 +47,12 @@ export default class Items extends Component {
         createItemComponent={(userItem) => <UserItem key={userItem._id} userItem={userItem}></UserItem>}
         filtersConfig={{
           defaults: getUserItemsFilterDefaults(),
-          getControls: getUserItemsFilterControls,
-          getControlsExtraParams: this.state.filterControlsExtraFields,
+          getControls: getUserItemsFilterControls(this.state.filterControlsExtraFields),
           filterItem: filterUserItem
         }}
         sortConfig={{
           defaults: itemsSortDefault,
-          getControls: getUserItemsSortControls,
+          getControls: getItemsSortControls,
           sortItems: sortUserItems
         }} />
     );

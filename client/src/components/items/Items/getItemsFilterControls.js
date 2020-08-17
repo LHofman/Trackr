@@ -4,7 +4,7 @@ import getFilterControl from '../../UI/FilterMenu/getFilterControl';
 import getArtistType from '../getArtistType';
 import { getTypeOptions } from '../getFieldOptions';
 
-export default (filters, handleFilterChange, extraParams = {}) => (
+export default (extraParams) => (filters, handleFilterChange) => (
   <div>
     { getFilterControl('type', 'Select', handleFilterChange, {
       options: getTypeOptions(),

@@ -73,8 +73,7 @@ export default class FilterMenu extends Component {
           <Menu.Item header>Filter By</Menu.Item>
           { this.props.getFilterControlsFunction(
             this.state.filters,
-            this.handleFilterChange,
-            this.props.getFilterControlsFunctionExtraParams || {}
+            this.handleFilterChange
           ) }
 
           <Menu.Item header>Sort By</Menu.Item>

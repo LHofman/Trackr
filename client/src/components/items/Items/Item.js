@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { List } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
+import { isDateStatusValid } from '../../../utils/dateUtils';
 
 export default class Item extends Component {
   constructor(props) {
@@ -25,11 +26,11 @@ export default class Item extends Component {
               item.releaseDateStatus
             }<br />
             {
-              item.type === 'Movie' && item.releaseDateDvd ?
+              item.type === 'Movie' && isDateStatusValid(item.releaseDateDvdStatus) ?
               `Dvd Release Date: ${
                 item.releaseDateDvdStatus === 'Date' ? 
                 new Date(item.releaseDateDvd).toDateString() :
-                item.releaseDateStatusDvd
+                item.releaseDateDvdStatus
               }` : ''
             }
           </List.Description>

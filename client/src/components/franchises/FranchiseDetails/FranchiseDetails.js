@@ -253,8 +253,7 @@ export default class FranchiseDetails extends Component {
               }}
               filtersConfig={{
                 defaults: getItemsFilterDefaults(),
-                getControls: getItemsFilterControls,
-                getControlsExtraParams: this.state.filterControlsExtraFields,
+                getControls: getItemsFilterControls(this.state.filterControlsExtraFields),
                 filterItem: filterItem
               }}
               sortConfig={{

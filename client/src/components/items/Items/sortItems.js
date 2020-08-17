@@ -17,8 +17,13 @@ export default ({ field, order }) => (item1, item2) => {
   }
   
   if (sortValue === 0) {
-    sortValue = sort('', item1.title, item2.title);
+    sortValue = sort('', item1.title, item2.title) * 2;
   }
   
+  //If sortValue is larger than 1 or smaller than -1, skip the order
+  if (Math.abs(sortValue) > 1) {
+    return sortValue / Math.abs(sortValue);
+  }
+
   return sortValue < 1 ? asc : asc * -1;
 }
