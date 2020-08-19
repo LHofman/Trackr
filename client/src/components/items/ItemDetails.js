@@ -51,8 +51,9 @@ export default class ItemDetails extends Component {
 	getUserItem() {
 		if (!isLoggedIn()) return;
 		fetch(`/api/userItems/${getUser().id}/${this.state.details._id}`).then(userItem => {
-			if (!userItem || userItem === null) throw new Error('userItem not found');
-			this.setState({userItem});
+			if (userItem) {
+				this.setState({userItem});
+			}
 		}).catch(console.log);
 	}
 

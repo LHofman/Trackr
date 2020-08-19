@@ -4,10 +4,6 @@ import { isDateStatusValid } from './dateUtils';
 
 export default (type, value1, value2) => {
 
-  if (value1 === undefined) {
-    const i = 5;
-  }
-
   switch (type) {
     case 'Date': return sortDates(value1, value2);
     case 'Number': return sortValues(value1 < value2);

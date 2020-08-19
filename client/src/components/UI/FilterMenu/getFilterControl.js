@@ -40,4 +40,4 @@ const createControl = (label, input) => (
     <Label>{ label }</Label>
     { input } <br/>
   </Menu.Item>
-)
+);

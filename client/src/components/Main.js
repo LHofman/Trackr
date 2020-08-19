@@ -1,12 +1,12 @@
 import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
-import AddFranchise from './franchises/AddFranchise';
-import AddGameObjective from './gameObjectives/AddGameObjective';
-import AddItem from './items/AddItem';
-import EditFranchise from './franchises/EditFranchise'
-import EditGameObjective from './gameObjectives/EditGameObjective';
-import EditItem from './items/EditItem';
+import AddFranchise from './franchises/FranchiseForm/AddFranchise';
+import AddGameObjective from './gameObjectives/GameObjectiveForm/AddGameObjective';
+import AddItem from './items/ItemForms/AddItem';
+import EditFranchise from './franchises/FranchiseForm/EditFranchise'
+import EditGameObjective from './gameObjectives/GameObjectiveForm/EditGameObjective';
+import EditItem from './items/ItemForm/EditItem';
 import Franchises from './franchises/Franchises';
 import FranchiseDetails from './franchises/FranchiseDetails/FranchiseDetails';
 import GameObjectives from './gameObjectives/GameObjectives';

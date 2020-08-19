@@ -1,5 +1,5 @@
 export default type => {
-  switch(type) {
+  switch (type) {
     case 'Album': return 'Artist';
     case 'Book': return 'Author';
     case 'Movie': return 'Director';

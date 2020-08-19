@@ -6,6 +6,9 @@ export default () => new Promise((resolve => {
     getPlatformOptions()
   ];
   Promise.all(fields).then(values => {
-    resolve(values.reduce((acc, field) => { return {...acc, ...field} }, {}));
+    resolve({
+      allArtists: values[0],
+      allPlatforms: values[1]
+    });
   });
 }))

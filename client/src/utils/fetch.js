@@ -5,6 +5,7 @@ export default (url, method, authorization, body) => {
         method,
         headers,
         body: JSON.stringify(body)
-    }).then(res => res.ok ? res.json() : Promise.reject(res))
-        .catch(Promise.reject.bind(Promise));
+    }).then(res => {
+        return res.ok ? res.json() : Promise.reject(res);
+    }).catch(Promise.reject.bind(Promise));
 }
