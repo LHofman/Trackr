@@ -3,7 +3,7 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 
 import AddFranchise from './franchises/FranchiseForm/AddFranchise';
 import AddGameObjective from './gameObjectives/GameObjectiveForm/AddGameObjective';
-import AddItem from './items/ItemForms/AddItem';
+import AddItem from './items/ItemForm/AddItem';
 import EditFranchise from './franchises/FranchiseForm/EditFranchise'
 import EditGameObjective from './gameObjectives/GameObjectiveForm/EditGameObjective';
 import EditItem from './items/ItemForm/EditItem';
