@@ -16,16 +16,6 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
-  "proxy": {
-    "/api/*": {
-      "target": "http://localhost:3001",
-      "secure": "false"
-    },
-    "/users/*": {
-      "target": "http://localhost:3001",
-      "secure": "false"
-    }
-  },
   "devDependencies": {
     "concurrently": "^3.6.1"
   }
