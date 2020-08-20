@@ -23,11 +23,6 @@ export default class PaginatedList extends Component {
     this.handleSortChange = this.handleSortChange.bind(this);
   }
   
-	addItems() {
-    this.props.addItemToList.addItems(this.state.addItems);
-    this.setState({ addItems: [] });
-	}
-	
   changePage(activePage) {
     this.handlePaginationChange(null, { activePage });
   }
@@ -98,20 +93,6 @@ export default class PaginatedList extends Component {
           handleSortChange={this.handleSortChange}
           getFilterControlsFunction={this.props.filtersConfig.getControls}
           getSortControlsFunction={this.props.sortConfig.getControls} />
-        {
-          this.props.addItemToList &&
-          <div>
-            <Dropdown
-              placeholder='Add items'
-              clearable={1} multiple search selection
-              loading={this.props.addItemToList.isLoading}
-              minCharacters={this.props.addItemToList.minCharacters || 2}
-              options={this.props.addItemToList.options}
-              onChange={this.handleAddItemsChange.bind(this)}
-              value={this.state.addItems}/>&nbsp;&nbsp;&nbsp;
-            <Button onClick={this.addItems.bind(this)}>Add</Button><br/><br/>
-          </div>
-        }
         {this.getPagination(totalPages)}
         <List>
           {items}

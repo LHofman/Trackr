@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Checkbox, Confirm, Dropdown, Icon, List, Popup, Rating } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Dropdown, Icon, Popup, Rating } from 'semantic-ui-react';
 
 import ItemDetailsFranchise from './ItemDetailsFranchise';
 
@@ -12,6 +12,7 @@ import hasStarted from '../../utils/hasStarted';
 import isLoggedIn from '../../utils/isLoggedIn';
 import statusOptions from '../userItems/statusOptions';
 import getArtistType from './getArtistType';
+import LinkedItems from '../UI/LinkedItems/LinkedItems';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -120,32 +121,11 @@ export default class ItemDetails extends Component {
 	}
 
   removeFromFranchise(franchise) {
-    fetch(`/api/franchises/${franchise._id}/items/remove`, 'put', true, [this.state.details._id]).then(completeItems => {
-			let { franchises, franchiseOptions } = this.state;
-      franchiseOptions.push({ key: franchise._id, value: franchise._id, text: franchise.title })
-      franchises = franchises.filter(franchise2 => franchise2._id !== franchise._id)
-      this.setState({ 
-        franchises, 
-        franchiseOptions
-      });
-    });
+    return fetch(`/api/franchises/${franchise._id}/items/remove`, 'put', true, [this.state.details._id]);
   }
 
-	handleAddFranchisesChange(e, { value }) {
-		this.setState({ addFranchises: value })
-	}
-
-	addFranchises() {
-		fetch(`/api/franchises/addItemToMultiple/${this.state.details._id}`, 'put', true, this.state.addFranchises).then(completeFranchises => {
-      const { franchises, franchiseOptions } = this.state;
-      franchises.push(...completeFranchises);
-      const completeFranchisesIds = completeFranchises.map(franchise => franchise._id);
-      this.setState({ 
-        franchises, 
-        franchiseOptions: franchiseOptions.filter(franchise => completeFranchisesIds.indexOf(franchise.key) === -1), 
-        addFranchises: [] 
-      });
-    });
+	addFranchises(addFranchises) {
+		return fetch(`/api/franchises/addItemToMultiple/${this.state.details._id}`, 'put', true, addFranchises);
 	}
 	
 	getAllFranchises() {
@@ -163,9 +143,6 @@ export default class ItemDetails extends Component {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
 		
-		const franchises = this.state.franchises.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
-			.map(franchise => <ItemDetailsFranchise key={franchise._id} item={this.state.details} franchise={franchise} onDelete={this.removeFromFranchise} />)
-
 		const details = this.state.details;
 
 		const links = (details.links && details.links.length > 0) ? details.links.map(link => <li key={link.index}>
@@ -270,13 +247,28 @@ export default class ItemDetails extends Component {
 						<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert('delete')}>Delete</Button>	
           ]
 				}<br/><br/>
-				<h2>In Franchises</h2>
-				<Dropdown placeholder='Add to franchises' clearable={1} multiple search selection options={this.state.franchiseOptions} onChange={this.handleAddFranchisesChange.bind(this)} value={this.state.addFranchises}/>&nbsp;&nbsp;&nbsp;
-				<Button onClick={this.addFranchises.bind(this)}>Add</Button><br/><br/>
-				<List bulleted>
-					{franchises}
-				</List>
+				<LinkedItems
+					title='In Franchises'
+					options={ this.state.franchiseOptions }
+					items={ this.state.franchises }
+					createItemComponent={ createFranchiseItemComponent(this.state.details) }
+					removeItem={ this.removeFromFranchise }
+					addItems={ this.addFranchises.bind(this) }
+					parentComponent={ this }
+					stateKeyItems='franchises'
+					stateKeyOptions='franchiseOptions'
+					placeholder='Add to franchises' />
       </div>
     );
   }
+}
+
+const createFranchiseItemComponent = (details) => (onDelete) => (franchise) => {
+  return (
+		<ItemDetailsFranchise
+			key={ franchise._id }
+			item={ details }
+			franchise={ franchise }
+			onDelete={ onDelete } />
+	)
 }
