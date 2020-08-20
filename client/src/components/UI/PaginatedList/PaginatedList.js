@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import { Link } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import { Button, Dropdown, Label, List, Pagination } from 'semantic-ui-react';
+import { Button, Label, List, Pagination } from 'semantic-ui-react';
 
 import FilterMenu from '../../UI/FilterMenu/FilterMenu';
 

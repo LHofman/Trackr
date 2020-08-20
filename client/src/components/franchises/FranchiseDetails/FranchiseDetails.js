@@ -4,7 +4,6 @@ import { Button, Confirm, Container, Grid } from 'semantic-ui-react';
 
 import Franchise from '../Franchise';
 import FranchiseDetailsItem from './FranchiseDetailsItem';
-import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';

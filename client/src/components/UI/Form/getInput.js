@@ -103,19 +103,16 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
   }
 }
 
-const createCreateInput = (label, error) => (input, config = {}) => {
-  if (config.noFormField) return input;
-  return (
-    <Form.Field
-      key={ (config.key || config.key === 0) ? config.key : undefined }
-      required={ (config.validation || {}).required ? true : false }
-      width={ config.width || 16 } >
-      { !config.hideLabel && <label>{ label }</label> }
-      { input }
-      { error && <Message error header={error} /> }
-    </Form.Field>
-  );
-}
+const createCreateInput = (label, error) => (input, config = {}) => (
+  <Form.Field
+    key={ (config.key || config.key === 0) ? config.key : undefined }
+    required={ (config.validation || {}).required ? true : false }
+    width={ config.width || 16 } >
+    { !config.hideLabel && <label>{ label }</label> }
+    { input }
+    { error && <Message error header={error} /> }
+  </Form.Field>
+);
 
 const onInputChangeEvent = (event, syncValue) => {
   syncValue(event.target.value);
