@@ -112,13 +112,23 @@ export default class MyForm extends Component {
   render() {
     const formFields = createFieldsFromConfig(this, this.handleValueChange.bind(this));
 
+    let cancelButtonAttributes = {};
+    if (this.props.cancelCallback) {
+      cancelButtonAttributes = { onClick: this.props.cancelCallback };
+    } else {
+      cancelButtonAttributes = {
+        as: Link,
+        to: this.props.cancelCallback || '/'
+      };
+    }
+
     return (
       <div>
         <h1>{ this.props.title }</h1>
         <Form error onSubmit={this.handleSubmit.bind(this)}>
           { formFields }
-          <Button positive floated='left' type='submit'>{ this.props.submitButtonText }</Button>
-          <Button negative floated='right' as={Link} to={ this.props.cancelUrl || '/'}>Cancel</Button>
+          <Button positive floated='left' type='submit'>{ this.props.submitButtonText || 'Submit' }</Button>
+          <Button negative floated='right' { ...cancelButtonAttributes }>Cancel</Button>
         </Form>
       </div>
     );

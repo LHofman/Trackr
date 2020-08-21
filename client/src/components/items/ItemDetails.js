@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Checkbox, Confirm, Dropdown, Icon, Popup, Rating, List, Modal, Radio } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Dropdown, Icon, Popup, Rating, List, Modal, Radio, Grid, Card } from 'semantic-ui-react';
 
 import ItemDetailsFranchise from './ItemDetailsFranchise';
 
@@ -15,6 +15,7 @@ import { isFinished, getFinishText, getFinishedText } from '../userItems/finishI
 import statusOptions from '../userItems/statusOptions';
 import getArtistType from './getArtistType';
 import LinkedItems from '../UI/LinkedItems/LinkedItems';
+import MyForm from '../UI/Form/MyForm';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -31,7 +32,11 @@ export default class ItemDetails extends Component {
 			addFranchises: [],
 			completeItemModal: false,
 			timeCompleted: 'now',
-			timeCompletedCustom: moment(new Date()).format('YYYY-MM-DD')
+			timeCompletedCustom: moment(new Date()).format('YYYY-MM-DD'),
+			addReviewModal: false,
+			reviewRating: 0,
+			reviewText: '',
+			allReviews: []
 		}
 
 		this.cancelComplete = this.cancelComplete.bind(this);
@@ -58,6 +63,7 @@ export default class ItemDetails extends Component {
 		}).then(() => {
 			this.getFranchises().then(() => this.getAllFranchises());
 			this.getUserItem();
+			this.getReviews(this.state.details);
 		});
 	}
 
@@ -88,6 +94,12 @@ export default class ItemDetails extends Component {
 				this.setState({ userItem });
 			}
 		}).catch(console.log);
+	}
+
+	getReviews(item) {
+		fetch(`/api/review/${item._id}`).then(allReviews => {
+			this.setState({ allReviews });
+		});
 	}
 
   followItem(e) {
@@ -198,13 +210,16 @@ export default class ItemDetails extends Component {
 	
   updateUserItem(userItem) {
 		fetch(`/api/userItems/${userItem._id}`, 'put', true, userItem)
+			.then(res => {
+				console.log(res);
+			})
 			.catch(res => {
 				res.json().then(body => {
 					console.log(body);
 				});
 			});
 
-    this.setState({ userItem, completeItemModal: false });
+    this.setState({ userItem, completeItemModal: false, addReviewModal: false });
 	}
 	
 	addFranchises(addFranchises) {
@@ -213,7 +228,37 @@ export default class ItemDetails extends Component {
 	
   removeFromFranchise(franchise) {
     return fetch(`/api/franchises/${franchise._id}/items/remove`, 'put', true, [this.state.details._id]);
-  }
+	}
+	
+	openReviewModel() {
+		this.setState({ addReviewModal: true });
+	}
+
+	closeReviewModel() {
+		this.setState({ addReviewModal: false });
+	}
+
+	addReview(formComponent) {
+		const form = formComponent.state.inputs;
+
+		const review = {
+			rating: form.rating.value,
+			review: form.review.value,
+			timestamp: new Date()
+		}
+
+		const reviews = this.state.allReviews;
+		reviews.push({
+			...review,
+			author: getUser().username
+		});
+		this.setState({ allReviews: reviews });
+
+		const userItem = this.state.userItem;
+		userItem.reviews = [ ...(userItem.reviews || []), review ];
+
+		this.updateUserItem(userItem);
+	}
 
 	render() {
 		const redirect = this.state.redirect;
@@ -404,18 +449,69 @@ export default class ItemDetails extends Component {
           ]
 				}
 				<br/><br/><br/><br/>
-				<LinkedItems
-					title='In Franchises'
-					options={ this.state.franchiseOptions }
-					optionsLoaded={ this.state.franchiseOptionsLoaded }
-					items={ this.state.franchises }
-					createItemComponent={ createFranchiseItemComponent(this.state.details) }
-					removeItem={ this.removeFromFranchise }
-					addItems={ this.addFranchises.bind(this) }
-					parentComponent={ this }
-					stateKeyItems='franchises'
-					stateKeyOptions='franchiseOptions'
-					placeholder='Add to franchises' />
+				<Grid>
+          <Grid.Column width={6}>
+						<LinkedItems
+							title='In Franchises'
+							options={ this.state.franchiseOptions }
+							optionsLoaded={ this.state.franchiseOptionsLoaded }
+							items={ this.state.franchises }
+							createItemComponent={ createFranchiseItemComponent(this.state.details) }
+							removeItem={ this.removeFromFranchise }
+							addItems={ this.addFranchises.bind(this) }
+							parentComponent={ this }
+							stateKeyItems='franchises'
+							stateKeyOptions='franchiseOptions'
+							placeholder='Add to franchises' />
+					</Grid.Column>
+					<Grid.Column width={10}>
+						<h2>
+							Reviews
+							{
+								userItem && 
+								<Button style={{ margin: '1em' }} onClick={ this.openReviewModel.bind(this) }>Add new Review</Button>
+							}
+						</h2>
+						<Modal open={ this.state.addReviewModal }>
+							<Modal.Content>
+								<MyForm
+									title='Add review'
+									inputs={{
+										rating: {
+											type: 'Rating',
+											hideLabel: true
+										},
+										review: {
+											type: 'TextArea',
+											hideLabel: true,
+											validation: {
+												required: true
+											}
+										}
+									}}
+									submit={ this.addReview.bind(this) }
+									cancelCallback={ this.closeReviewModel.bind(this) } />
+								<br/><br/>
+							</Modal.Content>
+						</Modal>
+						<Card.Group>
+							{
+								this.state.allReviews.map((review) => (
+									<Card fluid>
+										<Card.Content header={
+											<Rating icon='star' defaultRating={ review.rating } maxRating={ 10 } disabled />
+										} />
+										<Card.Content description={ review.review } />
+										<Card.Content extra>
+											<Icon name='user' />
+											{ review.author } - { new Date(review.timestamp).toDateString() }
+										</Card.Content>
+									</Card>		
+								))
+							}
+						</Card.Group>
+					</Grid.Column>
+				</Grid>
 				<br/>
       </div>
     );

@@ -161,6 +161,34 @@ router.get('/userItems/:user', (req, res, next) => {
   );
 });
 
+router.get('/review/:item', (req, res, next) => {
+  UserItem.find({ item: req.params.item, reviews: { $exists: true, $not: { $size: 0 } } })
+    .populate('user', 'username')
+    .exec((err, userItems) => {
+      if (err) return res.json([]);
+      // return res.json(userItems);
+      return res.json(
+        userItems
+          .map((userItem) => userItem.reviews.map((review) => { return {
+            rating: review.rating,
+            review: review.review,
+            timestamp: review.timestamp,
+            author: userItem.user.username
+          } }))
+          .reduce((reviews, userItemReviews) => [ ...reviews, ...userItemReviews ])
+      );
+      return res.json(
+        userItems
+          .map((userItem) => userItem.reviews.reduce((reviews, review) => [
+            ...reviews,
+            { ...review, author: userItem.user.username }
+          ]))
+          .reduce((reviews, userItemReviews) => [ ...reviews, ...userItemReviews ])
+      );
+    }
+  );
+});
+
 router.post('/userItems', auth, (req, res, next) => {
   const userItem = new UserItem(req.body);
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Checkbox, Dropdown, Form, Message, TextArea } from 'semantic-ui-react';
+import { Checkbox, Dropdown, Form, Message, TextArea, Rating } from 'semantic-ui-react';
 
 import { capitalizeFirstLetter, createLabel } from '../../../utils/stringUtils';
 import { getValue } from '../../../utils/objectUtils';
@@ -14,7 +14,7 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
   const defaultValue = config.value !== undefined ? config.value : '';
   const valueKey = (group ? `${group}.fields.` : '') + `${field}.value`;
 
-  const createInput = createCreateInput(label, config.error);
+  const createInput = createCreateInput(label, config);
   const syncValue = createSyncValue(valueKey, handleValueChange);
 
   if (config.checkCondition && !config.checkCondition(formComponent.state.inputs)) {
@@ -56,10 +56,16 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
           { ...config.extraAttributes }
           checked={ defaultValue ? true : false } 
           onChange={(param, data) => syncValue(data.checked)} />,
-        {
-          ...config,
-          hideLabel: true
-        }
+        { hideLabel: true }
+      );
+    case 'Rating':
+      return createInput(
+        <Rating
+          icon='star'
+          clearable
+          maxRating={10}
+          defaultRating={ defaultValue || 0 }
+          onRate={(param, data) => syncValue(data.rating)} />
       );
     case 'Select': 
       return createInput(
@@ -74,8 +80,7 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
           onAddItem={ (e, value) => {
             e.preventDefault();
             config.onAddItem(value.value, formComponent)
-          } } />,
-        config
+          } } />
       );
     case 'TextArea':
       return createInput(
@@ -85,8 +90,7 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
           { ...config.extraAttributes }
           placeholder={ placeholder }
           value={ defaultValue }
-          onChange={ (e) => onInputChangeEvent(e, syncValue) } />,
-        config
+          onChange={ (e) => onInputChangeEvent(e, syncValue) } />
       );
     case 'date':
     case 'password':
@@ -99,23 +103,27 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
           { ...config.extraAttributes }
           placeholder={ placeholder }
           value={ defaultValue }
-          onChange={ (e) => onInputChangeEvent(e, syncValue) } />,
-        config
+          onChange={ (e) => onInputChangeEvent(e, syncValue) } />
       );
     default: return null;
   }
 }
 
-const createCreateInput = (label, error) => (input, config = {}) => (
-  <Form.Field
-    key={ (config.key || config.key === 0) ? config.key : undefined }
-    required={ (config.validation || {}).required ? true : false }
-    width={ config.width || 16 } >
-    { !config.hideLabel && <label>{ label }</label> }
-    { input }
-    { error && <Message error header={error} /> }
-  </Form.Field>
-);
+const createCreateInput = (label, inputConfig) => (input, extraConfig) => {
+  const config = { ...inputConfig, ...extraConfig };
+
+  if (config.noFormField) return input;
+  return (
+    <Form.Field
+      key={ (config.key || config.key === 0) ? config.key : undefined }
+      required={ (config.validation || {}).required ? true : false }
+      width={ config.width || 16 } >
+      { !config.hideLabel && <label>{ label }</label> }
+      { input }
+      { config.error && <Message error header={ config.error } /> }
+    </Form.Field>
+  );
+}
 
 const onInputChangeEvent = (event, syncValue) => {
   syncValue(event.target.value);

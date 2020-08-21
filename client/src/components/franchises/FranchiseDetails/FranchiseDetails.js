@@ -161,31 +161,31 @@ export default class FranchiseDetails extends Component {
         }
         <Grid>
           <Grid.Column style={{width: "45%", minWidth: "250px"}}>
-          <LinkedItems
-            title='Items'
-            options={ this.state.itemOptions }
-            optionsLoaded={ this.state.itemOptionsLoaded }
-            items={ this.state.items }
-            paginatedList={{
-              filtersConfig:{
-                defaults: getItemsFiltersDefaults(),
-                getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-                filterItem: filterItem
-              },
-              sortConfig:{
-                defaults: itemsSortDefault,
-                getControls: getItemsSortControls,
-                sortItems: sortItems
-              }
-            }}
-            createItemComponent={ createItemComponent(this.state.details) }
-            removeItem={ this.removeItem }
-            addItems={ this.addItems.bind(this) }
-            parentComponent={ this }
-            stateKeyItems='items'
-            stateKeyOptions='itemOptions'
-            placeholder='Add items' 
-            extraAttributes={{ minCharacters:2 }} />
+            <LinkedItems
+              title='Items'
+              options={ this.state.itemOptions }
+              optionsLoaded={ this.state.itemOptionsLoaded }
+              items={ this.state.items }
+              paginatedList={{
+                filtersConfig:{
+                  defaults: getItemsFiltersDefaults(),
+                  getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
+                  filterItem: filterItem
+                },
+                sortConfig:{
+                  defaults: itemsSortDefault,
+                  getControls: getItemsSortControls,
+                  sortItems: sortItems
+                }
+              }}
+              createItemComponent={ createItemComponent(this.state.details) }
+              removeItem={ this.removeItem }
+              addItems={ this.addItems.bind(this) }
+              parentComponent={ this }
+              stateKeyItems='items'
+              stateKeyOptions='itemOptions'
+              placeholder='Add items' 
+              extraAttributes={{ minCharacters:2 }} />
           </Grid.Column>
           <Grid.Column style={{width: "45%", minWidth: "250px"}}>
             <LinkedItems

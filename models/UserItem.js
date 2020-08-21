@@ -24,6 +24,17 @@ export default mongoose.model(
       default: 'To Do'
     },
     completedHistory: [String],
-    rating: Number
+    rating: Number,
+    reviews: [{
+      rating: Number,
+      review: {
+        type: String,
+        required: true
+      },
+      timestamp: {
+        type: String,
+        required: true
+      }
+    }]
   })
 );
