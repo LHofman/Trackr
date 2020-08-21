@@ -13,6 +13,12 @@ export const getArtistOptions = () => new Promise((resolve) => {
   });
 });
 
+export const getGenreOptions = () => new Promise((resolve) => {
+  fetch('/api/genres').then(genres => {
+    resolve(genres.map(genre => { return { text: genre, value: genre } }));
+  });
+});
+
 export const getPlatformOptions = () => new Promise((resolve) => {
   fetch('/api/platforms').then(platforms => {
     resolve(platforms.map(platform => { return { text: platform, value: platform } }));

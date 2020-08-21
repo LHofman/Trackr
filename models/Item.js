@@ -12,6 +12,7 @@ const ItemSchema = mongoose.Schema({
     required: true
   },
   description: String,
+  genres: [String],
   links: [{
     index: {type: Number, required: true},
     title: {type: String, required: true},

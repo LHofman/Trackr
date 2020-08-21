@@ -7,14 +7,9 @@ import FranchiseDetailsItem from './FranchiseDetailsItem';
 
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
-import filterItem from '../../items/Items/filterItem';
-import getItemsFilterControls from '../../items/Items/getItemsFilterControls';
-import getItemsFilterControlsExtraParams from '../../items/Items/getItemsFilterControlsExtraParams';
-import getItemsFilterDefaults from '../../items/Items/getItemsFilterDefaults';
-import getItemsSortControls from '../../items/Items/getItemsSortControls';
-import itemsSortDefault from '../../items/Items/itemsSortDefault';
-import sortItems from '../../items/Items/sortItems';
 import LinkedItems from '../../UI/LinkedItems/LinkedItems';
+import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from '../../items/Items/itemsFilters';
+import { itemsSortDefault, sortItems, getItemsSortControls } from '../../items/Items/itemsSorting';
 
 export default class FranchiseDetails extends Component {
 	constructor(props) {
@@ -50,7 +45,7 @@ export default class FranchiseDetails extends Component {
       });
     });
 
-    getItemsFilterControlsExtraParams().then(filterControlsExtraFields => {
+    getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
       this.setState({ filterControlsExtraFields });
     });
 	}
@@ -173,8 +168,8 @@ export default class FranchiseDetails extends Component {
             items={ this.state.items }
             paginatedList={{
               filtersConfig:{
-                defaults: getItemsFilterDefaults(),
-                getControls: getItemsFilterControls(this.state.filterControlsExtraFields),
+                defaults: getItemsFiltersDefaults(),
+                getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
                 filterItem: filterItem
               },
               sortConfig:{

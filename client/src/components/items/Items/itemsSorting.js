@@ -1,6 +1,22 @@
+import React from 'react';
+
+import getSortControl from '../../UI/FilterMenu/getSortControl';
 import sort from '../../../utils/sort';
 
-export default ({ field, order }) => (item1, item2) => {
+export const getItemsSortControls = (currentSort, currentFilters, handleSortChange) => (
+  <div>
+    { getSortControl('title', currentSort, handleSortChange) }
+    { getSortControl('releaseDate', currentSort, handleSortChange) }
+    {
+      currentFilters.type === 'Movie' &&
+      getSortControl('releaseDateDvd', currentSort, handleSortChange)
+    }
+  </div>
+);
+
+export const itemsSortDefault = { field: 'title', order: 'asc' };
+
+export const sortItems = ({ field, order }) => (item1, item2) => {
   const asc = order === 'asc' ? -1 : 1;
 
   let sortValue = 0;

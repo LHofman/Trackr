@@ -71,7 +71,10 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
           value={ defaultValue }
           options={ config.options }
           onChange={ (param, data) => syncValue(data.value) }
-          onAddItem={ (e, value) => config.onAddItem(value.value, formComponent) || null } />,
+          onAddItem={ (e, value) => {
+            e.preventDefault();
+            config.onAddItem(value.value, formComponent)
+          } } />,
         config
       );
     case 'TextArea':

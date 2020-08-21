@@ -4,14 +4,11 @@ import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 import UserItem from './UserItem';
 
 import fetch from '../../../utils/fetch';
-import filterUserItem from './filterUserItem';
-import getItemsFilterControlsExtraParams from '../../items/Items/getItemsFilterControlsExtraParams';
 import getUser from '../../../utils/getUser';
-import getUserItemsFilterControls from './getUserItemsFilterControls';
-import getItemsSortControls from '../../items/Items/getItemsSortControls';
-import getUserItemsFilterDefaults from './getUserItemsFilterDefaults';
-import itemsSortDefault from '../../items/Items/itemsSortDefault';
-import sortUserItems from './sortUserItems';
+import { getItemsFiltersControlsExtraParams } from '../../items/Items/itemsFilters';
+import { itemsSortDefault, getItemsSortControls } from '../../items/Items/itemsSorting';
+import { sortUserItems } from './userItemsSorting';
+import { getUserItemsFilterControls, getUserItemsFilterDefaults, filterUserItem } from './userItemsFilters';
 
 export default class Items extends Component {
   constructor() {
@@ -25,7 +22,7 @@ export default class Items extends Component {
   componentWillMount() {
     this.getUser();
 
-    getItemsFilterControlsExtraParams().then(filterControlsExtraFields => {
+    getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
       this.setState({ filterControlsExtraFields });
     });
   }

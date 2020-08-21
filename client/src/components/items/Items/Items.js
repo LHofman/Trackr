@@ -4,14 +4,8 @@ import Item from './Item';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 
 import fetch from '../../../utils/fetch';
-import filterItem from './filterItem';
-import getItemsFilterControls from './getItemsFilterControls';
-import getItemsFilterDefaults from './getItemsFilterDefaults';
-import getItemsSortControls from './getItemsSortControls';
-import itemsSortDefault from './itemsSortDefault';
-import sortItems from './sortItems';
-
-import getItemsFilterControlsExtraParams from './getItemsFilterControlsExtraParams';
+import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from './itemsFilters';
+import { itemsSortDefault, sortItems, getItemsSortControls } from './itemsSorting';
 
 export default class Items extends Component {
   constructor() {
@@ -25,7 +19,7 @@ export default class Items extends Component {
   componentWillMount() {
     this.getItems();
 
-    getItemsFilterControlsExtraParams().then(filterControlsExtraFields => {
+    getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
       this.setState({ filterControlsExtraFields });
     });
   }
@@ -46,8 +40,8 @@ export default class Items extends Component {
         items={this.state.items}
         createItemComponent={(item) => <Item key={item._id} item={item}></Item>}
         filtersConfig={{
-          defaults: getItemsFilterDefaults(),
-          getControls: getItemsFilterControls(this.state.filterControlsExtraFields),
+          defaults: getItemsFiltersDefaults(),
+          getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
           filterItem: filterItem
         }}
         sortConfig={{

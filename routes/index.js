@@ -381,6 +381,23 @@ router.get('/artists', (req, res, next) => {
   });
 });
 
+router.get('/genres', (req, res, next) => {
+  Item.find({ genres : {'$exists': true}}, (err, items) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+
+    let allGenres = [];
+    items.map(item => item.genres).forEach(itemGenres => {
+      itemGenres.forEach(genre => {
+        if (allGenres.indexOf(genre) === -1) {
+          allGenres.push(genre);
+        }
+      });
+    });
+
+    res.json(allGenres.sort());
+  });
+});
+
 router.get('/platforms', (req, res, next) => {
   Item.find({ platforms : {'$exists': true}}, (err, items) => {
     if (err) return res.status(500).send(STATUS_500_MESSAGE);

@@ -310,7 +310,6 @@ export default class ItemDetails extends Component {
 						}
 					</h3>
 				}
-				<br />
 				{
 					details.type === 'Video Game' &&
 					<div>
@@ -319,8 +318,13 @@ export default class ItemDetails extends Component {
 					</div>
 				}
 				{
+					details.genres &&
+					<h4>Genres: { details.genres.sort().join(', ') }</h4>
+				}
+				{
 					details.description &&
 					<div>
+						<br/>
 						{details.description}
 						<br/><br/><br/>
 					</div>
@@ -390,7 +394,6 @@ export default class ItemDetails extends Component {
 								</Modal.Actions>
 							</Modal.Content>
 						</Modal>
-						<br />
           </div>
         }
 				{
@@ -399,7 +402,8 @@ export default class ItemDetails extends Component {
             <Button key='edit' positive floated='left' as={Link} to={`/items/${details.title_id}/edit`}>Edit</Button>,
 						<Button key='delete' negative floated='right' onClick={() => this.showConfirmationAlert('delete')}>Delete</Button>	
           ]
-				}<br/><br/>
+				}
+				<br/><br/><br/><br/>
 				<LinkedItems
 					title='In Franchises'
 					options={ this.state.franchiseOptions }
@@ -412,6 +416,7 @@ export default class ItemDetails extends Component {
 					stateKeyItems='franchises'
 					stateKeyOptions='franchiseOptions'
 					placeholder='Add to franchises' />
+				<br/>
       </div>
     );
   }

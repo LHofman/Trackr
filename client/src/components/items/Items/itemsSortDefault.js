@@ -1,1 +1,0 @@
-export default { field: 'title', order: 'asc' };

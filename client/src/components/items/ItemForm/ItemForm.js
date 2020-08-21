@@ -6,7 +6,13 @@ import Links from '../../UI/Form/CustomFields/Links';
 import MyForm from '../../UI/Form/MyForm';
 
 import { addItemToSelect } from '../../../utils/formUtils';
-import { getArtistOptions, getPlatformOptions, getTypeOptions, getDateStatusOptions } from '../getFieldOptions';
+import {
+  getArtistOptions,
+  getDateStatusOptions,
+  getGenreOptions,
+  getPlatformOptions,
+  getTypeOptions
+} from '../getFieldOptions';
 import getArtistType from '../getArtistType';
 import getUser from '../../../utils/getUser';
 import hasStarted from '../../../utils/hasStarted';
@@ -15,8 +21,9 @@ export default class ItemForm extends Component {
   constructor() {
     super();
     this.state = {
-      allPlatforms: [],
       allArtists: [],
+      allGenres: [],
+      allPlatforms: [],
       details: {},
       isLoaded: false,
       redirect: undefined
@@ -31,6 +38,7 @@ export default class ItemForm extends Component {
         this.setState({ ...details })
       }),
       getArtistOptions().then((allArtists) => { this.setState({ allArtists }) }),
+      getGenreOptions().then((allGenres) => { this.setState({ allGenres }) }),
       getPlatformOptions().then((allPlatforms) => { this.setState({ allPlatforms }) })
     ]).then(() => this.setState({ isLoaded: true }));
   }
@@ -50,6 +58,7 @@ export default class ItemForm extends Component {
     const newItem = {
       createdBy: getUser().id,
       description: form.description.value,
+      genres: form.genres.value,
       links: form.links.value,
       releaseDate: releaseDateFields.releaseDateStatus.value === 'Date'
         ? new Date(releaseDateFields.releaseDate.value).toISOString()
@@ -169,20 +178,24 @@ export default class ItemForm extends Component {
           }
         }
       },
-      description: {
-        type: 'TextArea',
-        value: defaultValues.description || '',
-      },
       ongoing: {
         checkCondition: (form) => (
           form.type.value === 'TvShow' &&
           hasStarted(form.releaseDateGroup.fields.releaseDateStatus.value, form.releaseDateGroup.fields.releaseDate.value)
         ),
         type: 'Checkbox',
-        value: defaultValues.ongoing || false,
-        validation: {
-          required: true
-        }
+        value: defaultValues.ongoing || false
+      },
+      description: {
+        type: 'TextArea',
+        value: defaultValues.description || '',
+      },
+      genres: {
+        type: 'Select',
+        extraAttributes: { search: true, multiple: true, allowAdditions: true },
+        options: this.state.allGenres,
+        value: defaultValues.genres || [],
+        onAddItem: addItemToSelect('allGenres', 'genres', this)
       },
       platforms: {
         checkCondition: (form) => form.type.value === 'Video Game',
