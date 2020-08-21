@@ -8,7 +8,7 @@ export default item => {
         case 'TvShow': options.push('To Watch', 'Watching', 'Watched'); break;
         case 'Video Game': options.push('To Play', 'Playing', 'Played', 'Completed'); break;
         case '': return '';
-        default: options.push('To Do', 'Done'); break;
+        default: options.push('To Do', 'Doing', 'Done'); break;
     }
     return options.map(option => {
         return {

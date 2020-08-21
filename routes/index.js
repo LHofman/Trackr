@@ -142,6 +142,16 @@ router.delete('/items/:id', auth, (req, res, next) => {
 
 //#region userItems
 
+router.get('/userItems/:user/inProgress', (req, res, next) => {
+  const statusesInProgres = ['Doing', 'Listening', 'Playing', 'Reading', 'Watching'];
+  UserItem.find({ user: req.params.user, status: { $in: statusesInProgres } })
+    .populate('item')
+    .exec((err, userItems) => {
+      if (err) return res.json([]);
+      return res.json(userItems);
+    });
+});
+
 router.get('/userItems/:user/:item', (req, res, next) => {
   UserItem.findOne({user: req.params.user, item: req.params.item}, 
     (err, userItem) => {
@@ -165,7 +175,7 @@ router.get('/review/:item', (req, res, next) => {
   UserItem.find({ item: req.params.item, reviews: { $exists: true, $not: { $size: 0 } } })
     .populate('user', 'username')
     .exec((err, userItems) => {
-      if (err) return res.json([]);
+      if (err || userItems.length === 0) return res.json([]);
       // return res.json(userItems);
       return res.json(
         userItems

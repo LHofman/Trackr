@@ -3,7 +3,7 @@ import { Icon, List } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
 
-export default class Item extends Component {
+export default class UserItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
