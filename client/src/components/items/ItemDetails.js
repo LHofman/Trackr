@@ -318,7 +318,7 @@ export default class ItemDetails extends Component {
 					</div>
 				}
 				{
-					details.genres &&
+					(details.genres && details.genres.length > 0) &&
 					<h4>Genres: { details.genres.sort().join(', ') }</h4>
 				}
 				{
