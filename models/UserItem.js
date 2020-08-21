@@ -23,6 +23,7 @@ export default mongoose.model(
       required: true,
       default: 'To Do'
     },
+    completedHistory: [String],
     rating: Number
   })
 );

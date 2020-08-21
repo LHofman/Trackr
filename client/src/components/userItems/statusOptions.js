@@ -5,7 +5,7 @@ export default item => {
         case 'Album': options.push('To Listen', 'Listening', 'Listened'); break;
         case 'Book': case 'Comicbook': case 'Manga': options.push('To Read', 'Reading', 'Read'); break;
         case 'Movie': options.push('To Watch', 'Watched'); break;
-        case 'TvShow': options.push('To Watch', 'Watching', 'Awaiting Hiatus', 'Watched'); break;
+        case 'TvShow': options.push('To Watch', 'Watching', 'Watched'); break;
         case 'Video Game': options.push('To Play', 'Playing', 'Played', 'Completed'); break;
         case '': return '';
         default: options.push('To Do', 'Done'); break;

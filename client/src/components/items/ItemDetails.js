@@ -1,6 +1,7 @@
+import moment from 'moment-timezone';
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Checkbox, Confirm, Dropdown, Icon, Popup, Rating } from 'semantic-ui-react';
+import { Button, Checkbox, Confirm, Dropdown, Icon, Popup, Rating, List, Modal, Radio } from 'semantic-ui-react';
 
 import ItemDetailsFranchise from './ItemDetailsFranchise';
 
@@ -10,6 +11,7 @@ import getIcon from '../../utils/getIcon';
 import getUser from '../../utils/getUser';
 import hasStarted from '../../utils/hasStarted';
 import isLoggedIn from '../../utils/isLoggedIn';
+import { isFinished, getFinishText, getFinishedText } from '../userItems/finishItem';
 import statusOptions from '../userItems/statusOptions';
 import getArtistType from './getArtistType';
 import LinkedItems from '../UI/LinkedItems/LinkedItems';
@@ -21,15 +23,25 @@ export default class ItemDetails extends Component {
 			details: '',
 			confirmationAlert: '',
 			userItem: '',
+			newUserItem: '',
 			redirect: undefined,
 			franchises: [],
 			franchiseOptions: [],
-			addFranchises: []
+			franchiseOptionsLoaded: false,
+			addFranchises: [],
+			completeItemModal: false,
+			timeCompleted: 'now',
+			timeCompletedCustom: moment(new Date()).format('YYYY-MM-DD')
 		}
 
-		this.updateUserItem = this.updateUserItem.bind(this);
+		this.cancelComplete = this.cancelComplete.bind(this);
+		this.completeItem = this.completeItem.bind(this);
+		this.confirmCompletion = this.confirmCompletion.bind(this);
+		this.handleValueChange = this.handleValueChange.bind(this);
 		this.showConfirmationAlert = this.showConfirmationAlert.bind(this);
+		this.removeCompletedHistory = this.removeCompletedHistory.bind(this);
 		this.removeFromFranchise = this.removeFromFranchise.bind(this);
+		this.updateUserItemValue = this.updateUserItemValue.bind(this);
 	}
 
   componentWillMount() {
@@ -49,11 +61,31 @@ export default class ItemDetails extends Component {
 		});
 	}
 
+	getFranchises() {
+		return fetch(`/api/franchises/byItem/${this.state.details._id}`).then(franchises => {
+      if (!franchises || franchises === null) return;
+      this.setState({ franchises });
+		});
+	}
+
+	getAllFranchises() {
+		fetch('/api/franchises').then(franchises => {
+      if (!franchises || franchises === null) return;
+      this.setState({
+				franchiseOptions: 
+					franchises.filter(franchise => this.state.franchises.map(franchise => franchise._id).indexOf(franchise._id) === -1)
+						.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
+						.map(franchise => { return { key: franchise._id, value: franchise._id, text: franchise.title } }),
+				franchiseOptionsLoaded: true
+      });
+		});
+	}
+
 	getUserItem() {
 		if (!isLoggedIn()) return;
 		fetch(`/api/userItems/${getUser().id}/${this.state.details._id}`).then(userItem => {
 			if (userItem) {
-				this.setState({userItem});
+				this.setState({ userItem });
 			}
 		}).catch(console.log);
 	}
@@ -100,54 +132,126 @@ export default class ItemDetails extends Component {
 		);
 	}
 
-  updateUserItem(name, value) {
+	handleValueChange(field, value) {
+		this.setState({ [field]: value });
+	}
+
+	completeItem(updatedUserItem = undefined) {
+		const newUserItem = updatedUserItem || this.state.userItem;
+
+		this.setState({ newUserItem, completeItemModal: true });
+	}
+
+	confirmCompletion() {
+		const { newUserItem, timeCompleted, timeCompletedCustom } = this.state;
+
+		let date = '';
+		switch (timeCompleted) {
+			case 'now':
+				date = moment(new Date()).format('YYYY-MM-DD');
+				break;
+			case 'Unknown':
+				date = 'Unknown';
+				break;
+			case 'custom':
+				date = moment(timeCompletedCustom).format('YYYY-MM-DD');
+				break;
+			default: break;
+		}
+
+		if ((newUserItem.completedHistory || []).length > 0) {
+			newUserItem.completedHistory.push(date);
+		} else {
+			newUserItem.completedHistory = [date];
+		}
+
+		this.updateUserItem(newUserItem);
+	}
+
+	cancelComplete() {
+		this.setState({ newUserItem: '', completeItemModal: false });
+	}
+
+	removeCompletedHistory(dateText) {
 		const userItem = this.state.userItem;
-    if (userItem[name] === value) return;
-    userItem[name] = value;
+		userItem.completedHistory.splice(userItem.completedHistory.indexOf(dateText), 1);
+		this.updateUserItem(userItem);
+	}
+
+  updateUserItemValue(name, value) {
+		let userItem = this.state.userItem;
+		if (userItem[name] === value) return;
+		
+		userItem[name] = value;
+
+		if (
+			name === 'status' &&
+			isFinished(this.state.details.type, value) &&
+			(userItem.completedHistory || []).length === 0
+		) {
+			this.completeItem(userItem);
+			return;
+		}
+		
+		this.updateUserItem(userItem);
+	}
+	
+  updateUserItem(userItem) {
 		fetch(`/api/userItems/${userItem._id}`, 'put', true, userItem)
 			.catch(res => {
 				res.json().then(body => {
 					console.log(body);
 				});
 			});
-    this.setState({ userItem });
+
+    this.setState({ userItem, completeItemModal: false });
 	}
 	
-	getFranchises() {
-		return fetch(`/api/franchises/byItem/${this.state.details._id}`).then(franchises => {
-      if (!franchises || franchises === null) return;
-      this.setState({ franchises });
-		});
-	}
-
-  removeFromFranchise(franchise) {
-    return fetch(`/api/franchises/${franchise._id}/items/remove`, 'put', true, [this.state.details._id]);
-  }
-
 	addFranchises(addFranchises) {
 		return fetch(`/api/franchises/addItemToMultiple/${this.state.details._id}`, 'put', true, addFranchises);
 	}
 	
-	getAllFranchises() {
-		fetch('/api/franchises').then(franchises => {
-      if (!franchises || franchises === null) return;
-      this.setState({ franchiseOptions: 
-        franchises.filter(franchise => this.state.franchises.map(franchise => franchise._id).indexOf(franchise._id) === -1)
-					.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
-        	.map(franchise => { return { key: franchise._id, value: franchise._id, text: franchise.title } })
-      });
-		});
-	}
+  removeFromFranchise(franchise) {
+    return fetch(`/api/franchises/${franchise._id}/items/remove`, 'put', true, [this.state.details._id]);
+  }
 
 	render() {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
 		
-		const details = this.state.details;
+		const { details, userItem } = this.state;
 
 		const links = (details.links && details.links.length > 0) ? details.links.map(link => <li key={link.index}>
 			<a href={link.url} target='_blank'>{link.title}</a>
 		</li>) : undefined;
+
+		let completedHistory = null;
+		const completedText = userItem ? getFinishedText(details) : '';
+		if (userItem && (userItem.completedHistory || []).length > 0) {
+			let times = {};
+			completedHistory = (
+				<div>
+					<p>{ completedText }</p>
+					<List bulleted>
+						{
+							userItem.completedHistory.sort().map((dateText, index, list) => {
+								times[dateText] = (times[dateText] || 0) + 1;
+								if (list.lastIndexOf(dateText) !== index) return null;
+								const timesDate = times[dateText];
+								const append = timesDate > 1 ? (' x' + timesDate) : '';
+								
+								return (
+									<List.Item key={ index }>
+										{ dateText + append }&nbsp;
+										<Icon key='icon' name='trash' color='red' onClick={ () => this.removeCompletedHistory(dateText)} />
+									</List.Item>
+								)
+							})
+						}
+					</List>
+				</div>
+			);
+		}
 				
 		return (
 			<div>
@@ -231,13 +335,62 @@ export default class ItemDetails extends Component {
 					</div>
 				}
 				{
-					this.state.userItem &&
+					userItem &&
 					<div>
 						<Checkbox key='inCollection' label='In Collection' name='inCollection' checked={this.state.userItem.inCollection}
-							onChange={(param, data) => this.updateUserItem('inCollection', data.checked)} /><br /><br />
-						<Rating icon='star' defaultRating={this.state.userItem.rating} maxRating={10} clearable onRate={(param, data) => this.updateUserItem('rating', data.rating)} /><br/><br/>
+							onChange={(param, data) => this.updateUserItemValue('inCollection', data.checked)} /><br /><br />
+						<Rating icon='star' defaultRating={this.state.userItem.rating} maxRating={10} clearable onRate={(param, data) => this.updateUserItemValue('rating', data.rating)} /><br/><br/>
 						<Dropdown key='status' placeholder='Status' selection options={statusOptions(details)} name='status' value={this.state.userItem.status} 
-							onChange={(param, data) => this.updateUserItem('status', data.value)} /><br /><br />
+							onChange={(param, data) => this.updateUserItemValue('status', data.value)} />&nbsp;&nbsp;&nbsp;
+						{
+							isFinished(details.type, userItem.status) &&
+							<Button onClick={ () => this.completeItem() }>{ getFinishText(details) } again</Button>
+						}
+						<br /><br />
+						{ completedHistory }
+						<Modal open={ this.state.completeItemModal } onClose={() => this.cancelComplete()}>
+							<Modal.Header>{ getFinishText(details) + ' item' }</Modal.Header>
+							<Modal.Content>
+								<p>When did you { getFinishText(details) } this item?</p>
+								<Radio
+									label='Now'
+									name='timeCompleted'
+									value='now'
+									checked={ this.state.timeCompleted === 'now' }
+									onChange={(param, { value }) => this.handleValueChange('timeCompleted', value)} /><br/>
+								<Radio
+									label={ 'I don\'t remember' }
+									name='timeCompleted'
+									value='Unknown'
+									checked={ this.state.timeCompleted === 'Unknown' }
+									onChange={(param, { value }) => this.handleValueChange('timeCompleted', value)} /><br/>
+								<Radio
+									label='Custom Date'
+									name='timeCompleted'
+									value='custom'
+									checked={ this.state.timeCompleted === 'custom' }
+									onChange={(param, { value }) => this.handleValueChange('timeCompleted', value)} /><br/>
+								{
+									this.state.timeCompleted === 'custom' &&
+									<input
+										type='date'
+										max={ moment(new Date()).format('YYYY-MM-DD') }
+										value={ moment(new Date()).format('YYYY-MM-DD') }
+										onChange={ (e) => this.handleValueChange('timeCompletedCustom', e.target.value) } />
+								}
+								<br/>
+								<Modal.Actions>
+									<Button color='black' onClick={() => this.cancelComplete()}>Cancel</Button>
+									<Button
+										content='Continue'
+										labelPosition='right'
+										icon='checkmark'
+										onClick={() => this.confirmCompletion()}
+										positive />
+								</Modal.Actions>
+							</Modal.Content>
+						</Modal>
+						<br />
           </div>
         }
 				{
@@ -250,6 +403,7 @@ export default class ItemDetails extends Component {
 				<LinkedItems
 					title='In Franchises'
 					options={ this.state.franchiseOptions }
+					optionsLoaded={ this.state.franchiseOptionsLoaded }
 					items={ this.state.franchises }
 					createItemComponent={ createFranchiseItemComponent(this.state.details) }
 					removeItem={ this.removeFromFranchise }
