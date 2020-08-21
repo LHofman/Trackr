@@ -162,6 +162,9 @@ export default class ItemDetails extends Component {
 			case 'now':
 				date = moment(new Date()).format('YYYY-MM-DD');
 				break;
+			case 'releaseDate':
+				date = moment(this.state.details.releaseDate).format('YYYY-MM-DD');
+				break;
 			case 'Unknown':
 				date = 'Unknown';
 				break;
@@ -294,6 +297,7 @@ export default class ItemDetails extends Component {
 							})
 						}
 					</List>
+					<br />
 				</div>
 			);
 		}
@@ -406,6 +410,12 @@ export default class ItemDetails extends Component {
 									name='timeCompleted'
 									value='now'
 									checked={ this.state.timeCompleted === 'now' }
+									onChange={(param, { value }) => this.handleValueChange('timeCompleted', value)} /><br/>
+								<Radio
+									label='On release date'
+									name='timeCompleted'
+									value='releaseDate'
+									checked={ this.state.timeCompleted === 'releaseDate' }
 									onChange={(param, { value }) => this.handleValueChange('timeCompleted', value)} /><br/>
 								<Radio
 									label={ 'I don\'t remember' }
