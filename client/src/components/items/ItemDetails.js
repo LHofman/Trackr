@@ -50,12 +50,25 @@ export default class ItemDetails extends Component {
 	}
 
   componentWillMount() {
-    this.getItem();
-  }
+    this.getItem(this.props);
+	}
+	
+	componentWillReceiveProps(props) {
+		this.getItem(props);
+	}
 
-	getItem() {
-		const title_id = this.props.match.params.titleId;
-		return fetch(`/api/items/title_id/${title_id}`).then(details => {
+	getItem(props) {
+		let titleId = '';
+		if (props.item) {
+			titleId = props.item.title_id;
+		} else if (props.match) {
+			titleId = props.match.params.titleId;
+		} else {
+			this.setState({ redirect: '/' });
+			return;
+		}
+
+		return fetch(`/api/items/title_id/${titleId}`).then(details => {
 			if (!details || details === null) throw new Error('item not found');
 			this.setState({ details })
 		}).catch(reason => {
@@ -301,10 +314,15 @@ export default class ItemDetails extends Component {
 				</div>
 			);
 		}
-				
+
+		let backButtonAttributes = { as: Link, to: '/' };
+		if (this.props.onBackCallback) {
+			backButtonAttributes = { onClick: () => this.props.onBackCallback() };
+		}
+
 		return (
 			<div>
-				<Button labelPosition='left' icon='left chevron' content='Back' as={Link} to={'/'} />
+				<Button labelPosition='left' icon='left chevron' content='Back' { ...backButtonAttributes } />
 				<h1>
 					{getIcon(details)}
 					{details.title}
@@ -460,7 +478,7 @@ export default class ItemDetails extends Component {
 				}
 				<br/><br/><br/><br/>
 				<Grid>
-          <Grid.Column width={6}>
+          <Grid.Column width={ this.props.item ? 8 : 6 }>
 						<LinkedItems
 							title='In Franchises'
 							options={ this.state.franchiseOptions }
@@ -474,7 +492,7 @@ export default class ItemDetails extends Component {
 							stateKeyOptions='franchiseOptions'
 							placeholder='Add to franchises' />
 					</Grid.Column>
-					<Grid.Column width={10}>
+					<Grid.Column width={ this.props.item ? 8 : 10 }>
 						<h2>
 							Reviews
 							{

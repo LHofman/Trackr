@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 
 import AddFranchise from './franchises/FranchiseForm/AddFranchise';
 import AddGameObjective from './gameObjectives/GameObjectiveForm/AddGameObjective';
@@ -25,11 +25,12 @@ import getNonAuthComponent from '../utils/getNonAuthComponent';
 export default () => (
   <main>
     <Switch>
-      <Route exact path='/' component={ HomePage } />
+      <Route exact path='/' render={() => <Redirect to='/home' />} />
       <Route exact path='/franchises' component={Franchises} />
       <Route exact path='/franchises/add' component={getAuthComponent(AddFranchise)} />
       <Route exact path='/franchises/:titleId' component={FranchiseDetails} />
       <Route exact path='/franchises/:titleId/edit' component={getAuthComponent(EditFranchise)} />
+      <Route exact path='/home' component={ HomePage } />
       <Route exact path='/items' component={Items} />
       <Route exact path='/items/add' component={getAuthComponent(AddItem)} />
       <Route exact path='/items/:titleId' component={ItemDetails} />

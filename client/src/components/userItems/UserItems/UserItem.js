@@ -11,13 +11,23 @@ export default class UserItem extends Component {
     }
   }
   
+  onHeaderClick() {
+    this.props.onClickCallback(this.state.userItem);
+  }
+  
   render() {
     const userItem = this.state.userItem;
+    
+    let onClickAttributes = { href: `/items/${userItem.item.title_id}` };
+    if (this.props.onClickCallback) {
+      onClickAttributes = { onClick: this.onHeaderClick.bind(this) };
+    }
+
     return (
       <List.Item>
         {getIcon(userItem.item)}
         <List.Content>
-          <List.Header as='a' href={`/items/${userItem.item.title_id}`}>
+          <List.Header as='a' { ...onClickAttributes } >
             {userItem.item.title}
             {
               userItem.inCollection &&

@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import { Button, Input, Label, List, Pagination } from 'semantic-ui-react';
+import { Button, Input, Label, List, Pagination, Grid, GridColumn } from 'semantic-ui-react';
 
 import Franchise from './Franchise';
+import FranchiseDetails from './FranchiseDetails/FranchiseDetails';
 
 import fetch from '../../utils/fetch';
 import isLoggedIn from '../../utils/isLoggedIn';
@@ -17,12 +18,15 @@ export default class Franchises extends Component {
       titleFilter: '',
       sortOrder: 'asc',
       activePage: 1,
+      detailsComponent: null,
+      redirect: undefined
     }
 
     this.onTitleFilterChange = this.onTitleFilterChange.bind(this);
     this.toggleSort = this.toggleSort.bind(this);
     this.sort = this.sort.bind(this);
     this.changePage = this.changePage.bind(this);
+    this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
@@ -84,7 +88,26 @@ export default class Franchises extends Component {
     )
   }
 
+  setDetailsComponent(franchise) {
+    if (!franchise) {
+      this.setState({ detailsComponent: null });
+      return;
+    }
+
+    if (window.innerWidth < 1200) {
+      this.setState({ redirect: `/franchises/${franchise.title_id}`});
+      return;
+    }
+
+    this.setState({
+      detailsComponent: <FranchiseDetails franchise={ franchise } onBackCallback={ this.setDetailsComponent } />
+    });
+  }
+
   render() {
+    const redirect = this.state.redirect;
+		if (redirect) return <Redirect to={redirect} />
+
     const { titleFilter, sortOrder} = this.state;
     
     let filteredFranchises = this.state.franchises.filter(franchise => 
@@ -98,24 +121,32 @@ export default class Franchises extends Component {
     const franchises = filteredFranchises
       .slice(begin, begin + 100)
       .map(franchise => 
-        <Franchise key={franchise._id} franchise={franchise}></Franchise>
+        <Franchise key={franchise._id} franchise={franchise} onClickCallback={ this.setDetailsComponent } ></Franchise>
       );
 
     return (
-      <div>
-        <h2>Franchises</h2>
+      <Grid>
+        <GridColumn width={ this.state.detailsComponent ? 8 : 16 }>
+          <h2>Franchises</h2>
+          {
+            isLoggedIn() && 
+            <Button positive circular floated='right' icon='plus' as={Link} to='/franchises/add' />
+          }
+          <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' />&nbsp;&nbsp;&nbsp;
+          <Button name='sort' onClick={this.toggleSort}>{'Sort by title ' + (sortOrder === 'asc' ? 'desc' : 'asc')}</Button><br/><br/>
+          {this.getPagination(totalPages)}
+          <List bulleted>
+            {franchises}
+          </List>
+          {this.getPagination(totalPages)}
+        </GridColumn>
         {
-          isLoggedIn() && 
-          <Button positive circular floated='right' icon='plus' as={Link} to='/franchises/add' />
+          this.state.detailsComponent &&
+          <GridColumn width={ 8 }>
+            { this.state.detailsComponent }
+          </GridColumn>
         }
-        <Input name='titleFilter' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' />&nbsp;&nbsp;&nbsp;
-        <Button name='sort' onClick={this.toggleSort}>{'Sort by title ' + (sortOrder === 'asc' ? 'desc' : 'asc')}</Button><br/><br/>
-        {this.getPagination(totalPages)}
-        <List bulleted>
-          {franchises}
-        </List>
-        {this.getPagination(totalPages)}
-      </div>
+      </Grid>
     );
   }
 }

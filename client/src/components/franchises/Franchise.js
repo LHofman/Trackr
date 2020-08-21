@@ -28,13 +28,23 @@ export default class Franchise extends Component {
     this.setState({ confirmationAlert: true });
   }
 
+  onHeaderClick() {
+    this.props.onClickCallback(this.props.franchise);
+  }
+  
   render() {
     const { franchise, parent, onDelete } = this.props;
+    
+    let onClickAttributes = { href: `/franchises/${franchise.title_id}` };
+    if (this.props.onClickCallback) {
+      onClickAttributes = { onClick: this.onHeaderClick.bind(this) };
+    }
+
     return (
       <List.Item>
         <List.Content>
           <List.Header>
-            <a href={`/franchises/${franchise.title_id}`}>{franchise.title}</a>
+            <a { ...onClickAttributes }>{franchise.title}</a>
             {
               parent && onDelete && canEdit(parent) &&
               [ 

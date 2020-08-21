@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import { Grid, GridColumn } from 'semantic-ui-react';
 
+import ItemDetails from '../../items/ItemDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 import UserItem from './UserItem';
 
@@ -15,8 +17,11 @@ export default class Items extends Component {
     super();
     this.state = {
       userItems: [],
-      filterControlsExtraFields: {}
+      filterControlsExtraFields: {},
+      detailsComponent: null
     }
+
+    this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
@@ -35,23 +40,54 @@ export default class Items extends Component {
     }).catch(console.log);
   }
 
+  setDetailsComponent(userItem) {
+    if (!userItem) {
+      this.setState({ detailsComponent: null });
+      return;
+    }
+
+    if (window.innerWidth < 1200) {
+      this.setState({ redirect: `/items/${userItem.item.title_id}`});
+      return;
+    }
+
+    this.setState({
+      detailsComponent: <ItemDetails item={ userItem.item } onBackCallback={ this.setDetailsComponent } />
+    });
+  }
+
   render() {
     return (
-      <PaginatedList
-        title='My Items'
-        createItemUrl={`/items/add`}
-        items={this.state.userItems}
-        createItemComponent={(userItem) => <UserItem key={userItem._id} userItem={userItem}></UserItem>}
-        filtersConfig={{
-          defaults: getUserItemsFilterDefaults(),
-          getControls: getUserItemsFilterControls(this.state.filterControlsExtraFields),
-          filterItem: filterUserItem
-        }}
-        sortConfig={{
-          defaults: itemsSortDefault,
-          getControls: getItemsSortControls,
-          sortItems: sortUserItems
-        }} />
+      <Grid>
+        <GridColumn width={ this.state.detailsComponent ? 8 : 16 }>
+          <PaginatedList
+            title='My Items'
+            createItemUrl={`/items/add`}
+            items={this.state.userItems}
+            createItemComponent={(userItem) => (
+              <UserItem
+                key={userItem._id}
+                userItem={userItem}
+                onClickCallback={ this.setDetailsComponent } ></UserItem>
+            )}
+            filtersConfig={{
+              defaults: getUserItemsFilterDefaults(),
+              getControls: getUserItemsFilterControls(this.state.filterControlsExtraFields),
+              filterItem: filterUserItem
+            }}
+            sortConfig={{
+              defaults: itemsSortDefault,
+              getControls: getItemsSortControls,
+              sortItems: sortUserItems
+            }} />
+        </GridColumn>
+        {
+          this.state.detailsComponent &&
+          <GridColumn width={ 8 }>
+            { this.state.detailsComponent }
+          </GridColumn>
+        }
+      </Grid>
     );
   }
 }

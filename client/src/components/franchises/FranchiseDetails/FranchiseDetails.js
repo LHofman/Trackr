@@ -38,7 +38,25 @@ export default class FranchiseDetails extends Component {
 	}
 
   componentWillMount() {
-    this.getFranchise().then(() => {
+    this.init(this.props);
+	}
+	
+	componentWillReceiveProps(props) {
+		this.init(props);
+	}
+
+  init(props) {
+    let titleId = '';
+		if (props.franchise) {
+			titleId = props.franchise.title_id;
+		} else if (props.match) {
+			titleId = props.match.params.titleId;
+		} else {
+			this.setState({ redirect: '/' });
+			return;
+    }
+    
+    this.getFranchise(titleId).then(() => {
       this.getItems();
       this.getParentFranchises().then(() => {
         this.getAllFranchises();
@@ -48,7 +66,7 @@ export default class FranchiseDetails extends Component {
     getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
       this.setState({ filterControlsExtraFields });
     });
-	}
+  }
 
 	addItems(itemsToAdd) {
 		return fetch(`/api/franchises/${this.state.details._id}/items/add`, 'put', true, itemsToAdd);
@@ -62,9 +80,8 @@ export default class FranchiseDetails extends Component {
     return fetch(`/api/franchises/${this.state.details._id}/subFranchises/add`, 'put', true, addSubFranchises);
 	}
 	
-	getFranchise() {
-		const title_id = this.props.match.params.titleId;
-		return fetch(`/api/franchises/title_id/${title_id}`).then(details => {
+	getFranchise(titleId) {
+		return fetch(`/api/franchises/title_id/${titleId}`).then(details => {
 			if (!details || details === null) throw new Error('item not found');
 			this.setState({
         details,
@@ -141,9 +158,14 @@ export default class FranchiseDetails extends Component {
 		
     const details = this.state.details;
 	
+		let backButtonAttributes = { as: Link, to: '/franchises' };
+		if (this.props.onBackCallback) {
+			backButtonAttributes = { onClick: () => this.props.onBackCallback() };
+		}
+
 		return (
 			<Container>
-				<Button labelPosition='left' icon='left chevron' content='Back' as={Link} to={'/franchises'} />
+				<Button labelPosition='left' icon='left chevron' content='Back' { ...backButtonAttributes } />
 				<h1>{details.title}</h1>
 				<Confirm
 					open={this.state.confirmationAlert}
