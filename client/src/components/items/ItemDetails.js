@@ -152,9 +152,13 @@ export default class ItemDetails extends Component {
 
 	onDelete() {
 		const itemId = this.state.details._id;
-		return fetch(`/api/items/${itemId}`, 'delete', true).then(res => 
-			this.setState({redirect: '/'})
-		);
+		return fetch(`/api/items/${itemId}`, 'delete', true).then(res => {
+			if (this.props.onDelete) {
+				this.props.onDelete(this.state.details);
+			} else {
+				this.setState({redirect: '/'})
+			}
+		});
 	}
 
 	handleValueChange(field, value) {
@@ -212,15 +216,20 @@ export default class ItemDetails extends Component {
 		
 		userItem[name] = value;
 
-		if (
-			name === 'status' &&
-			isFinished(this.state.details.type, value) &&
-			(userItem.completedHistory || []).length === 0
-		) {
-			this.completeItem(userItem);
-			return;
+		if (name === 'status') {
+			if (this.props.onChangeStatus) {
+				this.props.onChangeStatus(this.state.details);
+			}
+
+			if (
+				isFinished(this.state.details.type, value) &&
+				(userItem.completedHistory || []).length === 0
+			) {
+				this.completeItem(userItem);
+				return;
+			}
 		}
-		
+
 		this.updateUserItem(userItem);
 	}
 	
@@ -524,8 +533,8 @@ export default class ItemDetails extends Component {
 						</Modal>
 						<Card.Group>
 							{
-								this.state.allReviews.map((review) => (
-									<Card fluid>
+								this.state.allReviews.map((review, index) => (
+									<Card fluid key={ index }>
 										<Card.Content header={
 											<Rating icon='star' defaultRating={ review.rating } maxRating={ 10 } disabled />
 										} />

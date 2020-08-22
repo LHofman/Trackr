@@ -23,7 +23,9 @@ export default class HomePage extends Component {
   }
 
   componentWillMount() {
-    this.getUserItemsInProgress();
+    if (isLoggedIn()) {
+      this.getUserItemsInProgress();
+    }
   }
 
   getUserItemsInProgress() {
@@ -43,7 +45,20 @@ export default class HomePage extends Component {
       return;
     }
 
-    this.setState({ detailsComponent: <ItemDetails item={ item } onBackCallback={ this.setDetailsComponent } /> });
+    this.setState({
+      detailsComponent: (
+        <ItemDetails
+          item={ item }
+          onBackCallback={ this.setDetailsComponent }
+          onDelete={ this.deleteItemFromList.bind(this) }
+          onChangeStatus={ this.deleteItemFromList.bind(this) } />
+      )
+    });
+  }
+
+  deleteItemFromList(item) {
+    const items = this.state.userItemsInProgress.filter((stateItem) => stateItem.item._id !== item._id);
+    this.setState({ userItemsInProgress: items, detailsComponent: null });
   }
 
   render() {

@@ -5,6 +5,7 @@ import passport from 'passport';
 import Franchise from '../models/Franchise';
 import Item from '../models/Item';
 import GameObjective from '../models/GameObjective';
+import User from '../models/User';
 import UserGameObjective from '../models/UserGameObjective';
 import UserItem from '../models/UserItem';
 
@@ -624,5 +625,38 @@ router.put('/franchises/:id/subFranchises/remove', auth, (req, res, next) => {
 });
 
 //#endregion franchises
+
+//#region users
+
+router.get('/users', (req, res, next) => {
+  User.find().exec((err, items) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    return res.json(items);
+  });
+});
+
+router.get('/users/byUsername/:username', (req, res, next) => {
+  User.findOne({ username: req.params.username }).exec((err, user) => {
+    if (err) return res.status(404).send('User not found');
+    return res.json(user);
+  });
+});
+
+router.delete('/users/:id', auth, (req, res, next) => {
+  User.findById(req.params.id, (err, user) => {
+    if (err) return res.status(500).send({success: false, msg: 'User not found'});
+    if (!req.user.isAdmin) return res.status(500).send({sucess: false, msg: 'You do not have permission'});
+    
+    user.remove((err, user) => {  
+      if (err) return res.status(500).send('Something went wrong');
+      res.json({
+        success: true,
+        msg: `${user.username} has successfully been removed.`
+      });
+    });
+  });
+});
+
+//#endregion users
 
 export default router;

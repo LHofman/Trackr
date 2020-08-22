@@ -15,8 +15,10 @@ import Items from './items/Items/Items';
 import ItemDetails from './items/ItemDetails';
 import Login from './authentication/Login';
 import Logout from './authentication/Logout';
+import ManageUsers from './admin/users/ManageUsers/ManageUsers';
 import PageNotFound from './PageNotFound';
 import Register from './authentication/Register';
+import UserDetails from './admin/users/UserDetails/UserDetails';
 import UserItems from './userItems/UserItems/UserItems';
 
 import getAuthComponent from '../utils/getAuthComponent';
@@ -26,6 +28,8 @@ export default () => (
   <main>
     <Switch>
       <Route exact path='/' render={() => <Redirect to='/home' />} />
+      <Route exact path='/adminUsers' component={ getAuthComponent(ManageUsers) } />
+      <Route exact path='/adminUsers/:username' component={ getAuthComponent(UserDetails) } />
       <Route exact path='/franchises' component={Franchises} />
       <Route exact path='/franchises/add' component={getAuthComponent(AddFranchise)} />
       <Route exact path='/franchises/:titleId' component={FranchiseDetails} />

@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 export default mongoose.model(
   'User',
   mongoose.Schema({
+    isAdmin: Boolean,
     name: String,
     firstName: String,
     email: {

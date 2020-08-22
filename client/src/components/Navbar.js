@@ -3,14 +3,20 @@ import { Link } from 'react-router-dom';
 import { Menu } from 'semantic-ui-react';
 
 import isLoggedIn from '../utils/isLoggedIn';
+import getUser from '../utils/getUser';
 
 export default class Navbar extends Component {
   render() {
+    const user = getUser();
+
     return (
       <Menu>
-        <Menu.Item as={Link} to='/'>
-          Home
-        </Menu.Item>
+        {
+          (user || {}).isAdmin &&
+          <Menu.Item as={Link} to='/'>
+            Dashboard
+          </Menu.Item>
+        }
         <Menu.Item as={Link} to='/items'>
           Items
         </Menu.Item>
@@ -20,6 +26,12 @@ export default class Navbar extends Component {
         <Menu.Item as={Link} to='/myItems'>
           My Items
         </Menu.Item>
+        {
+          (user || {}).isAdmin &&
+          <Menu.Item as={ Link } to='/adminUsers'>
+            Manage Users
+          </Menu.Item>
+        }
 
         {
           isLoggedIn() ? (
