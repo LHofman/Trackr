@@ -20,7 +20,7 @@ export default class Register extends Component {
         password: newUser.password
       })
     }).then(body => {
-      localStorage.setItem('id_token', body.token);
+      localStorage.setItem('auth_token', body.token);
       localStorage.setItem('user', JSON.stringify(body.user));
       this.setState({ redirect: '/' });
     })
