@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Confirm, Icon, List } from 'semantic-ui-react';
 
-import canEdit from '../../utils/canEdit';
+import canEdit from '../../../utils/canEdit';
 
 export default class Franchise extends Component {
 

@@ -11,11 +11,15 @@ import isLoggedIn from '../../../utils/isLoggedIn';
 export default class PaginatedList extends Component {
   constructor(props) {
     super(props);
+    
+    const filtersConfig = props.filtersConfig || {};
+    const sortConfig = props.sortConfig || {};
+
     this.state = {
       activePage: 1,
       addItems: [],
-      filters: props.filtersConfig.defaults,
-      sort: props.sortConfig.defaults
+      filters: filtersConfig.defaults,
+      sort: sortConfig.defaults
     }
     
     this.changePage = this.changePage.bind(this);
@@ -66,11 +70,18 @@ export default class PaginatedList extends Component {
   }
 
   render() {
+    const filtersConfig = this.props.filtersConfig;
+    const sortConfig = this.props.sortConfig;
+
     let filteredItems = [];
     if (this.props.items && this.props.items.length > 0) {
-      filteredItems = this.props.items
-        .filter(item => this.props.filtersConfig.filterItem(item, this.state.filters))
-        .sort(this.props.sortConfig.sortItems(this.state.sort, this.state.filters));
+      filteredItems = this.props.items;
+      if (filtersConfig) {
+        filteredItems = filteredItems.filter(item => this.props.filtersConfig.filterItem(item, this.state.filters));
+      }
+      if (sortConfig) {
+        filteredItems = filteredItems.sort(this.props.sortConfig.sortItems(this.state.sort, this.state.filters));
+      }
     }
     
     const begin = (this.state.activePage - 1) * 100;
@@ -86,15 +97,18 @@ export default class PaginatedList extends Component {
           (this.props.createItemUrl && isLoggedIn()) && 
           <Button positive circular floated='right' icon='plus' as={Link} to={this.props.createItemUrl} />
         }
-        <FilterMenu
-          defaultFilters={this.props.filtersConfig.defaults}
-          defaultSort={this.props.sortConfig.defaults}
-          handleFilterChange={this.handleFilterChange}
-          handleSortChange={this.handleSortChange}
-          getFilterControlsFunction={this.props.filtersConfig.getControls}
-          getSortControlsFunction={this.props.sortConfig.getControls} />
+        {
+          (filtersConfig || sortConfig) &&
+          <FilterMenu
+            defaultFilters={ filtersConfig.defaults }
+            defaultSort={ sortConfig.defaults }
+            handleFilterChange={this.handleFilterChange}
+            handleSortChange={this.handleSortChange}
+            getFilterControlsFunction={ filtersConfig.getControls }
+            getSortControlsFunction={ sortConfig.getControls } />
+        }
         {this.getPagination(totalPages)}
-        <List>
+        <List { ...this.props.extraAttributes }>
           {items}
         </List>
         {this.getPagination(totalPages)}

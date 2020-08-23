@@ -7,7 +7,7 @@ import AddItem from './items/ItemForm/AddItem';
 import EditFranchise from './franchises/FranchiseForm/EditFranchise'
 import EditGameObjective from './gameObjectives/GameObjectiveForm/EditGameObjective';
 import EditItem from './items/ItemForm/EditItem';
-import Franchises from './franchises/Franchises';
+import Franchises from './franchises/Franchises/Franchises';
 import FranchiseDetails from './franchises/FranchiseDetails/FranchiseDetails';
 import GameObjectives from './gameObjectives/GameObjectives';
 import HomePage from './HomePage/HomePage';

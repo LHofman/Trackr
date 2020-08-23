@@ -7,7 +7,8 @@ export default class FilterMenu extends Component {
     this.state = {
       filters: props.defaultFilters,
       isSidebarVisible: false,
-      sort: props.defaultSort
+      sort: props.defaultSort,
+      titleFilter: ''
     }
 
     this.clearAll = this.clearAll.bind(this);
@@ -21,10 +22,15 @@ export default class FilterMenu extends Component {
     const defaultSort = this.props.defaultSort;
     this.setState({
       filters: defaultFilters,
-      sort: defaultSort
+      sort: defaultSort,
+      titleFilter: ''
     });
     this.props.handleFilterChange(defaultFilters);
     this.props.handleSortChange(defaultSort);
+  }
+
+  handleTitleChange(event) {
+    this.setState({ titleFilter: event.target.value });
   }
 
   onTitleFilterChange(event) {
@@ -56,33 +62,56 @@ export default class FilterMenu extends Component {
   }
 
   render() {
+    const filterControls = this.props.getFilterControlsFunction ? this.props.getFilterControlsFunction(
+      this.state.filters,
+      this.handleFilterChange
+    ) : {};
+    const hasFilterControls = Object.keys(filterControls).length > 0;
+    const sortControls = this.props.getSortControlsFunction ? this.props.getSortControlsFunction(
+      this.state.sort,
+      this.state.filters,
+      this.handleSortChange
+    ) : {};
+    const hasSortControls = Object.keys(sortControls).length > 0;
+
     return (
       <div>
         <Button onClick={this.toggleSidebar}><Icon name='bars' />Filter/Sort</Button>
-        <Input name='title' onKeyPress={this.onTitleFilterChange.bind(this)} icon='search' placeholder='Search...' />
+        <Input
+          name='title'
+          icon='search'
+          placeholder='Search...'
+          value={ this.state.titleFilter }
+          onChange={ this.handleTitleChange.bind(this) }
+          onKeyPress={ this.onTitleFilterChange.bind(this) } />
         <br/><br/><br/>
-        <Sidebar as={Menu}
-          animation='overlay'
-          onHide={this.hideSidebar.bind(this)}
-          vertical
-          visible={this.state.isSidebarVisible}
-          width='wide'
-        >
-          <Menu.Item header></Menu.Item>
-          <Menu.Item><Button primary onClick={() => this.clearAll()}>Clear All</Button></Menu.Item>
-          <Menu.Item header>Filter By</Menu.Item>
-          { this.props.getFilterControlsFunction(
-            this.state.filters,
-            this.handleFilterChange
-          ) }
-
-          <Menu.Item header>Sort By</Menu.Item>
-          { this.props.getSortControlsFunction(
-            this.state.sort,
-            this.state.filters,
-            this.handleSortChange
-          ) }
-        </Sidebar>
+        {
+          (hasFilterControls || hasSortControls) &&
+          <Sidebar as={Menu}
+            animation='overlay'
+            onHide={this.hideSidebar.bind(this)}
+            vertical
+            visible={this.state.isSidebarVisible}
+            width='wide'
+          >
+            <Menu.Item header></Menu.Item>
+            <Menu.Item><Button primary onClick={() => this.clearAll()}>Clear All</Button></Menu.Item>
+            {
+              hasFilterControls &&
+              <div>
+                <Menu.Item header>Filter By</Menu.Item>
+                { filterControls }
+              </div>
+            }
+            {
+              hasSortControls &&
+              <div>
+                <Menu.Item header>Sort By</Menu.Item>
+                { sortControls }
+              </div>
+            }
+          </Sidebar>
+        }
       </div>
     );
   }

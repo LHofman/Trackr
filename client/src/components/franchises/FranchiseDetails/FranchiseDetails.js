@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Confirm, Container, Grid } from 'semantic-ui-react';
 
-import Franchise from '../Franchise';
+import Franchise from '../Franchises/Franchise';
 import FranchiseDetailsItem from './FranchiseDetailsItem';
 
 import canEdit from '../../../utils/canEdit';
