@@ -16,7 +16,15 @@ export const getItemsSortControls = (currentSort, currentFilters, handleSortChan
 
 export const itemsSortDefault = { field: 'title', order: 'asc' };
 
-export const sortItems = ({ field, order }) => (item1, item2) => {
+export const sortItems = ({ field, order }, filters = {}) => (item1, item2) => {
+  if (filters.title) {
+    const item1HasExactTitle = item1.title.toLowerCase() === filters.title.toLowerCase();
+    const item2HasExactTitle = item2.title.toLowerCase() === filters.title.toLowerCase();
+
+    if (item1HasExactTitle && !item2HasExactTitle) return -1;
+    if (!item1HasExactTitle && item2HasExactTitle) return 1;
+  }
+
   const asc = order === 'asc' ? -1 : 1;
 
   let sortValue = 0;

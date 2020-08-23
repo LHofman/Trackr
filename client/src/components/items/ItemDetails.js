@@ -16,7 +16,6 @@ import statusOptions from '../userItems/statusOptions';
 import getArtistType from './getArtistType';
 import LinkedItems from '../UI/LinkedItems/LinkedItems';
 import MyForm from '../UI/Form/MyForm';
-import c from 'config';
 
 export default class ItemDetails extends Component {
 	constructor(props) {

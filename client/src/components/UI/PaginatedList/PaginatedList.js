@@ -67,10 +67,10 @@ export default class PaginatedList extends Component {
 
   render() {
     let filteredItems = [];
-    if (this.props.items) {
+    if (this.props.items && this.props.items.length > 0) {
       filteredItems = this.props.items
         .filter(item => this.props.filtersConfig.filterItem(item, this.state.filters))
-        .sort(this.props.sortConfig.sortItems(this.state.sort));
+        .sort(this.props.sortConfig.sortItems(this.state.sort, this.state.filters));
     }
     
     const begin = (this.state.activePage - 1) * 100;
