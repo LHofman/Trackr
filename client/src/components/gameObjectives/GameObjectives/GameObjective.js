@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Checkbox, Confirm, Icon, List } from 'semantic-ui-react';
 
-import canEdit from '../../utils/canEdit';
-import fetch from '../../utils/fetch';
-import getUser from '../../utils/getUser';
-import isLoggedIn from '../../utils/isLoggedIn';
+import canEdit from '../../../utils/canEdit';
+import fetch from '../../../utils/fetch';
+import getUser from '../../../utils/getUser';
+import isLoggedIn from '../../../utils/isLoggedIn';
 
 class GameObjective extends Component {
   constructor(props) {

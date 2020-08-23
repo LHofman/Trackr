@@ -5,9 +5,9 @@ import { Breadcrumb, Button, Checkbox, List } from 'semantic-ui-react';
 
 import GameObjective from './GameObjective';
 
-import fetch from '../../utils/fetch';
-import getUser from '../../utils/getUser';
-import isLoggedIn from '../../utils/isLoggedIn'
+import fetch from '../../../utils/fetch';
+import getUser from '../../../utils/getUser';
+import isLoggedIn from '../../../utils/isLoggedIn'
 
 class GameObjectives extends Component {
   constructor(props) {

@@ -9,7 +9,7 @@ import EditGameObjective from './gameObjectives/GameObjectiveForm/EditGameObject
 import EditItem from './items/ItemForm/EditItem';
 import Franchises from './franchises/Franchises/Franchises';
 import FranchiseDetails from './franchises/FranchiseDetails/FranchiseDetails';
-import GameObjectives from './gameObjectives/GameObjectives';
+import GameObjectives from './gameObjectives/GameObjectives/GameObjectives';
 import HomePage from './HomePage/HomePage';
 import Items from './items/Items/Items';
 import ItemDetails from './items/ItemDetails';
