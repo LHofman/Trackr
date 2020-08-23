@@ -8,6 +8,7 @@ import ItemDetails from '../items/ItemDetails';
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';
 import isLoggedIn from '../../utils/isLoggedIn';
+import ListWithDetails from '../../hoc/ListWithDetails';
 
 export default class HomePage extends Component {
   constructor() {
@@ -90,9 +91,8 @@ export default class HomePage extends Component {
       }
 
     return (
-      <Grid>
-        <GridColumn width={ this.state.detailsComponent ? 8 : 16 }>
-          <h1 style={{ marginBottom: '1em' }}>Items in progress</h1>
+      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
+        <h1 style={{ marginBottom: '1em' }}>Items in progress</h1>
           {
             this.state.itemsLoaded
             ? (
@@ -117,14 +117,7 @@ export default class HomePage extends Component {
               </Segment> 
             )
           }
-        </GridColumn>
-        {
-          this.state.detailsComponent &&
-          <GridColumn width={ 8 }>
-            { this.state.detailsComponent }
-          </GridColumn>
-        }
-      </Grid>
+      </ListWithDetails>
     );
   }
 }

@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
-import { Grid, GridColumn, List } from 'semantic-ui-react';
+import { List } from 'semantic-ui-react';
 import fetch from '../../../../utils/fetch';
 import User from './User';
 import UserDetails from '../UserDetails/UserDetails';
+import ListWithDetails from '../../../../hoc/ListWithDetails';
 
 export default class ManageUsers extends Component {
   constructor() {
@@ -63,20 +64,12 @@ export default class ManageUsers extends Component {
     ));
 
     return (
-      <Grid>
-        <GridColumn width={ detailsComponent ? 6 : 16 }>
-          <h1>Manage Users</h1>
-          <List bulleted>
-            { userComponents }
-          </List>
-        </GridColumn>
-        {
-          detailsComponent &&
-          <GridColumn width={ 10 }>
-            { detailsComponent }
-          </GridColumn>
-        }
-      </Grid>
-    )
+      <ListWithDetails listWidth={ 6 } detailsComponent={ detailsComponent }>
+        <h1>Manage Users</h1>
+        <List bulleted>
+          { userComponents }
+        </List>
+      </ListWithDetails>
+    );
   }
 }

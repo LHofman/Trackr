@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import { Link, Redirect } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import { Button, Input, Label, List, Pagination, Grid, GridColumn } from 'semantic-ui-react';
+import { Button, Input, Label, List, Pagination } from 'semantic-ui-react';
 
 import Franchise from './Franchise';
 import FranchiseDetails from './FranchiseDetails/FranchiseDetails';
 
 import fetch from '../../utils/fetch';
 import isLoggedIn from '../../utils/isLoggedIn';
+import ListWithDetails from '../../hoc/ListWithDetails';
 
 export default class Franchises extends Component {
   constructor() {
@@ -125,9 +126,8 @@ export default class Franchises extends Component {
       );
 
     return (
-      <Grid>
-        <GridColumn width={ this.state.detailsComponent ? 8 : 16 }>
-          <h2>Franchises</h2>
+      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
+        <h2>Franchises</h2>
           {
             isLoggedIn() && 
             <Button positive circular floated='right' icon='plus' as={Link} to='/franchises/add' />
@@ -139,14 +139,7 @@ export default class Franchises extends Component {
             {franchises}
           </List>
           {this.getPagination(totalPages)}
-        </GridColumn>
-        {
-          this.state.detailsComponent &&
-          <GridColumn width={ 8 }>
-            { this.state.detailsComponent }
-          </GridColumn>
-        }
-      </Grid>
+      </ListWithDetails>
     );
   }
 }

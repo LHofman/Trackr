@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Grid, GridColumn } from 'semantic-ui-react';
 
 import Item from './Item';
 import ItemDetails from '../ItemDetails';
@@ -9,6 +8,7 @@ import fetch from '../../../utils/fetch';
 import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from './itemsFilters';
 import { itemsSortDefault, sortItems, getItemsSortControls } from './itemsSorting';
 import { Redirect } from 'react-router-dom';
+import ListWithDetails from '../../../hoc/ListWithDetails';
 
 export default class Items extends Component {
   constructor() {
@@ -58,33 +58,25 @@ export default class Items extends Component {
 		if (redirect) return <Redirect to={redirect} />
 
     return (
-      <Grid>
-        <GridColumn width={ this.state.detailsComponent ? 8 : 16 }>
-          <PaginatedList
-            title='Items'
-            createItemUrl={`/items/add`}
-            items={this.state.items}
-            createItemComponent={(item) => (
-              <Item key={item._id} item={item} onClickCallback={ this.setDetailsComponent } ></Item>
-            )}
-            filtersConfig={{
-              defaults: getItemsFiltersDefaults(),
-              getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-              filterItem: filterItem
-            }}
-            sortConfig={{
-              defaults: itemsSortDefault,
-              getControls: getItemsSortControls,
-              sortItems: sortItems
-            }} />
-        </GridColumn>
-        {
-          this.state.detailsComponent &&
-          <GridColumn width={ 8 }>
-            { this.state.detailsComponent }
-          </GridColumn>
-        }
-      </Grid>
+      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
+        <PaginatedList
+          title='Items'
+          createItemUrl={`/items/add`}
+          items={this.state.items}
+          createItemComponent={(item) => (
+            <Item key={item._id} item={item} onClickCallback={ this.setDetailsComponent } ></Item>
+          )}
+          filtersConfig={{
+            defaults: getItemsFiltersDefaults(),
+            getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
+            filterItem: filterItem
+          }}
+          sortConfig={{
+            defaults: itemsSortDefault,
+            getControls: getItemsSortControls,
+            sortItems: sortItems
+          }} />
+      </ListWithDetails>
     );
   }
 }
