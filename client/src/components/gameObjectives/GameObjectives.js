@@ -150,19 +150,40 @@ class GameObjectives extends Component {
     const promises = [];
 
     for (let i = 0; i < gameObjectives.length; i++) {
-      if (data.checked && !gameObjectives.userGameObjective) {
-        gameObjectives[i].userGameObjective = {
+      let userGameObjective = gameObjectives[i].userGameObjective;
+      let promise = Promise.resolve({});
+
+      if (userGameObjective) {
+        if (data.checked) {
+          if (userGameObjective.completed) continue;
+
+          userGameObjective.completed = true;
+          userGameObjective.amount = gameObjectives[i].amount;
+        } else {
+          if (!userGameObjective.completed) continue;
+
+          userGameObjective.completed = false;
+          userGameObjective.amount = 0;
+        }
+
+        promise = fetch(`/api/userGameObjectives/${userGameObjective._id}`, 'put', true, userGameObjective);
+      } else {
+        if (!data.checked) continue;
+
+        userGameObjective = {
           gameObjective: gameObjectives[i]._id,
           user: getUser().id,
+          amount: gameObjectives[i].amount,
           completed: true
-        }
-        promises.push(fetch(`/api/userGameObjectives`, 'post', true, gameObjectives[i].userGameObjective));
-      } else if (!data.checked && gameObjectives[i].userGameObjective) {
-        let userGameObjectiveId = gameObjectives[i].userGameObjective._id;
-        delete gameObjectives[i].userGameObjective;
-        promises.push(fetch(`/api/userGameObjectives/${userGameObjectiveId}`, 'delete', true))
+        };
+
+        promise = fetch(`/api/userGameObjectives`, 'post', true, userGameObjective);
       }
+
+      gameObjectives[i].userGameObjective = userGameObjective;
+      promises.push(promise);
     }
+
     Promise.all(promises).then(res => {
       this.setState({ gameObjectives });
     });
@@ -173,7 +194,9 @@ class GameObjectives extends Component {
     if (redirect) return <Redirect to={redirect} />
 
     let gameObjectives = this.state.gameObjectives;
-    const all = gameObjectives.reduce((all, gameObjective) => all && typeof gameObjective.userGameObjective !== 'undefined', true);
+    const all = gameObjectives.reduce((all, gameObjective) => {
+      return all && (gameObjective.userGameObjective || {}).completed
+    }, true);
 
     gameObjectives = gameObjectives.sort((o1, o2) => o1.index - o2.index).map(gameObjective => 
       <GameObjective 

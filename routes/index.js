@@ -391,6 +391,22 @@ router.post('/userGameObjectives', auth, (req, res, next) => {
   });
 });
 
+router.put('/userGameObjectives/:id', auth, (req, res, next) => {
+  const userGameObjectiveId = req.params.id;
+  UserGameObjective.findById(userGameObjectiveId, (err, userGameObjective) => {
+    if (err) return res.status(500).send({success: false, msg: 'UserGameObjective not found'});
+
+    if (!new mongoose.Types.ObjectId(req.user._id).equals(userGameObjective.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this userGameObjective'});
+    }
+    
+    UserGameObjective.findByIdAndUpdate(userGameObjectiveId, req.body, { new: true }, (err, userGameObjective) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return res.json(userGameObjective);
+    });
+  });
+});
+
 router.delete('/userGameObjectives/:id', auth, (req, res, next) => {
   UserGameObjective.findById(req.params.id, (err, userGameObjective) => {
     if (err) return res.status(404).send('UserGameObjective not found');

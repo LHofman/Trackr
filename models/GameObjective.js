@@ -17,6 +17,7 @@ const GameObjectiveSchema = mongoose.Schema({
     ref: 'User',
     required: true
   },
+  amount: Number,
   hint: String,
   index: {
     type: Number,

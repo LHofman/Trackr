@@ -16,6 +16,10 @@ export default mongoose.model(
     completed: {
       type: Boolean,
       default: false
+    },
+    amount: {
+      type: Number,
+      default: 0
     }
   })
 );

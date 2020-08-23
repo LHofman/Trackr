@@ -33,6 +33,7 @@ export default class GameObjectiveForm extends Component {
 
     const newObjective = {
       createdBy: getUser().id,
+      amount: form.amount.value || 1,
       hint: form.hint.value,
       index: form.index.value,
       objective: form.objective.value,
@@ -66,6 +67,13 @@ export default class GameObjectiveForm extends Component {
           required: true
         }
       },
+      amount: {
+        type: 'number',
+        value: defaultValues.amount || 1,
+        extraAttributes: {
+          min: 1
+        }
+      },  
       spoiler: {
         type: 'Checkbox',
         label: 'name contains spoilers',

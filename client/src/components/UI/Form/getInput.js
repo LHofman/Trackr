@@ -16,6 +16,7 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
 
   const createInput = createCreateInput(label, config);
   const syncValue = createSyncValue(valueKey, handleValueChange);
+  const onInputChangeEvent = createOnInputChangeEvent(config);
 
   if (config.checkCondition && !config.checkCondition(formComponent.state.inputs)) {
     return null;
@@ -125,8 +126,26 @@ const createCreateInput = (label, inputConfig) => (input, extraConfig) => {
   );
 }
 
-const onInputChangeEvent = (event, syncValue) => {
-  syncValue(event.target.value);
+const createOnInputChangeEvent = (config) => (event, syncValue) => {
+  let value = event.target.value;
+
+  if (config.type === 'number' && value !== '') {
+    value = parseInt(value, 10);
+    const min = (config.extraAttributes || {}).min;
+    const max = (config.extraAttributes || {}).max;
+
+    if (isNaN(value)) {
+      value = min || 0;
+    }
+    else if (min && value < min) {
+      value = min;
+    }
+    else if (max && value > max) {
+      value = max;
+    }
+  }
+
+  syncValue(value);
 }
 
 const createSyncValue = (valueKey, handleValueChange) => (value) => {
