@@ -13,11 +13,11 @@ import GameObjectives from './gameObjectives/GameObjectives';
 import HomePage from './HomePage/HomePage';
 import Items from './items/Items/Items';
 import ItemDetails from './items/ItemDetails';
-import Login from './authentication/Login';
+import Login from './authentication/AuthForm/Login';
 import Logout from './authentication/Logout';
 import ManageUsers from './admin/users/ManageUsers/ManageUsers';
 import PageNotFound from './PageNotFound';
-import Register from './authentication/Register';
+import Register from './authentication/AuthForm/Register';
 import UserDetails from './admin/users/UserDetails/UserDetails';
 import UserItems from './userItems/UserItems/UserItems';
 

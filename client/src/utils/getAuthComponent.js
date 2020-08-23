@@ -1,4 +1,4 @@
-import Login from '../components/authentication/Login';
+import Login from '../components/authentication/AuthForm/Login';
 
 import isLoggedIn from './isLoggedIn';
 

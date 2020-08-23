@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 
-import fetch from '../../utils/fetch';
-import MyForm from '../UI/Form/MyForm';
+import fetch from '../../../utils/fetch';
+import MyForm from '../../UI/Form/MyForm';
 
 export default class Register extends Component {
   constructor() {
@@ -91,7 +91,7 @@ export default class Register extends Component {
       <MyForm
         title='Register'
         inputs={ inputs }
-        submitButtonText='Login'
+        submitButtonText='Register'
         submit={ this.submitForm.bind(this) } />
     );
   }

@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Message } from 'semantic-ui-react';
 
-import MyForm from '../UI/Form/MyForm';
+import MyForm from '../../UI/Form/MyForm';
 
-import fetch from '../../utils/fetch';
-import { updateNestedValue } from '../../utils/objectUtils';
+import fetch from '../../../utils/fetch';
+import { updateNestedValue } from '../../../utils/objectUtils';
 
 export default class Login extends Component {
   constructor() {
