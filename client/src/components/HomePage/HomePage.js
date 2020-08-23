@@ -3,7 +3,7 @@ import Redirect from 'react-router-dom/Redirect';
 import { Grid, GridColumn, List, Loader, Dimmer, Segment } from 'semantic-ui-react';
 
 import Item from '../items/Items/Item';
-import ItemDetails from '../items/ItemDetails';
+import ItemDetails from '../items/ItemDetails/ItemDetails';
 
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import ItemDetails from '../../items/ItemDetails';
+import ItemDetails from '../../items/ItemDetails/ItemDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 import UserItem from './UserItem';
 

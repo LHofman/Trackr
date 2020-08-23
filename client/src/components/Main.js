@@ -12,7 +12,7 @@ import FranchiseDetails from './franchises/FranchiseDetails/FranchiseDetails';
 import GameObjectives from './gameObjectives/GameObjectives/GameObjectives';
 import HomePage from './HomePage/HomePage';
 import Items from './items/Items/Items';
-import ItemDetails from './items/ItemDetails';
+import ItemDetails from './items/ItemDetails/ItemDetails';
 import Login from './authentication/AuthForm/Login';
 import Logout from './authentication/Logout';
 import ManageUsers from './admin/users/ManageUsers/ManageUsers';

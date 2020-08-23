@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import Item from './Item';
-import ItemDetails from '../ItemDetails';
+import ItemDetails from '../ItemDetails/ItemDetails';
 import ListWithDetails from '../../../hoc/ListWithDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 
