@@ -16,6 +16,7 @@ import statusOptions from '../userItems/statusOptions';
 import getArtistType from './getArtistType';
 import LinkedItems from '../UI/LinkedItems/LinkedItems';
 import MyForm from '../UI/Form/MyForm';
+import c from 'config';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -33,7 +34,8 @@ export default class ItemDetails extends Component {
 			completeItemModal: false,
 			timeCompleted: 'now',
 			timeCompletedCustom: moment(new Date()).format('YYYY-MM-DD'),
-			addReviewModal: false,
+			reviewFormModal: false,
+			reviewId: '',
 			reviewRating: 0,
 			reviewText: '',
 			allReviews: []
@@ -42,6 +44,8 @@ export default class ItemDetails extends Component {
 		this.cancelComplete = this.cancelComplete.bind(this);
 		this.completeItem = this.completeItem.bind(this);
 		this.confirmCompletion = this.confirmCompletion.bind(this);
+		this.deleteReview = this.deleteReview.bind(this);
+		this.editReview = this.editReview.bind(this);
 		this.handleValueChange = this.handleValueChange.bind(this);
 		this.showConfirmationAlert = this.showConfirmationAlert.bind(this);
 		this.removeCompletedHistory = this.removeCompletedHistory.bind(this);
@@ -235,16 +239,11 @@ export default class ItemDetails extends Component {
 	
   updateUserItem(userItem) {
 		fetch(`/api/userItems/${userItem._id}`, 'put', true, userItem)
-			.then(res => {
-				console.log(res);
-			})
 			.catch(res => {
-				res.json().then(body => {
-					console.log(body);
-				});
+				res.json().then(console.log);
 			});
 
-    this.setState({ userItem, completeItemModal: false, addReviewModal: false });
+    this.setState({ userItem, completeItemModal: false, reviewFormModal: false });
 	}
 	
 	addFranchises(addFranchises) {
@@ -256,23 +255,32 @@ export default class ItemDetails extends Component {
 	}
 	
 	openReviewModel() {
-		this.setState({ addReviewModal: true });
+		this.setState({ reviewFormModal: true });
 	}
 
 	closeReviewModel() {
-		this.setState({ addReviewModal: false });
+		this.setState({ reviewFormModal: false });
 	}
 
-	addReview(formComponent) {
+	updateReview(formComponent) {
 		const form = formComponent.state.inputs;
 
+		const reviewId = form.id.value;
+		let existingReview = {};
+		if (reviewId) {
+			existingReview = this.state.userItem.reviews.filter((review) => review._id === reviewId)[0];
+		}
+
 		const review = {
+			...existingReview,
 			rating: form.rating.value,
 			review: form.review.value,
 			timestamp: new Date()
-		}
+		};
 
-		const reviews = this.state.allReviews;
+		const filterFunction = (reviewB) => reviewB._id !== reviewId;
+
+		const reviews = this.state.allReviews.filter(filterFunction);
 		reviews.push({
 			...review,
 			author: getUser().username
@@ -280,7 +288,31 @@ export default class ItemDetails extends Component {
 		this.setState({ allReviews: reviews });
 
 		const userItem = this.state.userItem;
-		userItem.reviews = [ ...(userItem.reviews || []), review ];
+		userItem.reviews = [ ...(userItem.reviews || []).filter(filterFunction), review ];
+
+		this.updateUserItem(userItem);
+	}
+
+	editReview(review) {
+		this.setState({
+			reviewId: review._id,
+			reviewRating: review.rating,
+			reviewText: review.review,
+			reviewFormModal: true
+		});
+	}
+
+	deleteReview(reviewId) {
+		let { userItem, allReviews } = this.state;
+
+		const filterFunction = (reviewB) => reviewB._id !== reviewId
+
+		const reviews = userItem.reviews.filter(filterFunction);
+		userItem.reviews = reviews;
+
+		allReviews = allReviews.filter(filterFunction);
+
+		this.setState({ allReviews });
 
 		this.updateUserItem(userItem);
 	}
@@ -509,34 +541,49 @@ export default class ItemDetails extends Component {
 								<Button style={{ margin: '1em' }} onClick={ this.openReviewModel.bind(this) }>Add new Review</Button>
 							}
 						</h2>
-						<Modal open={ this.state.addReviewModal }>
+						<Modal open={ this.state.reviewFormModal }>
 							<Modal.Content>
 								<MyForm
 									title='Add review'
 									inputs={{
+										id: {
+											type: 'hidden',
+											value: this.state.reviewId
+										},
 										rating: {
 											type: 'Rating',
-											hideLabel: true
+											hideLabel: true,
+											value: this.state.reviewRating
 										},
 										review: {
 											type: 'TextArea',
 											hideLabel: true,
+											value: this.state.reviewText,
 											validation: {
 												required: true
 											}
 										}
 									}}
-									submit={ this.addReview.bind(this) }
+									submit={ this.updateReview.bind(this) }
 									cancelCallback={ this.closeReviewModel.bind(this) } />
 								<br/><br/>
 							</Modal.Content>
 						</Modal>
 						<Card.Group>
 							{
-								this.state.allReviews.map((review, index) => (
-									<Card fluid key={ index }>
+								this.state.allReviews.map((review) => (
+									<Card fluid key={ review._id }>
 										<Card.Content header={
-											<Rating icon='star' defaultRating={ review.rating } maxRating={ 10 } disabled />
+											<div>
+												<Rating icon='star' rating={ review.rating } maxRating={ 10 } disabled />
+												{
+													review.author === getUser().username &&
+													<div style={{ float: 'right' }}>
+														<Icon name='edit' color='orange' onClick={() => this.editReview(review)} />
+														<Icon name='trash' color='red' onClick={() => this.deleteReview(review._id)} />
+													</div>
+												}
+											</div>
 										} />
 										<Card.Content description={ review.review } />
 										<Card.Content extra>

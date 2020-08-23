@@ -181,19 +181,12 @@ router.get('/review/:item', (req, res, next) => {
       return res.json(
         userItems
           .map((userItem) => userItem.reviews.map((review) => { return {
+            _id: review._id,
             rating: review.rating,
             review: review.review,
             timestamp: review.timestamp,
             author: userItem.user.username
           } }))
-          .reduce((reviews, userItemReviews) => [ ...reviews, ...userItemReviews ])
-      );
-      return res.json(
-        userItems
-          .map((userItem) => userItem.reviews.reduce((reviews, review) => [
-            ...reviews,
-            { ...review, author: userItem.user.username }
-          ]))
           .reduce((reviews, userItemReviews) => [ ...reviews, ...userItemReviews ])
       );
     }
