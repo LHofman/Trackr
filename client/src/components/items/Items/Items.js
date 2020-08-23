@@ -9,7 +9,6 @@ import fetch from '../../../utils/fetch';
 import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from './itemsFilters';
 import { itemsSortDefault, sortItems, getItemsSortControls } from './itemsSorting';
 import { Redirect } from 'react-router-dom';
-import { sort } from '../../../utils/sortUtils';
 
 export default class Items extends Component {
   constructor() {

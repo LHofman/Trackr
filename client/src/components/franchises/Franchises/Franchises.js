@@ -8,7 +8,7 @@ import fetch from '../../../utils/fetch';
 import ListWithDetails from '../../../hoc/ListWithDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 import { filterFranchise, getFranchisesFiltersDefaults } from './franchisesFilters';
-import { franchisesSortDefault, getFranchisesSortControls, sortFranchises } from './franchisesSorting';
+import { franchisesSortDefault, getFranchisesSortControls, } from './franchisesSorting';
 import { sort } from '../../../utils/sortUtils';
 
 export default class Franchises extends Component {

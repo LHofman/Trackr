@@ -33,8 +33,9 @@ export const sortItems = ({ field, order }, filters = {}) => (item1, item2) => {
             { status: item1.releaseDateDvdStatus, value: item1.releaseDateDvd },
             { status: item2.releaseDateDvdStatus, value: item2.releaseDateDvd }
           );
+        default:
+          return null;
       }
-      return null;
     }
   )(item1, item2);
 }
