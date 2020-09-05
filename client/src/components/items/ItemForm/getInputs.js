@@ -7,7 +7,7 @@ import { getDateStatusOptions, getTypeOptions } from '../getFieldOptions';
 import getArtistType from '../getArtistType';
 import hasStarted from '../../../utils/hasStarted';
 
-export default (defaultValues, options) => ({
+export default (defaultValues, options, formComponent) => ({
   type: {
     type: 'Select',
     options: getTypeOptions(),
@@ -34,7 +34,7 @@ export default (defaultValues, options) => ({
         message: (form) => `At least 1 ${getArtistType(form.type.value)} is required`
       }
     },
-    onAddItem: addItemToSelect('allArtists', 'artists', this)
+    onAddItem: addItemToSelect('allArtists', 'artists', formComponent)
   },
   releaseDateGroup: {
     type: 'Group',
@@ -102,7 +102,7 @@ export default (defaultValues, options) => ({
     extraAttributes: { search: true, multiple: true, allowAdditions: true },
     options: options.allGenres,
     value: defaultValues.genres || [],
-    onAddItem: addItemToSelect('allGenres', 'genres', this)
+    onAddItem: addItemToSelect('allGenres', 'genres', formComponent)
   },
   platforms: {
     checkCondition: (form) => form.type.value === 'Video Game',
@@ -110,7 +110,7 @@ export default (defaultValues, options) => ({
     extraAttributes: { search: true, multiple: true, allowAdditions: true },
     options: options.allPlatforms,
     value: defaultValues.platforms || [],
-    onAddItem: addItemToSelect('allPlatforms', 'platforms', this)
+    onAddItem: addItemToSelect('allPlatforms', 'platforms', formComponent)
   },
   links: {
     type: 'Component',

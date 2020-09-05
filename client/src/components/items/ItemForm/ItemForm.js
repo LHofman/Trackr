@@ -89,11 +89,15 @@ export default class ItemForm extends Component {
       return null;
     }
 
-    const inputs = getInputs(this.state.details, {
-      allArtists: this.state.allArtists,
-      allGenres: this.state.allGenres,
-      allPlatforms: this.state.allPlatforms
-    });
+    const inputs = getInputs(
+      this.state.details,
+      {
+        allArtists: this.state.allArtists,
+        allGenres: this.state.allGenres,
+        allPlatforms: this.state.allPlatforms
+      },
+      this
+    );
 
     return (
       <MyForm
