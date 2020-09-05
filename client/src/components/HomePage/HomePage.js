@@ -17,10 +17,12 @@ export default class HomePage extends Component {
       userItemsInProgress: [],
       itemsLoaded: false,
       detailsComponent: null,
-      redirect: undefined
+      redirect: undefined,
+      itemStatusChanged: null
     }
 
     this.setDetailsComponent = this.setDetailsComponent.bind(this);
+    this.setStatusChanged = this.setStatusChanged.bind(this);
   }
 
   componentWillMount() {
@@ -36,6 +38,10 @@ export default class HomePage extends Component {
   }
 
   setDetailsComponent(item) {
+    if (this.state.itemStatusChanged) {
+      this.deleteItemFromList(this.state.itemStatusChanged);
+    }
+
     if (!item) {
       this.setState({ detailsComponent: null });
       return;
@@ -52,14 +58,18 @@ export default class HomePage extends Component {
           item={ item }
           onBackCallback={ this.setDetailsComponent }
           onDelete={ this.deleteItemFromList.bind(this) }
-          onChangeStatus={ this.deleteItemFromList.bind(this) } />
+          onChangeStatus={ () => this.setStatusChanged(item) } />
       )
     });
   }
 
+  setStatusChanged(item) {
+    this.setState({ itemStatusChanged: item });
+  }
+
   deleteItemFromList(item) {
     const items = this.state.userItemsInProgress.filter((stateItem) => stateItem.item._id !== item._id);
-    this.setState({ userItemsInProgress: items, detailsComponent: null });
+    this.setState({ userItemsInProgress: items, itemStatusChanged: null });
   }
 
   render() {

@@ -28,8 +28,10 @@ export default class UserItemDetails extends Component {
     this.setState({ userItem: props.userItem });
   }
 
-	completeItem() {
-		this.setState({ completeItemModal: true });
+	completeItem(updatedUserItem = undefined) {
+    const newUserItem = updatedUserItem || this.state.userItem;
+
+		this.setState({ newUserItem, completeItemModal: true });
 	}
 
 	confirmCompletion() {
@@ -79,8 +81,8 @@ export default class UserItemDetails extends Component {
   updateUserItemValue(name, value) {
 		let userItem = this.state.userItem;
 		if (userItem[name] === value) return;
-		
-		userItem[name] = value;
+    
+    userItem[name] = value;
 
 		if (name === 'status') {
 			if (this.props.onChangeStatus) {
