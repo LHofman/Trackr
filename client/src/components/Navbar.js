@@ -26,6 +26,9 @@ export default class Navbar extends Component {
         <Menu.Item as={Link} to='/myItems'>
           My Items
         </Menu.Item>
+        <Menu.Item as={Link} to='/lists'>
+          My Lists
+        </Menu.Item>
         {
           (user || {}).isAdmin &&
           <Menu.Item as={ Link } to='/adminUsers'>

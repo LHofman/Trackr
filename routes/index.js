@@ -5,6 +5,7 @@ import passport from 'passport';
 import Franchise from '../models/Franchise';
 import Item from '../models/Item';
 import GameObjective from '../models/GameObjective';
+import List from '../models/List';
 import User from '../models/User';
 import UserGameObjective from '../models/UserGameObjective';
 import UserItem from '../models/UserItem';
@@ -631,6 +632,76 @@ router.put('/franchises/:id/subFranchises/remove', auth, (req, res, next) => {
       )).then(completeFranchises => res.json(completeFranchises));
     }
   );
+});
+
+//#endregion franchises
+
+//#region lists
+
+router.get('/lists', (req, res, next) => {
+  List.find((err, lists) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    res.json(lists);
+  });
+});
+
+router.get('/lists/title_id/:title_id', (req, res, next) => {
+  List.findOne({ title_id: req.params.title_id })
+  .exec((err, list) => {
+    if (err) return res.status(404).send('List not found');
+    res.json(list);
+  });
+});
+
+router.delete('/lists/:id', auth, (req, res, next) => {
+  List.findById(req.params.id, (err, list) => {
+    if (err) return res.status(500).send({success: false, msg: 'List not found'});
+    if (!isCreator(list, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this list'});
+    
+    list.remove((err, list) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json({
+        success: true,
+        msg: `${list.title} has successfully been removed.`
+      });
+    });
+  });
+});
+
+router.post('/lists', auth, (req, res, next) => {
+  return getTitleId(req.body.title, List).then(title_id => {
+    const list = new List({ ...req.body, title_id });
+
+    list.save((err, list) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json(list);
+    });
+  });
+});
+
+router.put('/lists/:id', auth, (req, res, next) => {
+  List.findById(req.params.id, (err, list) => {
+    if (!isCreator(list, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this list'});
+
+    const newList = req.body;
+    const title = newList.title;
+
+    const update = newList => {
+      List.findByIdAndUpdate(list._id, newList, { new: true }).exec(
+        (err, list) => {
+          if (err) return res.status(500).send(STATUS_500_MESSAGE);
+          res.json(list);
+        }
+      );
+    };
+
+    if (title && title !== list.title) {
+      return getTitleId(title, List).then(title_id => {
+        newList.title_id = title_id;
+        update(newList);
+      });
+    } else update(newList);
+  });
 });
 
 //#endregion franchises

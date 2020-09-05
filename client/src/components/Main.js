@@ -4,15 +4,19 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import AddFranchise from './franchises/FranchiseForm/AddFranchise';
 import AddGameObjective from './gameObjectives/GameObjectiveForm/AddGameObjective';
 import AddItem from './items/ItemForm/AddItem';
+import AddList from './lists/ListForm/AddList';
 import EditFranchise from './franchises/FranchiseForm/EditFranchise'
 import EditGameObjective from './gameObjectives/GameObjectiveForm/EditGameObjective';
 import EditItem from './items/ItemForm/EditItem';
+import EditList from './lists/ListForm/EditList';
 import Franchises from './franchises/Franchises/Franchises';
 import FranchiseDetails from './franchises/FranchiseDetails/FranchiseDetails';
 import GameObjectives from './gameObjectives/GameObjectives/GameObjectives';
 import HomePage from './HomePage/HomePage';
 import Items from './items/Items/Items';
 import ItemDetails from './items/ItemDetails/ItemDetails';
+import Lists from './lists/Lists/Lists';
+import ListDetails from './lists/ListDetails/ListDetails';
 import Login from './authentication/AuthForm/Login';
 import Logout from './authentication/Logout';
 import ManageUsers from './admin/users/ManageUsers/ManageUsers';
@@ -39,6 +43,10 @@ export default () => (
       <Route exact path='/items/add' component={getAuthComponent(AddItem)} />
       <Route exact path='/items/:titleId' component={ItemDetails} />
       <Route exact path='/items/:titleId/edit' component={getAuthComponent(EditItem)} />
+      <Route exact path='/lists' component={Lists} />
+      <Route exact path='/lists/add' component={getAuthComponent(AddList)} />
+      <Route exact path='/lists/:titleId' component={ListDetails} />
+      <Route exact path='/lists/:titleId/edit' component={getAuthComponent(EditList)} />
       <Route exact path='/objectives/:titleId' component={GameObjectives} />
       <Route exact path='/objectives/:titleId/add' component={getAuthComponent(AddGameObjective)} />
       <Route exact path='/objectives/:titleId/subObjectives/:parentId' component={GameObjectives} />
