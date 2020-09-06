@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 import Franchise from './Franchise';
 import GameObjective from './GameObjective';
+import List from './List';
 import UserItem from './UserItem';
 
 const ItemSchema = mongoose.Schema({
@@ -56,6 +57,7 @@ ItemSchema.pre('find', autoPopulate);
 
 ItemSchema.pre('remove', function (next) {
   Franchise.update({}, { $pull: { items: this._id } }, { multi: true}).exec();
+  List.update({}, { $pull: { items: this._id } }, { multi: true}).exec();
   GameObjective.remove({game: this._id}).exec();
   UserItem.remove({item: this._id}).exec();
   next();

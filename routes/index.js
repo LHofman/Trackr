@@ -647,6 +647,7 @@ router.get('/lists', (req, res, next) => {
 
 router.get('/lists/title_id/:title_id', (req, res, next) => {
   List.findOne({ title_id: req.params.title_id })
+  .populate('items')
   .exec((err, list) => {
     if (err) return res.status(404).send('List not found');
     res.json(list);
@@ -704,7 +705,57 @@ router.put('/lists/:id', auth, (req, res, next) => {
   });
 });
 
-//#endregion franchises
+router.put('/lists/:id/items/add', auth, (req, res, next) => {
+  const items = req.body;
+  return List.updateOne(
+    { _id: req.params.id }, 
+    { $push: { items: { $each: items } } },
+    (err, test) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(items.map(itemId => 
+        Item.findById(itemId).exec()
+      )).then(completeItems => res.json(completeItems));
+    }
+  );
+});
+
+router.put('/lists/:id/items/remove', auth, (req, res, next) => {
+  const items = req.body;
+  return List.updateOne(
+    { _id: req.params.id }, 
+    { $pullAll: { items: items } },
+    (err, test) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(items.map(itemId => 
+        Item.findById(itemId).exec()
+      )).then(completeItems => res.json(completeItems));
+    }
+  );
+});
+
+router.get('/lists/byItem/:item', (req, res, next) => {
+  List.find({ items: mongoose.Types.ObjectId(req.params.item) }, (err, lists) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    return res.json(lists);
+  })
+});
+
+router.put('/lists/addItemToMultiple/:item', (req, res, next) => {
+  const lists = req.body;
+  return List.update(
+    { '_id': { $in: lists } }, 
+    { $push: { items: req.params.item } },
+    { multi: true },
+    (err, test) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(lists.map(listId => 
+        List.findById(listId).exec()
+      )).then(completeLists => res.json(completeLists));
+    }
+  );
+});
+
+//#endregion lists
 
 //#region users
 
