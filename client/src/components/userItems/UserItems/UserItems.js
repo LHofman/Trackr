@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
 
 import ItemDetails from '../../items/ItemDetails/ItemDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
+import ListWithDetails from '../../../hoc/ListWithDetails';
 import UserItem from './UserItem';
 
 import fetch from '../../../utils/fetch';
@@ -10,7 +12,6 @@ import { getItemsFiltersControlsExtraParams } from '../../items/Items/itemsFilte
 import { itemsSortDefault, getItemsSortControls } from '../../items/Items/itemsSorting';
 import { sortUserItems } from './userItemsSorting';
 import { getUserItemsFilterControls, getUserItemsFilterDefaults, filterUserItem } from './userItemsFilters';
-import ListWithDetails from '../../../hoc/ListWithDetails';
 
 export default class Items extends Component {
   constructor() {
@@ -18,7 +19,8 @@ export default class Items extends Component {
     this.state = {
       userItems: [],
       filterControlsExtraFields: {},
-      detailsComponent: null
+      detailsComponent: null,
+      redirect: null
     }
 
     this.setDetailsComponent = this.setDetailsComponent.bind(this);
@@ -46,6 +48,9 @@ export default class Items extends Component {
       return;
     }
 
+    console.log(window.innerWidth);
+    console.log(userItem);
+
     if (window.innerWidth < 1200) {
       this.setState({ redirect: `/items/${userItem.item.title_id}`});
       return;
@@ -57,6 +62,9 @@ export default class Items extends Component {
   }
 
   render() {
+    const redirect = this.state.redirect;
+		if (redirect) return <Redirect to={redirect} />
+
     return (
       <ListWithDetails detailsComponent={ this.state.detailsComponent }>
         <PaginatedList
@@ -76,7 +84,7 @@ export default class Items extends Component {
           }}
           sortConfig={{
             defaults: itemsSortDefault,
-            getControls: getItemsSortControls,
+            getControls: getItemsSortControls(),
             sortItems: sortUserItems
           }} />
       </ListWithDetails>

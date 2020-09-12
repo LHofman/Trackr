@@ -73,7 +73,7 @@ export default class Items extends Component {
           }}
           sortConfig={{
             defaults: itemsSortDefault,
-            getControls: getItemsSortControls,
+            getControls: getItemsSortControls(),
             sortItems: sortItems
           }} />
       </ListWithDetails>

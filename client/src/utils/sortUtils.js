@@ -5,7 +5,7 @@ import { isDateStatusValid } from './dateUtils';
 export const sortValues = (type, value1, value2) => {
   switch (type) {
     case 'Date': return sortDates(value1, value2);
-    case 'Number': return sortValuesStandard(value1 < value2);
+    case 'Number': return sortValuesStandard(value1, value2);
     default: return sortValuesStandard(value1.toString().toLowerCase(), value2.toString().toLowerCase());
   }
 }

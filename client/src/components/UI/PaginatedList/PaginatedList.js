@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import { Link } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import { Button, Label, List, Pagination } from 'semantic-ui-react';
+import { Button, Grid, GridColumn, Label, List, Pagination } from 'semantic-ui-react';
 
 import FilterMenu from '../../UI/FilterMenu/FilterMenu';
 
@@ -17,9 +17,9 @@ export default class PaginatedList extends Component {
 
     this.state = {
       activePage: 1,
-      addItems: [],
+      changingOrder: false,
       filters: filtersConfig.defaults,
-      sort: sortConfig.defaults
+      sort: sortConfig.defaults,
     }
     
     this.changePage = this.changePage.bind(this);
@@ -27,6 +27,13 @@ export default class PaginatedList extends Component {
     this.handleSortChange = this.handleSortChange.bind(this);
   }
   
+  componentWillReceiveProps(newProps) {
+    this.setState({ 
+      items: newProps.items || [],
+      activePage: 1
+    });
+  }
+
   changePage(activePage) {
     this.handlePaginationChange(null, { activePage });
   }
@@ -51,10 +58,6 @@ export default class PaginatedList extends Component {
     )
   }
 
-	handleAddItemsChange(e, { value }) {
-		this.setState({ addItems: value })
-	}
-
   handlePaginationChange(e, { activePage }) {
     this.setState({ activePage });
     animateScroll.scrollToTop();
@@ -69,47 +72,87 @@ export default class PaginatedList extends Component {
     this.setState({ sort: newSort });
   }
 
+	startChangeOrder() {
+    this.setState({ changingOrder: true });
+    this.props.startChangeOrder();
+	}
+
+	saveOrder() {
+    this.setState({ changingOrder: false });
+    this.props.saveOrder();
+	}
+
   render() {
-    const filtersConfig = this.props.filtersConfig;
-    const sortConfig = this.props.sortConfig;
+    const {
+      props: {
+        createItemComponent,
+        createItemUrl,
+        filtersConfig,
+        items,
+        sortConfig,
+        startChangeOrder,
+        title
+      },
+      state: {
+        activePage,
+        changingOrder,
+        filters,
+        sort
+      }
+    } = this;
 
     let filteredItems = [];
-    if (this.props.items && this.props.items.length > 0) {
-      filteredItems = this.props.items;
+    if (items && items.length > 0) {
+      filteredItems = items;
       if (filtersConfig) {
-        filteredItems = filteredItems.filter(item => this.props.filtersConfig.filterItem(item, this.state.filters));
+        filteredItems = filteredItems.filter(item => filtersConfig.filterItem(item, filters));
       }
       if (sortConfig) {
-        filteredItems = filteredItems.sort(this.props.sortConfig.sortItems(this.state.sort, this.state.filters));
+        filteredItems = filteredItems.sort(sortConfig.sortItems(sort, filters));
       }
     }
     
-    const begin = (this.state.activePage - 1) * 100;
+    const begin = (activePage - 1) * 100;
     const totalPages = Math.ceil(filteredItems.length / 100, 0);
-    const items = filteredItems
+    const itemComponents = filteredItems
       .slice(begin, begin + 100)
-      .map(this.props.createItemComponent);
+      .map(createItemComponent);
 
     return (
       <div>
-        <h2>{ this.props.title }</h2>
+        <h2>{title}</h2>
         {
-          (this.props.createItemUrl && isLoggedIn()) && 
-          <Button positive circular floated='right' icon='plus' as={Link} to={this.props.createItemUrl} />
+          (createItemUrl && isLoggedIn()) && 
+          <Button positive circular floated='right' icon='plus' as={Link} to={createItemUrl} />
         }
-        {
-          (filtersConfig || sortConfig) &&
-          <FilterMenu
-            defaultFilters={ filtersConfig.defaults }
-            defaultSort={ sortConfig.defaults }
-            handleFilterChange={this.handleFilterChange}
-            handleSortChange={this.handleSortChange}
-            getFilterControlsFunction={ filtersConfig.getControls }
-            getSortControlsFunction={ sortConfig.getControls } />
-        }
+        <Grid style={{ maxWidth: '750px' }}>
+          {
+            (filtersConfig || sortConfig) &&
+            <GridColumn width={8}>
+              <FilterMenu
+                defaultFilters={ filtersConfig.defaults }
+                defaultSort={ sortConfig.defaults }
+                handleFilterChange={this.handleFilterChange}
+                handleSortChange={this.handleSortChange}
+                getFilterControlsFunction={ filtersConfig.getControls }
+                getSortControlsFunction={ sortConfig.getControls } />
+            </GridColumn>
+          }
+          {
+            startChangeOrder &&
+            <GridColumn width={8}>
+              {
+                changingOrder
+                ? <Button positive onClick={ this.saveOrder.bind(this) }>Save order</Button>
+                : <Button onClick={ this.startChangeOrder.bind(this) }>change order</Button>
+              }
+              <br/><br/>
+            </GridColumn>
+          }
+        </Grid>
         {this.getPagination(totalPages)}
-        <List { ...this.props.extraAttributes }>
-          {items}
+        <List>
+          {itemComponents}
         </List>
         {this.getPagination(totalPages)}
       </div>

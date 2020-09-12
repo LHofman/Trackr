@@ -20,7 +20,8 @@ export default class ListDetails extends Component {
 			items: [],
       itemOptions: [],
       itemOptionsLoaded: false,
-      filterControlsExtraFields: {},
+			filterControlsExtraFields: {},
+			changingOrder: false
 		}
 		
     this.removeItem = this.removeItem.bind(this);
@@ -97,11 +98,38 @@ export default class ListDetails extends Component {
 	}
 
   removeItem(item) {
-    return fetch(`/api/lists/${this.state.list._id}/items/remove`, 'put', true, [item._id]);
-  }
+    return fetch(`/api/lists/${this.state.list._id}/items/remove`, 'put', true, [item._id]).then(() => {
+			const items = this.state.items.filter(itemB => itemB._id !== item._id);
+			this.setState({ items });
+		});
+	}
+	
+	startChangeOrder() {
+		this.setState({ changingOrder: true });
+	}
+
+	saveOrder() {
+		const list = this.state.list;
+		list.items = this.state.items;
+    fetch(`/api/lists/${list._id}`, 'put', true, list).then(() => {
+			this.setState({ changingOrder: false });
+		});
+	}
+
+	changeIndex(originalIndex, newIndex) {
+		const items = this.state.items;
+		const changedItem = items.splice(originalIndex - 1, 1);
+		items.splice(newIndex - 1, 0, changedItem[0]);
+		console.log(items);
+		this.setState({ items });
+	}
 
   render() {
-    const { redirect, list } = this.state;
+    const {
+			changingOrder,
+			list,
+			redirect
+		} = this.state;
 
     if (redirect) return <Redirect to={ redirect } />;
 
@@ -125,7 +153,7 @@ export default class ListDetails extends Component {
 					title='Items'
 					options={ this.state.itemOptions }
 					optionsLoaded={ this.state.itemOptionsLoaded }
-					items={ this.state.items }
+					items={ this.state.items.map((item, index) => { return { ...item, index: index + 1 } }) }
 					paginatedList={{
 						filtersConfig:{
 							defaults: getItemsFiltersDefaults(),
@@ -133,14 +161,16 @@ export default class ListDetails extends Component {
 							filterItem: filterItem
 						},
 						sortConfig:{
-							defaults: itemsSortDefault,
-							getControls: getItemsSortControls,
+							defaults: { field: 'index', order: 'asc' },
+							getControls: getItemsSortControls(['index']),
 							sortItems: sortItems
-						}
+						},
+						startChangeOrder: this.startChangeOrder.bind(this),
+						saveOrder: this.saveOrder.bind(this)
 					}}
-					createItemComponent={ createItemComponent(this.state.list) }
+					createItemComponent={ createItemComponent(list, changingOrder, this.changeIndex.bind(this)) }
 					removeItem={ this.removeItem }
-					addItems={ this.addItems.bind(this) }
+					addItems={ changingOrder ? false : this.addItems.bind(this) }
 					parentComponent={ this }
 					stateKeyItems='items'
 					stateKeyOptions='itemOptions'
@@ -148,7 +178,7 @@ export default class ListDetails extends Component {
 					extraAttributes={{ minCharacters:2 }} />
 				<br/>
         {
-          canEdit(list) && 
+          (canEdit(list) && !changingOrder) &&
           [
             <Button key='edit' positive floated='left' as={Link} to={`/lists/${list.title_id}/edit`}>Edit</Button>,
 						<Button key='delete' negative floated='right' onClick={() => this.toggleConfirmationAlert('delete')}>Delete</Button>	
@@ -159,6 +189,14 @@ export default class ListDetails extends Component {
   }
 }
 
-const createItemComponent = (list) => (onDelete) => (item) => {
-  return <ListDetailsItem key={ item._id } list={ list } item={ item } onDelete={onDelete} />
+const createItemComponent = (list, changingOrder, changeIndex) => (onDelete) => (item) => {
+	return (
+		<ListDetailsItem
+			key={item._id}
+			list={list}
+			changingOrder={changingOrder}
+			changeIndex={changeIndex}
+			onDelete={onDelete}
+			item={item} />
+	);
 }

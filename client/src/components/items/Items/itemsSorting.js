@@ -4,8 +4,12 @@ import { sort, sortValues } from '../../../utils/sortUtils';
 
 import getSortControl from '../../UI/FilterMenu/getSortControl';
 
-export const getItemsSortControls = (currentSort, currentFilters, handleSortChange) => (
+export const getItemsSortControls = (extraFields = []) => (currentSort, currentFilters, handleSortChange) => (
   <div>
+    {
+      extraFields.includes('index') &&
+      getSortControl('index', currentSort, handleSortChange)
+    }
     { getSortControl('title', currentSort, handleSortChange) }
     { getSortControl('releaseDate', currentSort, handleSortChange) }
     {
@@ -23,6 +27,8 @@ export const sortItems = ({ field, order }, filters = {}) => (item1, item2) => {
     filters,
     (field, item1, item2) => {
       switch (field) {
+        case 'index':
+          return sortValues('Number', item1.index, item2.index);
         case 'releaseDate':
           return sortValues('Date', 
             { status: item1.releaseDateStatus, value: item1.releaseDate },
