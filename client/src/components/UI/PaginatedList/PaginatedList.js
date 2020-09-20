@@ -151,7 +151,7 @@ export default class PaginatedList extends Component {
           }
         </Grid>
         {this.getPagination(totalPages)}
-        <List>
+        <List { ...(this.props.list || {}).extraAttributes }>
           {itemComponents}
         </List>
         {this.getPagination(totalPages)}

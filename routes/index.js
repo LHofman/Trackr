@@ -647,11 +647,11 @@ router.get('/lists', (req, res, next) => {
 
 router.get('/lists/title_id/:title_id', (req, res, next) => {
   List.findOne({ title_id: req.params.title_id })
-  .populate('items')
-  .exec((err, list) => {
-    if (err) return res.status(404).send('List not found');
-    res.json(list);
-  });
+    .populate('items.item')
+    .exec((err, list) => {
+      if (err) return res.status(404).send('List not found');
+      res.json(list);
+    });
 });
 
 router.delete('/lists/:id', auth, (req, res, next) => {
@@ -710,10 +710,10 @@ router.put('/lists/:id/items/add', auth, (req, res, next) => {
   return List.updateOne(
     { _id: req.params.id }, 
     { $push: { items: { $each: items } } },
-    (err, test) => {
+    (err, _) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
-      return Promise.all(items.map(itemId => 
-        Item.findById(itemId).exec()
+      return Promise.all(items.map(item => 
+        mongoose.model(item.itemModel).findById(item.item).exec()
       )).then(completeItems => res.json(completeItems));
     }
   );
@@ -723,11 +723,11 @@ router.put('/lists/:id/items/remove', auth, (req, res, next) => {
   const items = req.body;
   return List.updateOne(
     { _id: req.params.id }, 
-    { $pullAll: { items: items } },
-    (err, test) => {
+    { $pull: { items: { item: { $in: items } } } },
+    (err) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
-      return Promise.all(items.map(itemId => 
-        Item.findById(itemId).exec()
+      return Promise.all(items.map(item => 
+        Item.findById(item.item).exec()
       )).then(completeItems => res.json(completeItems));
     }
   );

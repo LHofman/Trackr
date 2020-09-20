@@ -8,7 +8,8 @@ import ListDetailsItem from './ListDetailsItem';
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
 import { getItemsFiltersDefaults, getItemsFiltersControls, getItemsFiltersControlsExtraParams, filterItem } from '../../items/Items/itemsFilters';
-import { sortItems, itemsSortDefault, getItemsSortControls } from '../../items/Items/itemsSorting';
+import { sortItems, getItemsSortControls } from '../../items/Items/itemsSorting';
+
 
 export default class ListDetails extends Component {
   constructor() {
@@ -59,7 +60,7 @@ export default class ListDetails extends Component {
 	getListDetails(titleId) {
 		return fetch(`/api/lists/title_id/${titleId}`).then(list => {
 			if (!list || list === null) throw new Error('List not found');
-			this.setState({ list, items: list.items });
+			this.setState({ list, items: list.items.map((item) => { return { ...item.item, itemModel: item.itemModel } }) });
 		}).catch(reason => {
 			this.setState({redirect: '/'});
 		});
@@ -81,17 +82,34 @@ export default class ListDetails extends Component {
   }
   
 	addItems(itemsToAdd) {
-		return fetch(`/api/lists/${this.state.list._id}/items/add`, 'put', true, itemsToAdd);
+		const items = itemsToAdd.map((item) => { return { item, itemModel: this.state.allItemsTypes[item] } });
+		return fetch(`/api/lists/${this.state.list._id}/items/add`, 'put', true, items);
 	}
 	
 	getItems() {
-		fetch('/api/items').then(items => {
-      if (!items || items === null) return;
+		Promise.all([
+			fetch('/api/items'),
+			fetch('/api/franchises')
+		]).then(itemsArray => {
+			const itemsItems = itemsArray[0].map((item) => { return { ...item, type: 'Item' } });
+			const itemsFranchises = itemsArray[1].map((franchise) => { return { ...franchise, title: `${franchise.title} (Franchise)`, type: 'Franchise' } });
+			const items = [ ...itemsItems, ...itemsFranchises ];
       this.setState({
+				allItemsTypes: items.reduce((map, item) => { return { ...map, [item._id]: item.type } }),
         itemOptions: 
-          items.filter(item => this.state.list.items.map(item => item._id).indexOf(item._id) === -1)
-          .sort(sortItems(itemsSortDefault))
-          .map(item => { return { key: item._id, value: item._id, text: `${item.title} (${new Date(item.releaseDate).getFullYear()})` } }),
+					items.filter(item => this.state.items.map(item => item._id).indexOf(item._id) === -1)
+					.sort((i1, i2) => i1.title <= i2.title ? -1 : 1)
+          .map(item => {
+						let text = item.title;
+						if (item.releaseDate) {
+							text += ` (${new Date(item.releaseDate).getFullYear()})`;
+						}
+						return {
+							key: item._id,
+							value: item._id,
+							text
+						};
+					}),
         itemOptionsLoaded: true
       });
 		});
@@ -110,7 +128,7 @@ export default class ListDetails extends Component {
 
 	saveOrder() {
 		const list = this.state.list;
-		list.items = this.state.items;
+		list.items = this.state.items.map((item) => { return { item, itemModel: item.itemModel } });
     fetch(`/api/lists/${list._id}`, 'put', true, list).then(() => {
 			this.setState({ changingOrder: false });
 		});

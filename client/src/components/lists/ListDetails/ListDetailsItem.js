@@ -70,6 +70,16 @@ export default class ListDetailsItem extends Component {
       }
     } = this;
 
+    let itemUrl = undefined;
+    switch (item.itemModel) {
+      case 'Item':
+        itemUrl = `/items/${item.title_id}`;
+        break;
+      case 'Franchise':
+        itemUrl = `/franchises/${item.title_id}`;
+        break;
+    }
+
     return (
       <List.Item>
         <List.Content>
@@ -96,9 +106,9 @@ export default class ListDetailsItem extends Component {
             }. &nbsp;
             {getIcon(item)}
             {
-              changingOrder
+              (changingOrder || !itemUrl)
               ? item.title
-              : <a href={`/items/${item.title_id}`}>{item.title}</a>
+              : <a href={itemUrl}>{item.title}</a>
             }
             {
               canEdit(list) &&
@@ -106,11 +116,17 @@ export default class ListDetailsItem extends Component {
             }
           </List.Header>
           <List.Description>
-            Release Date: {
-              item.releaseDateStatus === 'Date' ? 
-              new Date(item.releaseDate).toDateString() :
-              item.releaseDateStatus
-            }<br />
+            {
+              item.releaseDate &&
+              <div>
+                Release Date: {
+                  item.releaseDateStatus === 'Date' ? 
+                  new Date(item.releaseDate).toDateString() :
+                  item.releaseDateStatus
+                }
+                <br/>
+              </div>
+            }
             {
               item.type === 'Movie' && item.releaseDateDvd ?
               `Dvd Release Date: ${

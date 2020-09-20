@@ -81,6 +81,11 @@ export default class Lists extends Component {
             defaults: listsSortDefault,
             getControls: getListsSortControls,
             sortItems: sort
+          }}
+          list = {{
+            extraAttributes: {
+              bulleted: true
+            }
           }} />
       </ListWithDetails>
     );

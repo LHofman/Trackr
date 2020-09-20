@@ -16,8 +16,16 @@ const ListSchema = mongoose.Schema({
     required: true
   },
   items: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Item'
+    item: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: 'items.itemModel'
+    },
+    itemModel: {
+      type: String,
+      required: true,
+      enum: ['Item', 'Franchise']
+    }
   }]
 });
 

@@ -73,6 +73,11 @@ export default class Franchises extends Component {
             defaults: franchisesSortDefault,
             getControls: getFranchisesSortControls,
             sortItems: sort
+          }}
+          list = {{
+            extraAttributes: {
+              bulleted: true
+            }
           }} />
       </ListWithDetails>
     );
