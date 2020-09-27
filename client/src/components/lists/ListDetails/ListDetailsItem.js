@@ -78,6 +78,8 @@ export default class ListDetailsItem extends Component {
       case 'Franchise':
         itemUrl = `/franchises/${item.title_id}`;
         break;
+      default:
+        break;
     }
 
     return (
