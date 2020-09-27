@@ -12,7 +12,7 @@ class GameObjective extends Component {
     super(props);
     this.state = {
       amount: 0,
-      completed: false,
+      completed: (props.gameObjective.userGameObjective || {}).completed,
       confirmationAlert: false,
       following: props.following,
       gameObjective: props.gameObjective,
@@ -125,7 +125,7 @@ class GameObjective extends Component {
       const gameObjective = this.state.gameObjective;
       gameObjective.userGameObjective = newUserGameObjective;
       this.setState({ gameObjective });
-      this.props.refreshParent();
+      this.props.updateGameObjective(gameObjective);
     }).catch(console.log);
   }
 
