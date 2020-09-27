@@ -40,6 +40,7 @@ export default () => (
       <Route exact path='/franchises/:titleId/edit' component={getAuthComponent(EditFranchise)} />
       <Route exact path='/home' component={ HomePage } />
       <Route exact path='/items' component={Items} />
+      <Route exact path='/items/filters/:filter' component={Items} />
       <Route exact path='/items/add' component={getAuthComponent(AddItem)} />
       <Route exact path='/items/:titleId' component={ItemDetails} />
       <Route exact path='/items/:titleId/edit' component={getAuthComponent(EditItem)} />
@@ -54,6 +55,7 @@ export default () => (
       <Route exact path='/objectives/:titleId/subObjectives/:parentId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
       <Route exact path='/objectives/:titleId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
       <Route exact path='/myItems' component={getAuthComponent(UserItems)} />
+      <Route exact path='/myItems/filters/:filter' component={getAuthComponent(UserItems)} />
       <Route exact path='/login' component={getNonAuthComponent(Login)} />
       <Route exact path='/logout' component={getAuthComponent(Logout)} />
       <Route exact path='/register' component={getNonAuthComponent(Register)} />

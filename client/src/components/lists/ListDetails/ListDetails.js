@@ -7,8 +7,8 @@ import ListDetailsItem from './ListDetailsItem';
 
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
-import { getItemsFiltersDefaults, getItemsFiltersControls, getItemsFiltersControlsExtraParams, filterItem } from '../../items/Items/itemsFilters';
-import { sortItems, getItemsSortControls } from '../../items/Items/itemsSorting';
+import { getItemsFiltersDefaults, getItemsFiltersControls, getItemsFiltersControlsExtraParams, filterItem } from '../../../utils/items/itemsFilters';
+import { sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
 
 
 export default class ListDetails extends Component {

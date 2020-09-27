@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { sort, sortValues } from '../../../utils/sortUtils';
+import { sort, sortValues } from '../sortUtils';
 
-import getSortControl from '../../UI/FilterMenu/getSortControl';
+import getSortControl from '../../components/UI/FilterMenu/getSortControl';
 
 export const getItemsSortControls = (extraFields = []) => (currentSort, currentFilters, handleSortChange) => (
   <div>

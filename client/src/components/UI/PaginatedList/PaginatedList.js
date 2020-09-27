@@ -11,7 +11,7 @@ import isLoggedIn from '../../../utils/isLoggedIn';
 export default class PaginatedList extends Component {
   constructor(props) {
     super(props);
-    
+
     const filtersConfig = props.filtersConfig || {};
     const sortConfig = props.sortConfig || {};
 
@@ -30,7 +30,9 @@ export default class PaginatedList extends Component {
   componentWillReceiveProps(newProps) {
     this.setState({ 
       items: newProps.items || [],
-      activePage: 1
+      activePage: 1,
+      filters: newProps.filtersConfig.defaults,
+      sort: newProps.sortConfig.defaults
     });
   }
 
@@ -130,12 +132,12 @@ export default class PaginatedList extends Component {
             (filtersConfig || sortConfig) &&
             <GridColumn width={8}>
               <FilterMenu
-                defaultFilters={ filtersConfig.defaults }
-                defaultSort={ sortConfig.defaults }
+                defaultFilters={filters}
+                defaultSort={sort}
                 handleFilterChange={this.handleFilterChange}
                 handleSortChange={this.handleSortChange}
-                getFilterControlsFunction={ filtersConfig.getControls }
-                getSortControlsFunction={ sortConfig.getControls } />
+                getFilterControlsFunction={filtersConfig.getControls}
+                getSortControlsFunction={sortConfig.getControls} />
             </GridColumn>
           }
           {

@@ -1,10 +1,11 @@
 import React from 'react';
+import moment from 'moment';
 
-import checkFilter from '../../../utils/checkFilter';
-import { getArtistOptions, getPlatformOptions, getGenreOptions } from '../getFieldOptions';
-import getFilterControl from '../../UI/FilterMenu/getFilterControl';
-import getArtistType from '../getArtistType';
-import { getTypeOptions } from '../getFieldOptions';
+import checkFilter from '../checkFilter';
+import { getArtistOptions, getPlatformOptions, getGenreOptions } from '../../components/items/getFieldOptions';
+import getFilterControl from '../../components/UI/FilterMenu/getFilterControl';
+import getArtistType from '../../components/items/getArtistType';
+import { getTypeOptions } from '../../components/items/getFieldOptions';
 
 export const getItemsFiltersControls = (extraParams) => (filters, handleFilterChange) => (
   <div>
@@ -94,3 +95,21 @@ export const filterItem = (item, filters) => {
   if (filters.type === 'Video Game' && !checkFilter('List', item.platforms, filters.platform)) return false;
   return true;
 };
+
+export const applyCustomFilter = (filters, sort, customFilter) => {
+  switch (customFilter) {
+    case 'upcoming':
+      filters.releaseDateLowerLimit = moment().format('YYYY-MM-DD');
+      sort.field = 'releaseDate';
+      sort.order = 'asc';
+      return;
+    case 'upcomingDvd':
+      filters.type = 'Movie';
+      filters.releaseDateDvdLowerLimit = moment().format('YYYY-MM-DD');
+      sort.field = 'releaseDateDvd';
+      sort.order = 'asc';
+      return;
+    default:
+      return;
+  }
+}

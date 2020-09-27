@@ -8,8 +8,8 @@ import FranchiseDetailsItem from './FranchiseDetailsItem';
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
 import LinkedItems from '../../UI/LinkedItems/LinkedItems';
-import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from '../../items/Items/itemsFilters';
-import { itemsSortDefault, sortItems, getItemsSortControls } from '../../items/Items/itemsSorting';
+import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from '../../../utils/items/itemsFilters';
+import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
 
 export default class FranchiseDetails extends Component {
 	constructor(props) {

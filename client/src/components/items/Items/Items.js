@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
 
 import Item from './Item';
 import ItemDetails from '../ItemDetails/ItemDetails';
@@ -6,15 +7,16 @@ import ListWithDetails from '../../../hoc/ListWithDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 
 import fetch from '../../../utils/fetch';
-import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from './itemsFilters';
-import { itemsSortDefault, sortItems, getItemsSortControls } from './itemsSorting';
-import { Redirect } from 'react-router-dom';
+import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem, applyCustomFilter } from '../../../utils/items/itemsFilters';
+import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
 
 export default class Items extends Component {
   constructor() {
     super();
     this.state = {
       items: [],
+      filtersDefault: getItemsFiltersDefaults(),
+      sortDefault: itemsSortDefault,
       filterControlsExtraFields: {},
       detailsComponent: null,
       redirect: undefined
@@ -24,11 +26,38 @@ export default class Items extends Component {
   }
 
   componentWillMount() {
-    this.getItems();
+    Promise.all([
+      this.getItems(),
 
-    getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
-      this.setState({ filterControlsExtraFields });
+      new Promise((resolve) => {
+        getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
+          this.setState({ filterControlsExtraFields });
+          setTimeout(() => {
+            resolve();
+          });
+        });
+      })
+    ]).then(() => {
+      this.checkCustomFilter(this.props);
     });
+  }
+
+  componentWillReceiveProps(props) {
+    this.checkCustomFilter(props);
+  }
+
+  checkCustomFilter(props) {
+    if (!props.match || !props.match) {
+      return;
+    }
+
+    const filtersDefault = getItemsFiltersDefaults();
+    const sortDefault = itemsSortDefault;
+
+    const filter = props.match.params.filter;
+    applyCustomFilter(filtersDefault, sortDefault, filter);
+
+    this.setState({ filtersDefault, sortDefault});
   }
 
   getItems() {
@@ -67,12 +96,12 @@ export default class Items extends Component {
             <Item key={item._id} item={item} onClickCallback={ this.setDetailsComponent } ></Item>
           )}
           filtersConfig={{
-            defaults: getItemsFiltersDefaults(),
+            defaults: this.state.filtersDefault,
             getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
             filterItem: filterItem
           }}
           sortConfig={{
-            defaults: itemsSortDefault,
+            defaults: this.state.sortDefault,
             getControls: getItemsSortControls(),
             sortItems: sortItems
           }} />

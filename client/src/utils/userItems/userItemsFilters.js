@@ -1,11 +1,12 @@
 import React from 'react';
 
-import checkFilter from '../../../utils/checkFilter';
-import { filterItem } from '../../items/Items/itemsFilters';
-import getFilterControl from '../../UI/FilterMenu/getFilterControl';
-import { getItemsFiltersControls } from '../../items/Items/itemsFilters';
-import { getItemsFiltersDefaults } from "../../items/Items/itemsFilters"
-import statusOptions from '../statusOptions';
+import checkFilter from '../checkFilter';
+import { filterItem } from '../items/itemsFilters';
+import getFilterControl from '../../components/UI/FilterMenu/getFilterControl';
+import { getItemsFiltersControls } from '../items/itemsFilters';
+import { getItemsFiltersDefaults } from "../items/itemsFilters"
+import statusOptions from '../../components/userItems/statusOptions';
+import { applyCustomFilter as applyCustomFilterOnitem } from '../items/itemsFilters';
 
 export const getUserItemsFilterControls = (extraParams) => (filters, handleFilterChange) => (
   <div>
@@ -32,3 +33,7 @@ export const filterUserItem = (userItem, filters) => {
   if (!checkFilter('Select', userItem.status, filters.status)) return false;
   return true;
 };
+
+export const applyCustomFilter = (filters, sort, customFilter) => {
+  applyCustomFilterOnitem(filters, sort, customFilter);
+}

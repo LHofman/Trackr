@@ -17,6 +17,13 @@ export default class FilterMenu extends Component {
     this.toggleSidebar = this.toggleSidebar.bind(this);
   }
 
+  componentWillReceiveProps(props) {
+    this.setState({
+      filters: props.defaultFilters,
+      sort: props.defaultSort
+    });
+  }
+
   clearAll() {
     const defaultFilters = this.props.defaultFilters;
     const defaultSort = this.props.defaultSort;

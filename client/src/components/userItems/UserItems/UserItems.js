@@ -8,16 +8,23 @@ import UserItem from './UserItem';
 
 import fetch from '../../../utils/fetch';
 import getUser from '../../../utils/getUser';
-import { getItemsFiltersControlsExtraParams } from '../../items/Items/itemsFilters';
-import { itemsSortDefault, getItemsSortControls } from '../../items/Items/itemsSorting';
-import { sortUserItems } from './userItemsSorting';
-import { getUserItemsFilterControls, getUserItemsFilterDefaults, filterUserItem } from './userItemsFilters';
+import { getItemsFiltersControlsExtraParams } from '../../../utils/items/itemsFilters';
+import { itemsSortDefault, getItemsSortControls } from '../../../utils/items/itemsSorting';
+import { sortUserItems } from '../../../utils/userItems/userItemsSorting';
+import {
+  applyCustomFilter,
+  getUserItemsFilterControls,
+  getUserItemsFilterDefaults,
+  filterUserItem
+} from '../../../utils/userItems/userItemsFilters';
 
 export default class Items extends Component {
   constructor() {
     super();
     this.state = {
       userItems: [],
+      filtersDefault: getUserItemsFilterDefaults(),
+      sortDefault: itemsSortDefault,
       filterControlsExtraFields: {},
       detailsComponent: null,
       redirect: null
@@ -27,11 +34,38 @@ export default class Items extends Component {
   }
 
   componentWillMount() {
-    this.getUser();
+    Promise.all([
+      this.getUser(),
 
-    getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
-      this.setState({ filterControlsExtraFields });
+      new Promise((resolve) => {
+        getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
+          this.setState({ filterControlsExtraFields });
+          setTimeout(() => {
+            resolve();
+          });
+        });
+      })
+    ]).then(() => {
+      this.checkCustomFilter(this.props);
     });
+  }
+
+  componentWillReceiveProps(props) {
+    this.checkCustomFilter(props);
+  }
+
+  checkCustomFilter(props) {
+    if (!props.match || !props.match) {
+      return;
+    }
+
+    const filtersDefault = getUserItemsFilterDefaults();
+    const sortDefault = itemsSortDefault;
+
+    const filter = props.match.params.filter;
+    applyCustomFilter(filtersDefault, sortDefault, filter);
+
+    this.setState({ filtersDefault, sortDefault});
   }
 
   getUser() {
@@ -47,9 +81,6 @@ export default class Items extends Component {
       this.setState({ detailsComponent: null });
       return;
     }
-
-    console.log(window.innerWidth);
-    console.log(userItem);
 
     if (window.innerWidth < 1200) {
       this.setState({ redirect: `/items/${userItem.item.title_id}`});
@@ -78,12 +109,12 @@ export default class Items extends Component {
               onClickCallback={ this.setDetailsComponent } ></UserItem>
           )}
           filtersConfig={{
-            defaults: getUserItemsFilterDefaults(),
+            defaults: this.state.filtersDefault,
             getControls: getUserItemsFilterControls(this.state.filterControlsExtraFields),
             filterItem: filterUserItem
           }}
           sortConfig={{
-            defaults: itemsSortDefault,
+            defaults: this.state.sortDefault,
             getControls: getItemsSortControls(),
             sortItems: sortUserItems
           }} />

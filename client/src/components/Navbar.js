@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu } from 'semantic-ui-react';
+import { Dropdown, Menu } from 'semantic-ui-react';
 
 import isLoggedIn from '../utils/isLoggedIn';
 import getUser from '../utils/getUser';
@@ -20,12 +20,24 @@ export default class Navbar extends Component {
         <Menu.Item as={Link} to='/items'>
           Items
         </Menu.Item>
+        <Dropdown item>
+          <Dropdown.Menu>
+            <Dropdown.Item as={Link} to='/items/filters/upcoming'>Upcoming</Dropdown.Item>
+            <Dropdown.Item as={Link} to='/items/filters/upcomingDvd'>Upcoming DVD's</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
         <Menu.Item as={Link} to='/franchises'>
           Franchises
         </Menu.Item>
         <Menu.Item as={Link} to='/myItems'>
           My Items
         </Menu.Item>
+        <Dropdown item>
+          <Dropdown.Menu>
+            <Dropdown.Item as={Link} to='/myItems/filters/upcoming'>Upcoming</Dropdown.Item>
+            <Dropdown.Item as={Link} to='/myItems/filters/upcomingDvd'>Upcoming DVD's</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
         <Menu.Item as={Link} to='/lists'>
           My Lists
         </Menu.Item>
