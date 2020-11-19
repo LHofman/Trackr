@@ -51,7 +51,12 @@ export default class Navbar extends Component {
         {
           isLoggedIn() ? (
             <Menu.Menu position='right'>
-              <Menu.Item name='logout' as={Link} to='/logout' />
+              <Dropdown item text={ getUser().username }>
+                <Dropdown.Menu>
+                  <Dropdown.Item as={Link} to='/profile/edit'>Edit Profile</Dropdown.Item>
+                  <Dropdown.Item as={Link} to='/logout'>Logout</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </Menu.Menu>
           ) : (
             <Menu.Menu position='right'>

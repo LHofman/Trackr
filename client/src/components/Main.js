@@ -9,6 +9,7 @@ import EditFranchise from './franchises/FranchiseForm/EditFranchise'
 import EditGameObjective from './gameObjectives/GameObjectiveForm/EditGameObjective';
 import EditItem from './items/ItemForm/EditItem';
 import EditList from './lists/ListForm/EditList';
+import EditProfile from './profile/EditProfile/EditProfile';
 import Franchises from './franchises/Franchises/Franchises';
 import FranchiseDetails from './franchises/FranchiseDetails/FranchiseDetails';
 import GameObjectives from './gameObjectives/GameObjectives/GameObjectives';
@@ -54,6 +55,7 @@ export default () => (
       <Route exact path='/objectives/:titleId/subObjectives/:parentId/add' component={getAuthComponent(AddGameObjective)} />
       <Route exact path='/objectives/:titleId/subObjectives/:parentId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
       <Route exact path='/objectives/:titleId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
+      <Route exact path='/profile/edit' component={getAuthComponent(EditProfile)} />
       <Route exact path='/myItems' component={getAuthComponent(UserItems)} />
       <Route exact path='/myItems/filters/:filter' component={getAuthComponent(UserItems)} />
       <Route exact path='/login' component={getNonAuthComponent(Login)} />

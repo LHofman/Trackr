@@ -773,6 +773,21 @@ router.get('/users/byUsername/:username', (req, res, next) => {
   });
 });
 
+router.put('/users/:id', auth, (req, res, next) => {
+  User.findById(req.params.id, (err, user) => {
+    if (!new mongoose.Types.ObjectId(req.user._id).equals(user._id)) {
+      return res.status(500).send({sucess: false, msg: 'Unauthorized'});
+    }
+
+    delete req.body.password; //Don't allow changing of password via this endpoint
+
+    User.findByIdAndUpdate(user._id, req.body, { new: true }, (err, user) => {
+      if (err) return res.status(500).send('Something went wrong');
+      return res.json(user);
+    });
+  });
+});
+
 router.delete('/users/:id', auth, (req, res, next) => {
   User.findById(req.params.id, (err, user) => {
     if (err) return res.status(500).send({success: false, msg: 'User not found'});
