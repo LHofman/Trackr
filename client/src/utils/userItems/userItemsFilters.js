@@ -18,19 +18,22 @@ export const getUserItemsFilterControls = (extraParams) => (filters, handleFilte
       filters.type &&
       getFilterControl('status', 'Select', handleFilterChange, { options: statusOptions({ type: filters.type }) })
     }
+    { getFilterControl('rating', 'Rating', handleFilterChange) }
   </div>
 );
 
 export const getUserItemsFilterDefaults = () => { return {
   ...getItemsFiltersDefaults(),
   inCollection: '',
-  status: ''
+  status: '',
+  rating: 0
 }}
 
 export const filterUserItem = (userItem, filters) => {
   if (!filterItem(userItem.item, filters)) return false;
   if (!checkFilter('Select', userItem.inCollection.toString(), filters.inCollection)) return false;
   if (!checkFilter('Select', userItem.status, filters.status)) return false;
+  if (filters.rating > 0 && !checkFilter('Number', userItem.rating || 0, filters.rating)) return false;
   return true;
 };
 

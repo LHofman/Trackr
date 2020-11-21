@@ -9,6 +9,7 @@ export default (type, value, filter) => {
   switch (type) {
     case 'Date': return checkDateFilter(value, filter);
     case 'List': return value.indexOf(filter) >= 0;
+    case 'Number': return value === filter;
     case 'Select': return valueString === filterString;
     case 'Text': return valueString.includes(filterString);
     default: return true;
