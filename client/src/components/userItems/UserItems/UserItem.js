@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Icon, List } from 'semantic-ui-react';
+import { Icon, List, Rating } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
 
@@ -51,6 +51,15 @@ export default class UserItem extends Component {
               </div> : ''
             }
             Status: {userItem.status}
+            <br/>
+            {
+              userItem.rating > 0 &&
+              <Rating
+                icon='star'
+                maxRating={10}
+                disabled={true}
+                defaultRating={userItem.rating} />
+            }
           </List.Description>
         </List.Content>
       </List.Item>
