@@ -1,18 +1,13 @@
 import React, { Component } from 'react';
 import { List } from 'semantic-ui-react';
 
+import getOnClickAttributes from '../../../utils/getOnClickAttributes';
+
 export default class ItemsList extends Component {
-  onHeaderClick() {
-    this.props.onClickCallback(this.props.list);
-  }
-  
   render() {
     const { list } = this.props;
     
-    let onClickAttributes = { href: `/lists/${list.title_id}` };
-    if (this.props.onClickCallback) {
-      onClickAttributes = { onClick: this.onHeaderClick.bind(this) };
-    }
+    const onClickAttributes = getOnClickAttributes(`/lists/${list.title_id}`, this.props, list);
 
     return (
       <List.Item>

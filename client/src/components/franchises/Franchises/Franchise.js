@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Confirm, Icon, List } from 'semantic-ui-react';
 
 import canEdit from '../../../utils/canEdit';
+import getOnClickAttributes from '../../../utils/getOnClickAttributes';
 
 export default class Franchise extends Component {
 
@@ -28,17 +29,10 @@ export default class Franchise extends Component {
     this.setState({ confirmationAlert: true });
   }
 
-  onHeaderClick() {
-    this.props.onClickCallback(this.props.franchise);
-  }
-  
   render() {
     const { franchise, parent, onDelete } = this.props;
     
-    let onClickAttributes = { href: `/franchises/${franchise.title_id}` };
-    if (this.props.onClickCallback) {
-      onClickAttributes = { onClick: this.onHeaderClick.bind(this) };
-    }
+    const onClickAttributes = getOnClickAttributes(`/franchises/${franchise.title_id}`, this.props, franchise);
 
     return (
       <List.Item>

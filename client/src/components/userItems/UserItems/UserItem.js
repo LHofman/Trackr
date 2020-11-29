@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Icon, List, Rating } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
+import getOnClickAttributes from '../../../utils/getOnClickAttributes';
 
 export default class UserItem extends Component {
   constructor(props) {
@@ -11,28 +12,23 @@ export default class UserItem extends Component {
     }
   }
   
-  onHeaderClick() {
-    this.props.onClickCallback(this.state.userItem);
-  }
-  
   render() {
     const userItem = this.state.userItem;
-    
-    let onClickAttributes = { href: `/items/${userItem.item.title_id}` };
-    if (this.props.onClickCallback) {
-      onClickAttributes = { onClick: this.onHeaderClick.bind(this) };
-    }
+
+    const onClickAttributes = getOnClickAttributes(`/items/${userItem.item.title_id}`, this.props, userItem);
 
     return (
       <List.Item>
         {getIcon(userItem.item)}
         <List.Content>
-          <List.Header as='a' { ...onClickAttributes } >
-            {userItem.item.title}
-            {
-              userItem.inCollection &&
-              <Icon name='inbox' />
-            }
+          <List.Header>
+            <a {...onClickAttributes}>
+              {userItem.item.title}
+              {
+                userItem.inCollection &&
+                <Icon name='inbox' />
+              }
+            </a>
           </List.Header>
           <List.Description>
             Release Date: {

@@ -178,7 +178,6 @@ router.get('/review/:item', (req, res, next) => {
     .populate('user', 'username')
     .exec((err, userItems) => {
       if (err || userItems.length === 0) return res.json([]);
-      // return res.json(userItems);
       return res.json(
         userItems
           .map((userItem) => userItem.reviews.map((review) => { return {

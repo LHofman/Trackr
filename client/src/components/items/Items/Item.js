@@ -3,6 +3,7 @@ import { List } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
 import { isDateStatusValid } from '../../../utils/dateUtils';
+import getOnClickAttributes from '../../../utils/getOnClickAttributes';
 
 export default class Item extends Component {
   constructor(props) {
@@ -12,23 +13,18 @@ export default class Item extends Component {
     }
   }
 
-  onHeaderClick() {
-    this.props.onClickCallback(this.state.item);
-  }
-  
   render() {
     const item = this.state.item;
 
-    let onClickAttributes = { href: `/items/${item.title_id}` };
-    if (this.props.onClickCallback) {
-      onClickAttributes = { onClick: this.onHeaderClick.bind(this) };
-    }
+    const onClickAttributes = getOnClickAttributes(`/items/${item.title_id}`, this.props, item);
 
     return (
       <List.Item>
         {getIcon(item)}
         <List.Content>
-          <List.Header as='a' { ...onClickAttributes }>{item.title}</List.Header>
+          <List.Header>
+            <a { ...onClickAttributes }>{item.title}</a>
+          </List.Header>
           <List.Description>
             Release Date: {
               item.releaseDateStatus === 'Date' ? 
