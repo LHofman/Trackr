@@ -9,8 +9,8 @@ import UserItem from './UserItem';
 import fetch from '../../../utils/fetch';
 import getUser from '../../../utils/getUser';
 import { getItemsFiltersControlsExtraParams } from '../../../utils/items/itemsFilters';
-import { itemsSortDefault, getItemsSortControls } from '../../../utils/items/itemsSorting';
-import { sortUserItems } from '../../../utils/userItems/userItemsSorting';
+import { itemsSortDefault } from '../../../utils/items/itemsSorting';
+import { getUserItemsSortControls, sortUserItems } from '../../../utils/userItems/userItemsSorting';
 import {
   applyCustomFilter,
   getUserItemsFilterControls,
@@ -115,7 +115,7 @@ export default class Items extends Component {
           }}
           sortConfig={{
             defaults: this.state.sortDefault,
-            getControls: getItemsSortControls(),
+            getControls: getUserItemsSortControls(),
             sortItems: sortUserItems
           }} />
       </ListWithDetails>

@@ -59,7 +59,11 @@ const sortDates = (value1 = {}, value2 = {}) => {
 }
 
 const sortValuesStandard = (value1, value2) => {
+  if (value1 && !value2) return -2;
+  if (!value1 && value2) return 2;
+
   if (value1 < value2) return -1;
   if (value1 > value2) return 1;
+  
   return 0;
 }
