@@ -132,8 +132,10 @@ export default class PaginatedList extends Component {
             (filtersConfig || sortConfig) &&
             <GridColumn width={8}>
               <FilterMenu
-                defaultFilters={filters}
-                defaultSort={sort}
+                filters={filters}
+                defaultFilters={filtersConfig.defaults}
+                sort={sort}
+                defaultSort={sortConfig.defaults}
                 handleFilterChange={this.handleFilterChange}
                 handleSortChange={this.handleSortChange}
                 getFilterControlsFunction={filtersConfig.getControls}
