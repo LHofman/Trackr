@@ -71,7 +71,8 @@ export default class ListForm extends Component {
         title={ this.props.title }
         inputs={ inputs }
         submitButtonText={ this.props.submitButtonText }
-        submit={ this.submitForm.bind(this) } />
+        submit={ this.submitForm.bind(this) }
+        cancelUrl={ this.props.cancelUrl || '/lists' } />
     );
   }
 }

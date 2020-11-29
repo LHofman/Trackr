@@ -118,7 +118,7 @@ export default class MyForm extends Component {
     } else {
       cancelButtonAttributes = {
         as: Link,
-        to: this.props.cancelCallback || '/'
+        to: this.props.cancelUrl || '/'
       };
     }
 

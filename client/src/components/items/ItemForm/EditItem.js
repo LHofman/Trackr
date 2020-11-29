@@ -8,7 +8,8 @@ export default class EditItem extends Component {
   constructor() {
     super();
     this.state = {
-      id: null
+      id: null,
+      title_id: null,
     }
   }
 
@@ -21,7 +22,7 @@ export default class EditItem extends Component {
       const title_id = this.props.match.params.titleId;
       return fetch(`/api/items/title_id/${title_id}`).then(details => {
         if (canEdit(details)) {
-          this.setState({ id: details._id});
+          this.setState({ id: details._id, title_id: details.title_id });
           resolve({ details });
         } else {
           resolve({ redirect: `/items/${title_id}` });
@@ -36,7 +37,8 @@ export default class EditItem extends Component {
         title='Edit Item'
         getDetails={ this.getItemDetails.bind(this) }
         submitButtonText='Save Item'
-        updateItem={ this.editItem.bind(this) } />
+        updateItem={ this.editItem.bind(this) }
+        cancelUrl={`/items/${this.state.title_id}`} />
     );
   }
 }
