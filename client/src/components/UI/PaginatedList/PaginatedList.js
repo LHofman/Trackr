@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import MediaQuery from 'react-responsive';
 import { Link } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
@@ -8,18 +9,13 @@ import FilterMenu from '../../UI/FilterMenu/FilterMenu';
 
 import isLoggedIn from '../../../utils/isLoggedIn';
 
-export default class PaginatedList extends Component {
+class PaginatedList extends Component {
   constructor(props) {
     super(props);
 
-    const filtersConfig = props.filtersConfig || {};
-    const sortConfig = props.sortConfig || {};
-
     this.state = {
-      activePage: 1,
       changingOrder: false,
-      filters: filtersConfig.defaults,
-      sort: sortConfig.defaults,
+      parentTitle: props.parentTitle
     }
     
     this.changePage = this.changePage.bind(this);
@@ -28,16 +24,21 @@ export default class PaginatedList extends Component {
   }
   
   componentWillReceiveProps(newProps) {
+    const existingParentTitle = this.state.parentTitle;
+
     this.setState({ 
       items: newProps.items || [],
-      activePage: 1,
-      filters: newProps.filtersConfig.defaults,
-      sort: newProps.sortConfig.defaults
+      parentTitle: newProps.parentTitle
     });
+
+    if (newProps.parentTitle !== existingParentTitle) {
+      newProps.handleFilterChange(newProps.filtersConfig.defaults);
+      newProps.handleSortChange(newProps.sortConfig.defaults);
+    }
   }
 
   changePage(activePage) {
-    this.handlePaginationChange(null, { activePage });
+    this.props.handlePageChange(activePage);
   }
 
   getPagination(totalPages) {
@@ -45,14 +46,14 @@ export default class PaginatedList extends Component {
       <div>
         <MediaQuery query='(max-width: 550px)'>
           <Button icon='fast backward' onClick={() => this.changePage(1)} />
-          <Button icon='step backward' onClick={() => this.changePage(this.state.activePage-1)} />
-          <Label content={`${this.state.activePage}/${totalPages}`} color='teal' />
-          <Button icon='step forward' onClick={() => this.changePage(this.state.activePage+1)} />
+          <Button icon='step backward' onClick={() => this.changePage(this.props.activePage-1)} />
+          <Label content={`${this.props.activePage}/${totalPages}`} color='teal' />
+          <Button icon='step forward' onClick={() => this.changePage(this.props.activePage+1)} />
           <Button icon='fast forward' onClick={() => this.changePage(totalPages)} />
         </MediaQuery>
         <MediaQuery query='(min-width: 550px)'>
           <Pagination
-            activePage={this.state.activePage}
+            activePage={this.props.activePage}
             totalPages={totalPages}
             onPageChange={this.handlePaginationChange.bind(this)} />
         </MediaQuery>
@@ -61,17 +62,16 @@ export default class PaginatedList extends Component {
   }
 
   handlePaginationChange(e, { activePage }) {
-    this.setState({ activePage });
+    this.props.handlePageChange(activePage);
     animateScroll.scrollToTop();
   }
 
   handleFilterChange(filters) {
-    this.setState({ filters });
-    this.setState({ activePage: 1 });
+    this.props.handleFilterChange(filters);
   }
 
   handleSortChange(newSort) {
-    this.setState({ sort: newSort });
+    this.props.handleSortChange(newSort);
   }
 
 	startChangeOrder() {
@@ -87,19 +87,19 @@ export default class PaginatedList extends Component {
   render() {
     const {
       props: {
+        activePage,
         createItemComponent,
         createItemUrl,
+        filters,
         filtersConfig,
         items,
+        sort,
         sortConfig,
         startChangeOrder,
         title
       },
       state: {
-        activePage,
-        changingOrder,
-        filters,
-        sort
+        changingOrder
       }
     } = this;
 
@@ -133,7 +133,7 @@ export default class PaginatedList extends Component {
             <GridColumn width={8}>
               <FilterMenu
                 filters={filters}
-                defaultFilters={filtersConfig.defaults}
+                defaultFilters={filters}
                 sort={sort}
                 defaultSort={sortConfig.defaults}
                 handleFilterChange={this.handleFilterChange}
@@ -163,3 +163,21 @@ export default class PaginatedList extends Component {
     );
   }
 }
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    activePage: state[ownProps.reducer][ownProps.paginationConfig.listKey],
+    filters: state[ownProps.reducer][ownProps.filtersConfig.listKey],
+    sort: state[ownProps.reducer][ownProps.sortConfig.listKey]
+  };
+};
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    handlePageChange: (page) => dispatch({ type: ownProps.paginationConfig.action, payload: page }),
+    handleFilterChange: (filters) => dispatch({ type: ownProps.filtersConfig.action, payload: filters }),
+    handleSortChange: (newSort) => dispatch({ type: ownProps.sortConfig.action, payload: newSort })
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(PaginatedList);

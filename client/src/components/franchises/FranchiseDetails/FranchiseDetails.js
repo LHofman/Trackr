@@ -11,6 +11,9 @@ import LinkedItems from '../../UI/LinkedItems/LinkedItems';
 import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from '../../../utils/items/itemsFilters';
 import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
 
+import { ITEMS_LIST_FILTERS, ITEMS_LIST_PAGE, ITEMS_LIST_SORTING } from '../../../store/franchises/keys';
+import { SET_FRANCHISES_ITEMS_LIST_FILTERS, SET_FRANCHISES_ITEMS_LIST_PAGE, SET_FRANCHISES_ITEMS_LIST_SORTING } from '../../../store/franchises/actions';
+
 export default class FranchiseDetails extends Component {
 	constructor(props) {
 		super(props);
@@ -189,16 +192,26 @@ export default class FranchiseDetails extends Component {
               optionsLoaded={ this.state.itemOptionsLoaded }
               items={ this.state.items }
               paginatedList={{
-                filtersConfig:{
+                parentTitle: this.state.details.title_id,
+                filtersConfig: {
                   defaults: getItemsFiltersDefaults(),
                   getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-                  filterItem: filterItem
+                  filterItem: filterItem,
+                  action: SET_FRANCHISES_ITEMS_LIST_FILTERS,
+                  listKey: ITEMS_LIST_FILTERS
                 },
                 sortConfig:{
                   defaults: itemsSortDefault,
                   getControls: getItemsSortControls(),
-                  sortItems: sortItems
-                }
+                  sortItems: sortItems,
+                  action: SET_FRANCHISES_ITEMS_LIST_SORTING,
+                  listKey: ITEMS_LIST_SORTING
+                },
+                paginationConfig: {
+                  action: SET_FRANCHISES_ITEMS_LIST_PAGE,
+                  listKey: ITEMS_LIST_PAGE
+                },
+                reducer: 'franchises'
               }}
               createItemComponent={ createItemComponent(this.state.details) }
               removeItem={ this.removeItem }

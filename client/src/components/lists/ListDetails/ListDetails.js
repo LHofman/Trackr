@@ -10,6 +10,9 @@ import fetch from '../../../utils/fetch';
 import { getItemsFiltersDefaults, getItemsFiltersControls, getItemsFiltersControlsExtraParams, filterItem } from '../../../utils/items/itemsFilters';
 import { sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
 
+import { SET_LISTS_ITEMS_LIST_FILTERS, SET_LISTS_ITEMS_LIST_PAGE, SET_LISTS_ITEMS_LIST_SORTING } from '../../../store/lists/actions';
+import { ITEMS_LIST_FILTERS, ITEMS_LIST_PAGE, ITEMS_LIST_SORTING } from '../../../store/lists/keys';
+
 
 export default class ListDetails extends Component {
   constructor() {
@@ -173,18 +176,28 @@ export default class ListDetails extends Component {
 					optionsLoaded={ this.state.itemOptionsLoaded }
 					items={ this.state.items.map((item, index) => { return { ...item, index: index + 1 } }) }
 					paginatedList={{
+						parentTitle: this.state.list.title_id,
 						filtersConfig:{
 							defaults: getItemsFiltersDefaults(),
 							getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-							filterItem: filterItem
+							filterItem: filterItem,
+							action: SET_LISTS_ITEMS_LIST_FILTERS,
+							listKey: ITEMS_LIST_FILTERS
 						},
 						sortConfig:{
 							defaults: { field: 'index', order: 'asc' },
 							getControls: getItemsSortControls(['index']),
-							sortItems: sortItems
+							sortItems: sortItems,
+							action: SET_LISTS_ITEMS_LIST_SORTING,
+							listKey: ITEMS_LIST_SORTING
+						},
+						paginationConfig: {
+							action: SET_LISTS_ITEMS_LIST_PAGE,
+							listKey: ITEMS_LIST_PAGE
 						},
 						startChangeOrder: this.startChangeOrder.bind(this),
-						saveOrder: this.saveOrder.bind(this)
+						saveOrder: this.saveOrder.bind(this),
+						reducer: 'lists'
 					}}
 					createItemComponent={ createItemComponent(list, changingOrder, this.changeIndex.bind(this)) }
 					removeItem={ this.removeItem }

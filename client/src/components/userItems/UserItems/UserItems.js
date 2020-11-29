@@ -18,6 +18,9 @@ import {
   filterUserItem
 } from '../../../utils/userItems/userItemsFilters';
 
+import { SET_USERITEMS_LIST_FILTERS, SET_USERITEMS_LIST_PAGE, SET_USERITEMS_LIST_SORTING } from '../../../store/userItems/actions';
+import { LIST_FILTERS, LIST_PAGE, LIST_SORTING } from '../../../store/userItems/keys';
+
 export default class Items extends Component {
   constructor() {
     super();
@@ -111,13 +114,22 @@ export default class Items extends Component {
           filtersConfig={{
             defaults: this.state.filtersDefault,
             getControls: getUserItemsFilterControls(this.state.filterControlsExtraFields),
-            filterItem: filterUserItem
+            filterItem: filterUserItem,
+            action: SET_USERITEMS_LIST_FILTERS,
+            listKey: LIST_FILTERS
           }}
           sortConfig={{
             defaults: this.state.sortDefault,
             getControls: getUserItemsSortControls(),
-            sortItems: sortUserItems
-          }} />
+            sortItems: sortUserItems,
+            action: SET_USERITEMS_LIST_SORTING,
+            listKey: LIST_SORTING
+          }}
+          paginationConfig={{
+            action: SET_USERITEMS_LIST_PAGE,
+            listKey: LIST_PAGE
+          }}
+          reducer='userItems' />
       </ListWithDetails>
     );
   }

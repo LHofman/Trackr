@@ -20,6 +20,7 @@ export default class FilterMenu extends Component {
   componentWillReceiveProps(props) {
     this.setState({
       filters: props.filters,
+      titleFilter: props.filters.title || '',
       sort: props.sort
     });
   }

@@ -11,6 +11,9 @@ import { filterList, getListsFiltersDefaults } from './listsFilters';
 import { listsSortDefault, getListsSortControls } from './listsSorting';
 import { sort } from '../../../utils/sortUtils';
 
+import { SET_LISTS_LIST_FILTERS, SET_LISTS_LIST_PAGE, SET_LISTS_LIST_SORTING } from '../../../store/lists/actions';
+import { LIST_FILTERS, LIST_PAGE, LIST_SORTING } from '../../../store/lists/keys';
+
 export default class Lists extends Component {
   constructor() {
     super();
@@ -75,18 +78,27 @@ export default class Lists extends Component {
           createItemComponent={(list) => <ItemsList key={list._id} list={list} onClickCallback={ this.setDetailsComponent } />}
           filtersConfig={{
             defaults: getListsFiltersDefaults(),
-            filterItem: filterList
+            filterItem: filterList,
+            action: SET_LISTS_LIST_FILTERS,
+            listKey: LIST_FILTERS
           }}
           sortConfig={{
             defaults: listsSortDefault,
             getControls: getListsSortControls,
-            sortItems: sort
+            sortItems: sort,
+            action: SET_LISTS_LIST_SORTING,
+            listKey: LIST_SORTING
+          }}
+          paginationConfig={{
+            action: SET_LISTS_LIST_PAGE,
+            listKey: LIST_PAGE
           }}
           list = {{
             extraAttributes: {
               bulleted: true
             }
-          }} />
+          }}
+          reducer='lists' />
       </ListWithDetails>
     );
   }

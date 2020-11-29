@@ -10,6 +10,9 @@ import fetch from '../../../utils/fetch';
 import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem, applyCustomFilter } from '../../../utils/items/itemsFilters';
 import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
 
+import { SET_ITEMS_LIST_FILTERS, SET_ITEMS_LIST_PAGE, SET_ITEMS_LIST_SORTING } from '../../../store/items/actions';
+import { LIST_FILTERS, LIST_PAGE, LIST_SORTING } from '../../../store/items/keys';
+
 export default class Items extends Component {
   constructor() {
     super();
@@ -98,13 +101,22 @@ export default class Items extends Component {
           filtersConfig={{
             defaults: this.state.filtersDefault,
             getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-            filterItem: filterItem
+            filterItem: filterItem,
+            action: SET_ITEMS_LIST_FILTERS,
+            listKey: LIST_FILTERS
           }}
           sortConfig={{
             defaults: this.state.sortDefault,
             getControls: getItemsSortControls(),
-            sortItems: sortItems
-          }} />
+            sortItems: sortItems,
+            action: SET_ITEMS_LIST_SORTING,
+            listKey: LIST_SORTING
+          }}
+          paginationConfig={{
+            action: SET_ITEMS_LIST_PAGE,
+            listKey: LIST_PAGE
+          }}
+          reducer='items' />
       </ListWithDetails>
     );
   }

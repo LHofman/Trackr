@@ -11,6 +11,9 @@ import { filterFranchise, getFranchisesFiltersDefaults } from './franchisesFilte
 import { franchisesSortDefault, getFranchisesSortControls, } from './franchisesSorting';
 import { sort } from '../../../utils/sortUtils';
 
+import { SET_FRANCHISES_LIST_FILTERS, SET_FRANCHISES_LIST_PAGE, SET_FRANCHISES_LIST_SORTING } from '../../../store/franchises/actions';
+import { LIST_FILTERS, LIST_PAGE, LIST_SORTING } from '../../../store/franchises/keys';
+
 export default class Franchises extends Component {
   constructor() {
     super();
@@ -67,18 +70,27 @@ export default class Franchises extends Component {
           )}
           filtersConfig={{
             defaults: getFranchisesFiltersDefaults(),
-            filterItem: filterFranchise
+            filterItem: filterFranchise,
+            action: SET_FRANCHISES_LIST_FILTERS,
+            listKey: LIST_FILTERS
           }}
           sortConfig={{
             defaults: franchisesSortDefault,
             getControls: getFranchisesSortControls,
-            sortItems: sort
+            sortItems: sort,
+            action: SET_FRANCHISES_LIST_SORTING,
+            listKey: LIST_SORTING
+          }}
+          paginationConfig={{
+            action: SET_FRANCHISES_LIST_PAGE,
+            listKey: LIST_PAGE
           }}
           list = {{
             extraAttributes: {
               bulleted: true
             }
-          }} />
+          }}
+          reducer='franchises' />
       </ListWithDetails>
     );
   }
