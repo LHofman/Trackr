@@ -6,6 +6,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import path from 'path';
+import util from 'util';
 
 import passportStrategy from './config/passportStrategy';
 
@@ -15,8 +16,16 @@ import users from './routes/users';
 dotenv.config();
 
 const port = process.env.PORT || 3001;
-const DB_CONNECTION = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD
-}@ds${config.get('DB_CONNECTION')}.mlab.com:${config.get('DB_CONNECTION_2')}/${config.get('DB_NAME')}`
+const DB_CONNECTION = util.format(
+  "mongodb+srv://%s:%s@%s.%s.mongodb.net/%s?retryWrites=true&w=majority",
+  process.env.DB_USERNAME,
+  process.env.DB_PASSWORD,
+  config.get('DB_CONNECTION'),
+  config.get('DB_CONNECTION_2'),
+  config.get('DB_NAME')
+);
+// const DB_CONNECTION = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD
+// }@ds${config.get('DB_CONNECTION')}.mlab.com:${config.get('DB_CONNECTION_2')}/${config.get('DB_NAME')}`
 mongoose.connect(DB_CONNECTION, {useNewUrlParser: true});
 
 const app = express();
