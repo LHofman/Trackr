@@ -39,7 +39,10 @@ router.post('/authenticate', (req, res, next) => {
 
 router.post('/register', (req, res, next) => {
   const user = new User(req.body);
+  console.log(user);
   addUser(user, (err, user) => {
+    console.log(err);
+    console.log(user);
     if (err)
       return res.status(500).send({
         success: false,

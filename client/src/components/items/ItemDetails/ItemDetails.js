@@ -47,6 +47,7 @@ export default class ItemDetails extends Component {
 	}
 	
 	componentWillReceiveProps(props) {
+		this.setState({ userItem: ''});
 		this.getItem(props);
 	}
 
@@ -119,7 +120,7 @@ export default class ItemDetails extends Component {
 
 	getUserItem() {
 		if (!isLoggedIn()) return;
-		fetch(`/api/userItems/${getUser().id}/${this.state.details._id}`).then(userItem => {
+		fetch(`/api/users/${getUser().id}/userItems/${this.state.details._id}`).then(userItem => {
 			if (userItem) {
 				this.setState({ userItem });
 			}
@@ -128,7 +129,7 @@ export default class ItemDetails extends Component {
 
   followItem(e) {
     e.preventDefault();
-		return fetch(`/api/userItems`, 'post', true, 
+		return fetch(`/api/users/${getUser().id}/userItems`, 'post', true, 
 			{ 
 				user: getUser().id, 
 				item: this.state.details._id,
@@ -139,7 +140,7 @@ export default class ItemDetails extends Component {
   }
 
   unfollowItem() {
-    return fetch(`/api/userItems/${this.state.userItem._id}`, 'delete', true).then(userItem => {
+    return fetch(`/api/users/${getUser().id}/userItem/${this.state.userItem._id}`, 'delete', true).then(() => {
 			this.setState({ userItem: ''});
 			this.hideConfirmationAlert();
     }).catch(console.log);
@@ -193,7 +194,7 @@ export default class ItemDetails extends Component {
 	}
 	
   updateUserItem(userItem) {
-		fetch(`/api/userItems/${userItem._id}`, 'put', true, userItem)
+		fetch(`/api/users/${getUser().id}/userItems/${userItem._id}`, 'put', true, userItem)
 			.catch(res => {
 				res.json().then(console.log);
 			});
