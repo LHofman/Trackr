@@ -24,8 +24,6 @@ const DB_CONNECTION = util.format(
   config.get('DB_CONNECTION_2'),
   config.get('DB_NAME')
 );
-// const DB_CONNECTION = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD
-// }@ds${config.get('DB_CONNECTION')}.mlab.com:${config.get('DB_CONNECTION_2')}/${config.get('DB_NAME')}`
 mongoose.connect(DB_CONNECTION, {useNewUrlParser: true});
 
 const app = express();
