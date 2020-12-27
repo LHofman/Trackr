@@ -72,7 +72,7 @@ export default class Items extends Component {
   }
 
   getUser() {
-    return fetch(`/api/userItems/${getUser().id}`).then(userItems => {
+    return fetch(`/api/users/${getUser().id}/userItems`).then(userItems => {
       if (!userItems || userItems === null) throw new Error('No userItems found');
       userItems.sort(sortUserItems(itemsSortDefault));
       this.setState({ userItems })

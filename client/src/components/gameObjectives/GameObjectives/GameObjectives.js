@@ -64,7 +64,7 @@ class GameObjectives extends Component {
       this.setState({redirect: '/'});
     }).then(() => {
       if (!isLoggedIn()) return;
-      return fetch(`/api/userItems/${getUser().id}/${this.state.game._id}`).then(userItem => {
+      return fetch(`/api/users/${getUser().id}/userItems/${this.state.game._id}`).then(userItem => {
         if (userItem) this.setState({ following: true });
         else this.setState({ following: false });
       });

@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
+import { UserItemSchema } from './UserItem';
 
 export default mongoose.model(
   'User',
@@ -19,6 +20,10 @@ export default mongoose.model(
     password: {
       type: String,
       required: true
+    },
+    userItems: {
+      type: [UserItemSchema],
+      select: false
     }
   })
 );

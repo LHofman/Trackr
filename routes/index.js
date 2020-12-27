@@ -15,7 +15,8 @@ const router = express.Router();
 
 const STATUS_500_MESSAGE = 'Something went wrong';
 
-const isCreator = (model, user) => new mongoose.Types.ObjectId(user._id).equals(model.createdBy._id);
+const isCreator = (model, user) => stringToId(user._id).equals(model.createdBy._id);
+const stringToId = (idString) => new mongoose.Types.ObjectId(idString);
 
 //#region items
 
@@ -144,96 +145,109 @@ router.delete('/items/:id', auth, (req, res, next) => {
 
 //#region userItems
 
-router.get('/userItems/:user/inProgress', (req, res, next) => {
-  const statusesInProgres = ['Doing', 'Listening', 'Playing', 'Reading', 'Watching'];
-  UserItem.find({ user: req.params.user, status: { $in: statusesInProgres } })
-    .populate('item')
-    .exec((err, userItems) => {
-      if (err) return res.json([]);
-      return res.json(userItems);
+router.get('/users/:userId/userItems/inProgress', (req, res, next) => {
+  const statusesInProgress = ['Doing', 'Listening', 'Playing', 'Reading', 'Watching'];
+  
+  User.aggregate([
+    { $match: { _id: stringToId(req.params.userId) } },
+    { $project: {
+      userItems: { $filter: {
+        input: '$userItems',
+        as: 'userItem',
+        cond: { $in: [ '$$userItem.status', statusesInProgress ] }
+      } }
+    } }
+  ], (err, user) => {
+    if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
+    if (!user.length) return res.json(null);
+    User.populate(user, {path: 'userItems.item'}, (err, user) => {
+      res.json(user[0].userItems);
     });
+  });
 });
 
-router.get('/userItems/:user/:item', (req, res, next) => {
-  UserItem.findOne({user: req.params.user, item: req.params.item}, 
-    (err, userItem) => {
-      if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
-      res.json(userItem);
-    }
-  );
+router.get('/users/:userId/userItems/:itemId', (req, res, next) => {
+  User.aggregate([
+    { $match: { _id: stringToId(req.params.userId) } },
+    { $unwind: '$userItems' },
+    { $match: { 'userItems.item': stringToId(req.params.itemId) } },
+    { $project: { userItems: 1 } }
+  ], (err, user) => {
+    if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
+    if (!user.length) return res.json(null);
+    res.json(user[0].userItems);
+  });
 });
 
-router.get('/userItems/:user', (req, res, next) => {
-  UserItem.find({user: req.params.user})
-    .populate('item')
-    .exec((err, userItems) => {
+router.get('/users/:userId/userItems', (req, res, next) => {
+  User.findById(req.params.userId)
+    .select({ userItems: 1})
+    .populate('userItems.item')
+    .exec((err, user) => {
       if (err) return res.status(500).send({success: false, msg: 'UserItems not found'});
-      res.json(userItems);
+      res.json(user.userItems);
     }
   );
 });
 
-router.get('/review/:item', (req, res, next) => {
-  UserItem.find({ item: req.params.item, reviews: { $exists: true, $not: { $size: 0 } } })
-    .populate('user', 'username')
-    .exec((err, userItems) => {
-      if (err || userItems.length === 0) return res.json([]);
-      return res.json(
-        userItems
-          .map((userItem) => userItem.reviews.map((review) => { return {
-            _id: review._id,
-            rating: review.rating,
-            review: review.review,
-            timestamp: review.timestamp,
-            author: userItem.user.username
-          } }))
-          .reduce((reviews, userItemReviews) => [ ...reviews, ...userItemReviews ])
-      );
-    }
-  );
+router.get('/items/:itemId/reviews', (req, res, next) => {
+  User.aggregate([
+    { $unwind: '$userItems' },
+    { $match: { 'userItems.item': stringToId(req.params.itemId) } },
+    { $project: {
+      userItems: 1,
+      username: 1,
+      isAnyTrue: { $anyElementTrue: [ "$userItems.reviews" ] }
+    } }
+  ], (err, users) => {
+    if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
+    if (!users.length) return res.json([]);
+
+    return res.json(
+      users.map((user) => user.userItems.reviews.map((review) => { return {
+          _id: review._id,
+          rating: review.rating,
+          review: review.review,
+          timestamp: review.timestamp,
+          author: user.username
+        } }))
+        .reduce((reviews, userItemReviews) => [ ...reviews, ...userItemReviews ])
+    );
+  });
 });
 
-router.post('/userItems', auth, (req, res, next) => {
+router.post('/users/:userId/userItems', auth, (req, res, next) => {
   const userItem = new UserItem(req.body);
 
-  userItem.save((err, userItem) => {
-    if (err) return res.status(500).send({success: false, msg: STATUS_500_MESSAGE});
-    res.json(userItem);
-  });
-});
-
-router.put('/userItems/:id', auth, (req, res, next) => {
-  const userItemId = req.params.id;
-  UserItem.findById(userItemId, (err, userItem) => {
-    if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
-    if (!new mongoose.Types.ObjectId(req.user._id).equals(userItem.user))
-      return res.status(500).send({sucess: false, msg: 'You did not create this userItem'});
-    
-    UserItem.findByIdAndUpdate(userItemId, req.body, { new: true }, (err, userItem) => {
+  return User.updateOne(
+    { _id: req.params.userId }, 
+    { $push: { userItems: userItem } },
+    (err, _) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
       res.json(userItem);
-    });
-  });
+    }
+  );
 });
 
-router.delete('/userItems/:id', auth, (req, res, next) => {
-  UserItem.findById(req.params.id)
-    .populate('item')
-    .exec((err, userItem) => {
-      if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
-      if (!new mongoose.Types.ObjectId(req.user._id).equals(userItem.user))
-        return res.status(500).send({sucess: false, msg: 'You did not create this userItem'});
-    
-      const item = userItem.item;
+router.put('/users/:userId/userItems/:id', auth, (req, res, next) => {
+  User.update(
+    { 'userItems._id': stringToId(req.params.id) },
+    { '$set': { 'userItems.$': req.body }},
+    (err, _) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    }
+  );
+});
 
-      userItem.remove((err, userItem) => {
-        if (err) return res.status(500).send('Something went wrong');
-        res.json({
-          success: true,
-          msg: `${item.title} has successfully been unfollowed.`
-        });
-      });
-    });
+router.delete('/users/:userId/userItem/:id', auth, (req, res, next) => {
+  return User.updateOne(
+    { _id: req.params.userId }, 
+    { $pull: { userItems: { _id: req.params.id } } },
+    (err, _) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json({ success: true });
+    }
+  );
 });
 
 //#endregion
@@ -389,7 +403,7 @@ router.put('/userGameObjectives/:id', auth, (req, res, next) => {
   UserGameObjective.findById(userGameObjectiveId, (err, userGameObjective) => {
     if (err) return res.status(500).send({success: false, msg: 'UserGameObjective not found'});
 
-    if (!new mongoose.Types.ObjectId(req.user._id).equals(userGameObjective.user)) {
+    if (!stringToId(req.user._id).equals(userGameObjective.user)) {
       return res.status(500).send({sucess: false, msg: 'You did not create this userGameObjective'});
     }
     
@@ -562,14 +576,14 @@ router.put('/franchises/:id/items/remove', auth, (req, res, next) => {
 });
 
 router.get('/franchises/byItem/:item', (req, res, next) => {
-  Franchise.find({ items: mongoose.Types.ObjectId(req.params.item) }, (err, franchises) => {
+  Franchise.find({ items: stringToId(req.params.item) }, (err, franchises) => {
     if (err) return res.status(500).send(STATUS_500_MESSAGE);
     return res.json(franchises);
   })
 });
 
 router.get('/franchises/bySubFranchise/:subFranchise', (req, res, next) => {
-  Franchise.find({ subFranchises: mongoose.Types.ObjectId(req.params.subFranchise) }, (err, franchises) => {
+  Franchise.find({ subFranchises: stringToId(req.params.subFranchise) }, (err, franchises) => {
     if (err) return res.status(500).send(STATUS_500_MESSAGE);
     return res.json(franchises);
   })
@@ -733,7 +747,7 @@ router.put('/lists/:id/items/remove', auth, (req, res, next) => {
 });
 
 router.get('/lists/byItem/:item', (req, res, next) => {
-  List.find({ items: mongoose.Types.ObjectId(req.params.item) }, (err, lists) => {
+  List.find({ items: stringToId(req.params.item) }, (err, lists) => {
     if (err) return res.status(500).send(STATUS_500_MESSAGE);
     return res.json(lists);
   })
@@ -774,7 +788,7 @@ router.get('/users/byUsername/:username', (req, res, next) => {
 
 router.put('/users/:id', auth, (req, res, next) => {
   User.findById(req.params.id, (err, user) => {
-    if (!new mongoose.Types.ObjectId(req.user._id).equals(user._id)) {
+    if (!stringToId(req.user._id).equals(user._id)) {
       return res.status(500).send({sucess: false, msg: 'Unauthorized'});
     }
 

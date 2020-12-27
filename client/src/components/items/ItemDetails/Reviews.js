@@ -23,7 +23,7 @@ export default class Reviews extends Component {
   }
 
 	getReviews(item) {
-		fetch(`/api/review/${item._id}`).then(allReviews => {
+		fetch(`/api/items/${item._id}/reviews`).then(allReviews => {
 			this.setState({ allReviews });
 		});
 	}

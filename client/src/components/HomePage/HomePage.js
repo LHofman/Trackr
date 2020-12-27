@@ -32,7 +32,7 @@ export default class HomePage extends Component {
   }
 
   getUserItemsInProgress() {
-    fetch(`/api/userItems/${getUser().id}/inProgress`).then((userItemsInProgress) => {
+    fetch(`/api/users/${getUser().id}/userItems/inProgress`).then((userItemsInProgress) => {
       this.setState({ userItemsInProgress, itemsLoaded: true });
     })
   }
