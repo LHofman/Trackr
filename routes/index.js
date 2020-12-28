@@ -362,6 +362,19 @@ router.put('/gameObjectives/:id', auth, (req, res, next) => {
 
 //#region userGameObjectives
 
+router.get('/users/:userId/userGameObjectives/byGame/:itemId', (req, res, next) => {
+  User.aggregate([
+    { $match: { _id: stringToId(req.params.userId) } },
+    { $unwind: '$userItems' },
+    { $match: { 'userItems.item': stringToId(req.params.itemId) } },
+    { $project: { userItems: 1 } }
+  ], (err, user) => {
+    if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
+    if (!user.length) return res.json(null);
+    res.json(user[0].userItems.userGameObjectives);
+  });
+});
+
 router.get('/userGameObjectives/:user/game/:game', (req, res, next) => {
   GameObjective.find({game: req.params.game}).exec((err, gameObjectives) => {
     if (err) return res.status(500).send(STATUS_500_MESSAGE);
@@ -378,16 +391,20 @@ router.get('/userGameObjectives/:user/game/:game', (req, res, next) => {
   });
 });
 
-
-router.get('/userGameObjectives/:user/:gameObjective', (req, res, next) => {
-  UserGameObjective.findOne({
-    gameObjective: req.params.gameObjective,
-    user: req.params.user
-  }, (err, userGameObjective) => {
-    if (err || userGameObjective === null)
-      return res.status(404).send('userGameObjective not found');
-    res.json(userGameObjective);
-  });
+router.post('/users/:userId/userGameObjectives/byGame/:itemId', auth, (req, res, next) => {
+  const userGameObjective = new UserGameObjective(req.body);
+  
+  return User.update(
+    {
+      '_id': req.params.userId,
+      'userItems.item': req.params.itemId
+    },
+    { '$push': { 'userItems.$.userGameObjectives': userGameObjective } },
+    (err, _) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json(userGameObjective);
+    }
+  );
 });
 
 router.post('/userGameObjectives', auth, (req, res, next) => {

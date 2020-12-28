@@ -1,4 +1,5 @@
 import { ReviewSchema } from './Review';
+import { UserGameObjectiveSchema } from './UserGameObjective';
 
 const mongoose = require('mongoose');
 
@@ -20,7 +21,8 @@ export const UserItemSchema = mongoose.Schema({
   },
   completedHistory: [String],
   rating: Number,
-  reviews: [ReviewSchema]
+  reviews: [ReviewSchema],
+  userGameObjectives: [UserGameObjectiveSchema]
 });
 
 export default mongoose.model(
