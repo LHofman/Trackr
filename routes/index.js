@@ -818,4 +818,26 @@ router.delete('/users/:id', auth, (req, res, next) => {
 
 //#endregion users
 
+router.put('/userItems/moveDocuments', (req, res, next) => {
+  UserItem.find((err, userItems) => {
+    let usersItems = {};
+    userItems.forEach((userItem) => {
+      let userId = userItems[0].toObject().user;
+      if (!usersItems[userId]) usersItems[userId] = [];
+      usersItems[userId].push(userItem);
+    });
+
+    Object.keys(usersItems).forEach((userId) => {
+      User.updateOne(
+        { _id: userId }, 
+        { userItems: usersItems[userId] },
+        (err, i) => {
+          console.log(err);
+          console.log(i);
+        }
+      );
+    });
+  });
+});
+
 export default router;
