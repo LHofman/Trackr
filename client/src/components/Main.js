@@ -1,4 +1,5 @@
 import React from 'react';
+import Media from 'react-media';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import AddFranchise from './franchises/FranchiseForm/AddFranchise';
@@ -40,10 +41,18 @@ export default () => (
       <Route exact path='/franchises/:titleId' component={FranchiseDetails} />
       <Route exact path='/franchises/:titleId/edit' component={getAuthComponent(EditFranchise)} />
       <Route exact path='/home' component={ HomePage } />
-      <Route exact path='/items' component={Items} />
+      <Media query="(min-width: 1200px)">
+        {matches => matches ? (
+          <Route path='/items' component={Items} />
+        ) : (
+          <div>
+            <Route exact path='/items' component={Items} />
+            <Route exact path='/items/:titleId' component={ItemDetails} />
+          </div>
+        )}
+      </Media>
       <Route exact path='/items/filters/:filter' component={Items} />
       <Route exact path='/items/add' component={getAuthComponent(AddItem)} />
-      <Route exact path='/items/:titleId' component={ItemDetails} />
       <Route exact path='/items/:titleId/edit' component={getAuthComponent(EditItem)} />
       <Route exact path='/lists' component={Lists} />
       <Route exact path='/lists/add' component={getAuthComponent(AddList)} />

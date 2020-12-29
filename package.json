@@ -32,6 +32,7 @@
     "nodemon": "^1.19.4",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
+    "react-media": "^1.10.0",
     "react-responsive": "^5.0.0",
     "react-scroll": "^1.8.1",
     "serve-favicon": "~2.4.5"

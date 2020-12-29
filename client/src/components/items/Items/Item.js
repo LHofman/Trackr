@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { List } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
@@ -16,14 +17,12 @@ export default class Item extends Component {
   render() {
     const item = this.state.item;
 
-    const onClickAttributes = getOnClickAttributes(`/items/${item.title_id}`, this.props, item);
-
     return (
       <List.Item>
         {getIcon(item)}
         <List.Content>
           <List.Header>
-            <a { ...onClickAttributes }>{item.title}</a>
+            <Link to={`${this.props.match}/${item.title_id}`}>{item.title}</Link>
           </List.Header>
           <List.Description>
             Release Date: {

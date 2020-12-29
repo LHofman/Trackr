@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
+import Media from 'react-media';
+import { Redirect, Route } from 'react-router-dom';
+import { Grid, GridColumn } from 'semantic-ui-react';
 
 import Item from './Item';
 import ItemDetails from '../ItemDetails/ItemDetails';
-import ListWithDetails from '../../../hoc/ListWithDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 
 import fetch from '../../../utils/fetch';
@@ -12,6 +13,7 @@ import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../util
 
 import { SET_ITEMS_LIST_FILTERS, SET_ITEMS_LIST_PAGE, SET_ITEMS_LIST_SORTING } from '../../../store/items/actions';
 import { LIST_FILTERS, LIST_PAGE, LIST_SORTING } from '../../../store/items/keys';
+import HomePage from '../../HomePage/HomePage';
 
 export default class Items extends Component {
   constructor() {
@@ -25,7 +27,7 @@ export default class Items extends Component {
       redirect: undefined
     }
 
-    this.setDetailsComponent = this.setDetailsComponent.bind(this);
+    // this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
@@ -71,53 +73,56 @@ export default class Items extends Component {
     }).catch(console.log);
   }
 
-  setDetailsComponent(item) {
-    if (!item) {
-      this.setState({ detailsComponent: null });
-      return;
-    }
-
-    if (window.innerWidth < 1200) {
-      this.setState({ redirect: `/items/${item.title_id}`});
-      return;
-    }
-
-    this.setState({ detailsComponent: <ItemDetails item={ item } onBackCallback={ this.setDetailsComponent } /> });
-  }
-
   render() {
-    const redirect = this.state.redirect;
+    const { items, redirect } = this.state;
 		if (redirect) return <Redirect to={redirect} />
 
+    const listComponent = (
+      <PaginatedList
+        title='Items'
+        createItemUrl={`/items/add`}
+        items={this.state.items}
+        createItemComponent={(item) => (
+          <Item key={item._id} item={item} onClickCallback={ this.setDetailsComponent } match={'/items'} ></Item>
+        )}
+        filtersConfig={{
+          defaults: this.state.filtersDefault,
+          getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
+          filterItem: filterItem,
+          action: SET_ITEMS_LIST_FILTERS,
+          listKey: LIST_FILTERS
+        }}
+        sortConfig={{
+          defaults: this.state.sortDefault,
+          getControls: getItemsSortControls(),
+          sortItems: sortItems,
+          action: SET_ITEMS_LIST_SORTING,
+          listKey: LIST_SORTING
+        }}
+        paginationConfig={{
+          action: SET_ITEMS_LIST_PAGE,
+          listKey: LIST_PAGE
+        }}
+        reducer='items' />
+    );
+
     return (
-      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
-        <PaginatedList
-          title='Items'
-          createItemUrl={`/items/add`}
-          items={this.state.items}
-          createItemComponent={(item) => (
-            <Item key={item._id} item={item} onClickCallback={ this.setDetailsComponent } ></Item>
-          )}
-          filtersConfig={{
-            defaults: this.state.filtersDefault,
-            getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-            filterItem: filterItem,
-            action: SET_ITEMS_LIST_FILTERS,
-            listKey: LIST_FILTERS
-          }}
-          sortConfig={{
-            defaults: this.state.sortDefault,
-            getControls: getItemsSortControls(),
-            sortItems: sortItems,
-            action: SET_ITEMS_LIST_SORTING,
-            listKey: LIST_SORTING
-          }}
-          paginationConfig={{
-            action: SET_ITEMS_LIST_PAGE,
-            listKey: LIST_PAGE
-          }}
-          reducer='items' />
-      </ListWithDetails>
+      <Media query="(min-width: 1200px)">
+        {matches => (matches && items.length) ? (
+          <Grid>
+            <GridColumn width={8}>
+              {listComponent}
+            </GridColumn>
+            <GridColumn width={8}>
+              <Route exact path={`/items/:titleId`} render={(props) => (
+                <ItemDetails item={ items.filter((item) =>
+                  item.title_id === props.match.params.titleId
+                )[0] } />
+              )} />
+            </GridColumn>
+          </Grid>
+        ) : (listComponent)}
+      </Media>
     );
   }
 }
