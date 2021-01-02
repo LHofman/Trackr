@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { Icon, List, Rating } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
-import getOnClickAttributes from '../../../utils/getOnClickAttributes';
 
 export default class UserItem extends Component {
   constructor(props) {
@@ -15,20 +15,18 @@ export default class UserItem extends Component {
   render() {
     const userItem = this.state.userItem;
 
-    const onClickAttributes = getOnClickAttributes(`/items/${userItem.item.title_id}`, this.props, userItem);
-
     return (
       <List.Item>
         {getIcon(userItem.item)}
         <List.Content>
           <List.Header>
-            <a {...onClickAttributes}>
+            <Link to={`${this.props.match}/${userItem.item.title_id}`}>
               {userItem.item.title}
               {
                 userItem.inCollection &&
                 <Icon name='inbox' />
               }
-            </a>
+            </Link>
           </List.Header>
           <List.Description>
             Release Date: {

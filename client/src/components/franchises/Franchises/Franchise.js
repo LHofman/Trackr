@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { Confirm, Icon, List } from 'semantic-ui-react';
 
 import canEdit from '../../../utils/canEdit';
-import getOnClickAttributes from '../../../utils/getOnClickAttributes';
 
 export default class Franchise extends Component {
 
@@ -32,13 +32,11 @@ export default class Franchise extends Component {
   render() {
     const { franchise, parent, onDelete } = this.props;
     
-    const onClickAttributes = getOnClickAttributes(`/franchises/${franchise.title_id}`, this.props, franchise);
-
     return (
       <List.Item>
         <List.Content>
           <List.Header>
-            <a { ...onClickAttributes }>{franchise.title}</a>
+            <Link to={`${this.props.match}/${franchise.title_id}`}>{franchise.title}</Link>
             {
               parent && onDelete && canEdit(parent) &&
               [ 

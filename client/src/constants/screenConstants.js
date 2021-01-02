@@ -1,0 +1,1 @@
+export const SPLIT_SCREEN_MIN_WIDTH = '1200px';

@@ -29,48 +29,78 @@ import UserItems from './userItems/UserItems/UserItems';
 
 import getAuthComponent from '../utils/getAuthComponent';
 import getNonAuthComponent from '../utils/getNonAuthComponent';
+import '../constants/screenConstants';
+import { SPLIT_SCREEN_MIN_WIDTH } from '../constants/screenConstants';
+
+const routes = [
+  { path: '/', render: () => <Redirect to='/home' /> },
+  { path: '/adminUsers', component: getAuthComponent(ManageUsers), detailsRoute: {
+    path: '/adminUsers/:username', component: getAuthComponent(UserDetails)
+  } },
+  { path: '/franchises', component: Franchises, detailsRoute: {
+    path: '/franchises/:titleId', component: FranchiseDetails
+  } },
+  { path: '/franchises/add', component: getAuthComponent(AddFranchise) },
+  { path: '/franchises/:titleId/edit', component: getAuthComponent(EditFranchise) },
+  { path: '/home', component: getAuthComponent(HomePage), detailsRoute: {
+    path: '/home/:titleId', component: ItemDetails
+  } },
+  { path: '/items', component: getAuthComponent(Items), detailsRoute: {
+    path: '/items/:titleId', component: ItemDetails
+  } },
+  { path: '/items/filters/:filter', component: Items },
+  { path: '/items/add', component: getAuthComponent(AddItem) },
+  { path: '/items/:titleId/edit', component: getAuthComponent(EditItem) },
+  { path: '/lists', component: getAuthComponent(Lists), detailsRoute: {
+    path: '/lists/:titleId', component: ListDetails
+  } },
+  { path: '/lists/add', component: getAuthComponent(AddList) },
+  { path: '/lists/:titleId/edit', component: getAuthComponent(EditList) },
+  { path: '/objectives/:titleId', component: GameObjectives },
+  { path: '/objectives/:titleId/add', component: getAuthComponent(AddGameObjective) },
+  { path: '/objectives/:titleId/subObjectives/:parentId', component: GameObjectives },
+  {
+    path: '/objectives/:titleId/subObjectives/:parentId/add',
+    component: getAuthComponent(AddGameObjective)
+  },
+  {
+    path: '/objectives/:titleId/subObjectives/:parentId/:objectiveId/edit',
+    component: getAuthComponent(EditGameObjective)
+  },
+  {
+    path: '/objectives/:titleId/:objectiveId/edit',
+    component: getAuthComponent(EditGameObjective)
+  },
+  { path: '/profile/edit', component: getAuthComponent(EditProfile) },
+  { path: '/myItems', component: getAuthComponent(UserItems), detailsRoute: {
+    path: '/myItems/:titleId', component: ItemDetails
+  } },
+  { path: '/myItems/filters/:filter', component: getAuthComponent(UserItems) },
+  { path: '/login', component: getNonAuthComponent(Login) },
+  { path: '/logout', component: getAuthComponent(Logout) },
+  { path: '/register', component: getNonAuthComponent(Register) },
+  { exact: false, path: '*', component: PageNotFound }
+];
 
 export default () => (
   <main>
-    <Switch>
-      <Route exact path='/' render={() => <Redirect to='/home' />} />
-      <Route exact path='/adminUsers' component={ getAuthComponent(ManageUsers) } />
-      <Route exact path='/adminUsers/:username' component={ getAuthComponent(UserDetails) } />
-      <Route exact path='/franchises' component={Franchises} />
-      <Route exact path='/franchises/add' component={getAuthComponent(AddFranchise)} />
-      <Route exact path='/franchises/:titleId' component={FranchiseDetails} />
-      <Route exact path='/franchises/:titleId/edit' component={getAuthComponent(EditFranchise)} />
-      <Route exact path='/home' component={ HomePage } />
-      <Media query="(min-width: 1200px)">
-        {matches => matches ? (
-          <Route path='/items' component={Items} />
-        ) : (
-          <div>
-            <Route exact path='/items' component={Items} />
-            <Route exact path='/items/:titleId' component={ItemDetails} />
-          </div>
-        )}
-      </Media>
-      <Route exact path='/items/filters/:filter' component={Items} />
-      <Route exact path='/items/add' component={getAuthComponent(AddItem)} />
-      <Route exact path='/items/:titleId/edit' component={getAuthComponent(EditItem)} />
-      <Route exact path='/lists' component={Lists} />
-      <Route exact path='/lists/add' component={getAuthComponent(AddList)} />
-      <Route exact path='/lists/:titleId' component={ListDetails} />
-      <Route exact path='/lists/:titleId/edit' component={getAuthComponent(EditList)} />
-      <Route exact path='/objectives/:titleId' component={GameObjectives} />
-      <Route exact path='/objectives/:titleId/add' component={getAuthComponent(AddGameObjective)} />
-      <Route exact path='/objectives/:titleId/subObjectives/:parentId' component={GameObjectives} />
-      <Route exact path='/objectives/:titleId/subObjectives/:parentId/add' component={getAuthComponent(AddGameObjective)} />
-      <Route exact path='/objectives/:titleId/subObjectives/:parentId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
-      <Route exact path='/objectives/:titleId/:objectiveId/edit' component={getAuthComponent(EditGameObjective)} />
-      <Route exact path='/profile/edit' component={getAuthComponent(EditProfile)} />
-      <Route exact path='/myItems' component={getAuthComponent(UserItems)} />
-      <Route exact path='/myItems/filters/:filter' component={getAuthComponent(UserItems)} />
-      <Route exact path='/login' component={getNonAuthComponent(Login)} />
-      <Route exact path='/logout' component={getAuthComponent(Logout)} />
-      <Route exact path='/register' component={getNonAuthComponent(Register)} />
-      <Route path='*' component={PageNotFound} />
-    </Switch>
+    <Media query={`(min-width: ${SPLIT_SCREEN_MIN_WIDTH})`}>
+      {matches => matches ? (
+        <Switch>
+          { routes.map(
+            (route, idx) => <Route key={idx} { ...{exact: !route.detailsRoute, ...route }} />
+          ) }
+        </Switch>
+      ) : (
+        <Switch>
+          { routes.map((route, idx, array) => [
+            <Route key={idx} exact { ...route } />,
+            route.detailsRoute
+              ? <Route key={idx + array.length} exact { ...route.detailsRoute } />
+              : null
+          ] ).reduce((acc, routes) => [...acc, ...routes], []) }
+        </Switch>
+      )}
+    </Media>
   </main>
-)
+);

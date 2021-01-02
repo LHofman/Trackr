@@ -29,11 +29,8 @@ export default class Items extends Component {
       filtersDefault: getUserItemsFilterDefaults(),
       sortDefault: itemsSortDefault,
       filterControlsExtraFields: {},
-      detailsComponent: null,
       redirect: null
     }
-
-    this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
@@ -79,28 +76,19 @@ export default class Items extends Component {
     }).catch(console.log);
   }
 
-  setDetailsComponent(userItem) {
-    if (!userItem) {
-      this.setState({ detailsComponent: null });
-      return;
-    }
-
-    if (window.innerWidth < 1200) {
-      this.setState({ redirect: `/items/${userItem.item.title_id}`});
-      return;
-    }
-
-    this.setState({
-      detailsComponent: <ItemDetails item={ userItem.item } onBackCallback={ this.setDetailsComponent } />
-    });
-  }
-
   render() {
-    const redirect = this.state.redirect;
+    const { redirect, userItems } = this.state;
 		if (redirect) return <Redirect to={redirect} />
 
     return (
-      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
+      <ListWithDetails
+        isLoaded={userItems.length > 0}
+        detailsRoutePath='/myItems/:titleId'
+        renderDetailsComponent={(props) => (
+          <ItemDetails item={ userItems.filter((ui) =>
+            ui.item.title_id === props.match.params.titleId
+          )[0].item } />
+        )} >
         <PaginatedList
           title='My Items'
           createItemUrl={`/items/add`}
@@ -109,7 +97,7 @@ export default class Items extends Component {
             <UserItem
               key={userItem._id}
               userItem={userItem}
-              onClickCallback={ this.setDetailsComponent } ></UserItem>
+              match='/myItems' />
           )}
           filtersConfig={{
             defaults: this.state.filtersDefault,

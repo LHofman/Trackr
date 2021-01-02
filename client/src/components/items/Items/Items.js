@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import Media from 'react-media';
-import { Redirect, Route } from 'react-router-dom';
-import { Grid, GridColumn } from 'semantic-ui-react';
+import { Redirect} from 'react-router-dom';
 
 import Item from './Item';
 import ItemDetails from '../ItemDetails/ItemDetails';
@@ -13,7 +11,7 @@ import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../util
 
 import { SET_ITEMS_LIST_FILTERS, SET_ITEMS_LIST_PAGE, SET_ITEMS_LIST_SORTING } from '../../../store/items/actions';
 import { LIST_FILTERS, LIST_PAGE, LIST_SORTING } from '../../../store/items/keys';
-import HomePage from '../../HomePage/HomePage';
+import ListWithDetails from '../../../hoc/ListWithDetails';
 
 export default class Items extends Component {
   constructor() {
@@ -23,11 +21,8 @@ export default class Items extends Component {
       filtersDefault: getItemsFiltersDefaults(),
       sortDefault: itemsSortDefault,
       filterControlsExtraFields: {},
-      detailsComponent: null,
       redirect: undefined
     }
-
-    // this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
@@ -77,52 +72,42 @@ export default class Items extends Component {
     const { items, redirect } = this.state;
 		if (redirect) return <Redirect to={redirect} />
 
-    const listComponent = (
-      <PaginatedList
-        title='Items'
-        createItemUrl={`/items/add`}
-        items={this.state.items}
-        createItemComponent={(item) => (
-          <Item key={item._id} item={item} onClickCallback={ this.setDetailsComponent } match={'/items'} ></Item>
-        )}
-        filtersConfig={{
-          defaults: this.state.filtersDefault,
-          getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-          filterItem: filterItem,
-          action: SET_ITEMS_LIST_FILTERS,
-          listKey: LIST_FILTERS
-        }}
-        sortConfig={{
-          defaults: this.state.sortDefault,
-          getControls: getItemsSortControls(),
-          sortItems: sortItems,
-          action: SET_ITEMS_LIST_SORTING,
-          listKey: LIST_SORTING
-        }}
-        paginationConfig={{
-          action: SET_ITEMS_LIST_PAGE,
-          listKey: LIST_PAGE
-        }}
-        reducer='items' />
-    );
-
     return (
-      <Media query="(min-width: 1200px)">
-        {matches => (matches && items.length) ? (
-          <Grid>
-            <GridColumn width={8}>
-              {listComponent}
-            </GridColumn>
-            <GridColumn width={8}>
-              <Route exact path={`/items/:titleId`} render={(props) => (
-                <ItemDetails item={ items.filter((item) =>
-                  item.title_id === props.match.params.titleId
-                )[0] } />
-              )} />
-            </GridColumn>
-          </Grid>
-        ) : (listComponent)}
-      </Media>
+      <ListWithDetails
+        isLoaded={items.length > 0}
+        detailsRoutePath='/items/:titleId'
+        renderDetailsComponent={(props) => (
+          <ItemDetails item={ items.filter((item) =>
+            item.title_id === props.match.params.titleId
+          )[0] } />
+        )} >
+        <PaginatedList
+          title='Items'
+          createItemUrl={`/items/add`}
+          items={this.state.items}
+          createItemComponent={(item) => (
+            <Item key={item._id} item={item} match={'/items'} ></Item>
+          )}
+          filtersConfig={{
+            defaults: this.state.filtersDefault,
+            getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
+            filterItem: filterItem,
+            action: SET_ITEMS_LIST_FILTERS,
+            listKey: LIST_FILTERS
+          }}
+          sortConfig={{
+            defaults: this.state.sortDefault,
+            getControls: getItemsSortControls(),
+            sortItems: sortItems,
+            action: SET_ITEMS_LIST_SORTING,
+            listKey: LIST_SORTING
+          }}
+          paginationConfig={{
+            action: SET_ITEMS_LIST_PAGE,
+            listKey: LIST_PAGE
+          }}
+          reducer='items' />
+      </ListWithDetails>
     );
   }
 }

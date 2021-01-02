@@ -16,12 +16,10 @@ export default class HomePage extends Component {
     this.state = {
       userItemsInProgress: [],
       itemsLoaded: false,
-      detailsComponent: null,
       redirect: undefined,
       itemStatusChanged: null
     }
 
-    this.setDetailsComponent = this.setDetailsComponent.bind(this);
     this.setStatusChanged = this.setStatusChanged.bind(this);
   }
 
@@ -35,32 +33,6 @@ export default class HomePage extends Component {
     fetch(`/api/userItems/${getUser().id}/inProgress`).then((userItemsInProgress) => {
       this.setState({ userItemsInProgress, itemsLoaded: true });
     })
-  }
-
-  setDetailsComponent(item) {
-    if (this.state.itemStatusChanged) {
-      this.deleteItemFromList(this.state.itemStatusChanged);
-    }
-
-    if (!item) {
-      this.setState({ detailsComponent: null });
-      return;
-    }
-
-    if (window.innerWidth < 1200) {
-      this.setState({ redirect: `/items/${item.title_id}`});
-      return;
-    }
-
-    this.setState({
-      detailsComponent: (
-        <ItemDetails
-          item={ item }
-          onBackCallback={ this.setDetailsComponent }
-          onDelete={ this.deleteItemFromList.bind(this) }
-          onChangeStatus={ () => this.setStatusChanged(item) } />
-      )
-    });
   }
 
   setStatusChanged(item) {
@@ -77,7 +49,7 @@ export default class HomePage extends Component {
       return <Redirect to='/items' />
     }
 
-    const redirect = this.state.redirect;
+    const { itemsLoaded, redirect}  = this.state;
 		if (redirect) return <Redirect to={redirect} />
 
     let userItemsInProgress = {};
@@ -89,7 +61,7 @@ export default class HomePage extends Component {
             key={ userItem._id }
             item={ userItem.item }
             status={ userItem.status }
-            onClickCallback={ this.setDetailsComponent } />
+            match={'/home'} />
         ))
         .reduce((userItemsByStatus, userItem) => {
           const status = userItem.props.status;
@@ -98,13 +70,26 @@ export default class HomePage extends Component {
             [status]: [ ...(userItemsByStatus[status] || []), userItem ]
           }
         }, []);
-      }
+    }
 
     return (
-      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
-        <h1 style={{ marginBottom: '1em' }}>Items in progress</h1>
+      <ListWithDetails
+        isLoaded={itemsLoaded}
+        detailsRoutePath='/home/:titleId'
+        renderDetailsComponent={(props) => {
+          let item = this.state.userItemsInProgress.filter((ui) =>
+            ui.item.title_id === props.match.params.titleId
+          )[0].item;
+          return (
+            <ItemDetails
+              item={item}
+              onDelete={ this.deleteItemFromList.bind(this) }
+              onChangeStatus={ () => this.setStatusChanged(item) } />
+          )
+        }} >
+          <h1 style={{ marginBottom: '1em' }}>Items in progress</h1>
           {
-            this.state.itemsLoaded
+            itemsLoaded
             ? (
               Object.values(userItemsInProgress).length > 0
               ? (

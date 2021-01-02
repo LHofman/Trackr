@@ -18,12 +18,9 @@ export default class Lists extends Component {
   constructor() {
     super();
     this.state = {
-      detailsComponent: null,
       lists: [],
       redirect: undefined
     }
-
-    this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
@@ -43,39 +40,28 @@ export default class Lists extends Component {
     this.setState({ lists, detailsComponent: null });
   }
 
-  setDetailsComponent(list) {
-    if (!list) {
-      this.setState({ detailsComponent: null });
-      return;
-    }
-
-    if (window.innerWidth < 1200) {
-      this.setState({ redirect: `/lists/${list.title_id}`});
-      return;
-    }
-
-    this.setState({
-      detailsComponent: (
-        <ListDetails
-          list={ list }
-          onBackCallback={ this.setDetailsComponent }
-          deleteList={ this.deleteList.bind(this) } />
-      )
-    });
-  }
-
   render() {
-    const { detailsComponent, lists, redirect } = this.state;
+    const { lists, redirect } = this.state;
 		if (redirect) return <Redirect to={redirect} />
 
     return (
-      <ListWithDetails listWidth={ 6 } detailsComponent={ detailsComponent }>
+      <ListWithDetails
+        isLoaded={lists.length > 0}
+        listWidth={6}
+        detailsRoutePath='/lists/:titleId'
+        renderDetailsComponent={(props) => (
+          <ListDetails
+            list={ lists.filter((list) =>
+              list.title_id === props.match.params.titleId
+            )[0] }
+            deleteList={ this.deleteList.bind(this) } />
+        )} >
         <PaginatedList
           title='Lists'
           createItemUrl={`/lists/add`}
           items={lists}
           extraAttributes= {{ bulleted: true }}
-          createItemComponent={(list) => <ItemsList key={list._id} list={list} onClickCallback={ this.setDetailsComponent } />}
+          createItemComponent={(list) => <ItemsList key={list._id} list={list} match='/lists' />}
           filtersConfig={{
             defaults: getListsFiltersDefaults(),
             filterItem: filterList,

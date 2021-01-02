@@ -1,19 +1,16 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { List } from 'semantic-ui-react';
-
-import getOnClickAttributes from '../../../utils/getOnClickAttributes';
 
 export default class ItemsList extends Component {
   render() {
     const { list } = this.props;
     
-    const onClickAttributes = getOnClickAttributes(`/lists/${list.title_id}`, this.props, list);
-
     return (
       <List.Item>
         <List.Content>
           <List.Header>
-            <a { ...onClickAttributes }>{list.title}</a>
+            <Link to={`${this.props.match}/${list.title_id}`}>{list.title}</Link>
           </List.Header>
         </List.Content>
       </List.Item>

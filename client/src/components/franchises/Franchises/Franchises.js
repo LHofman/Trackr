@@ -19,11 +19,8 @@ export default class Franchises extends Component {
     super();
     this.state = {
       franchises: [],
-      detailsComponent: null,
       redirect: undefined
     }
-
-    this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
@@ -38,35 +35,26 @@ export default class Franchises extends Component {
     }).catch(console.log);
   }
 
-  setDetailsComponent(franchise) {
-    if (!franchise) {
-      this.setState({ detailsComponent: null });
-      return;
-    }
-
-    if (window.innerWidth < 1200) {
-      this.setState({ redirect: `/franchises/${franchise.title_id}`});
-      return;
-    }
-
-    this.setState({
-      detailsComponent: <FranchiseDetails franchise={ franchise } onBackCallback={ this.setDetailsComponent } />
-    });
-  }
-
   render() {
-    const redirect = this.state.redirect;
+    const { franchises, redirect } = this.state;
 		if (redirect) return <Redirect to={redirect} />
 
     return (
-      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
+      <ListWithDetails
+        isLoaded={franchises.length > 0}
+        detailsRoutePath='/franchises/:titleId'
+        renderDetailsComponent={(props) => (
+          <FranchiseDetails franchise={ franchises.filter((franchise) =>
+            franchise.title_id === props.match.params.titleId
+          )[0] } />
+        )} >
         <PaginatedList
           title='Franchises'
           createItemUrl={`/franchises/add`}
-          items={this.state.franchises}
+          items={franchises}
           extraAttributes= {{ bulleted: true }}
           createItemComponent={(franchise) => (
-            <Franchise key={franchise._id} franchise={franchise} onClickCallback={ this.setDetailsComponent } />
+            <Franchise key={franchise._id} franchise={franchise} match='/franchises' />
           )}
           filtersConfig={{
             defaults: getFranchisesFiltersDefaults(),

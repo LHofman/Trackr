@@ -4,7 +4,6 @@ import { List } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
 import { isDateStatusValid } from '../../../utils/dateUtils';
-import getOnClickAttributes from '../../../utils/getOnClickAttributes';
 
 export default class Item extends Component {
   constructor(props) {

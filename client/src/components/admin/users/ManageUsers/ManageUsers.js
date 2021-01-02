@@ -10,12 +10,9 @@ export default class ManageUsers extends Component {
   constructor() {
     super();
     this.state = {
-      detailsComponent: null,
       redirect: undefined,
       users: []
     }
-
-    this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
@@ -33,41 +30,30 @@ export default class ManageUsers extends Component {
     this.setState({ users, detailsComponent: null });
   }
 
-  setDetailsComponent(user) {
-    if (!user) {
-      this.setState({ detailsComponent: null });
-      return;
-    }
-
-    if (window.innerWidth < 1200) {
-      this.setState({ redirect: `/adminUsers/${user.username}`});
-      return;
-    }
-
-    this.setState({
-      detailsComponent: (
-        <UserDetails
-          user={ user }
-          onBackCallback={ this.setDetailsComponent }
-          deleteUser={ this.deleteUser.bind(this) } />
-      )
-    });
-  }
-
   render() {
-    const { detailsComponent, redirect, users } = this.state;
+    const { redirect, users } = this.state;
 
     if (redirect) return <Redirect to={ redirect } />;
 
     const userComponents = users.map((user) => (
-      <User key={ user._id } user={ user } onClickCallback={ this.setDetailsComponent } />
+      <User key={ user._id } user={ user } match={'/adminUsers'} />
     ));
 
     return (
-      <ListWithDetails listWidth={ 6 } detailsComponent={ detailsComponent }>
+      <ListWithDetails
+        isLoaded={users.length > 0}
+        listWidth={6}
+        detailsRoutePath='/adminUsers/:username'
+        renderDetailsComponent={(props) => (
+          <UserDetails
+            user={ users.filter((user) =>
+              user.username === props.match.params.username
+            )[0] }
+            deleteUser={ this.deleteUser.bind(this) } />
+        )} >
         <h1>Manage Users</h1>
         <List bulleted>
-          { userComponents }
+          {userComponents}
         </List>
       </ListWithDetails>
     );

@@ -15,7 +15,7 @@ export default class UserDetails extends Component {
   }
 
   componentWillMount() {
-    this.getUser(this.props);
+		this.getUser(this.props);
 	}
 	
 	componentWillReceiveProps(props) {
