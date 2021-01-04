@@ -43,7 +43,7 @@ export default class Items extends Component {
   }
 
   componentWillReceiveProps(props) {
-    this.checkCustomFilter(props);
+    this.setState({ redirect: '' }, () => { this.checkCustomFilter(props) });
   }
 
   checkCustomFilter(props) {
@@ -60,6 +60,11 @@ export default class Items extends Component {
     this.setState({ filtersDefault, sortDefault});
   }
 
+  deleteItem(item) {
+    const items = this.state.items.filter((stateItem) => stateItem._id !== item._id);
+    this.setState({ items, redirect: '/items' });
+  }
+
   getItems() {
     return fetch('/api/items').then(items => {
       if (!items || items === null) throw new Error('No items found');
@@ -70,16 +75,20 @@ export default class Items extends Component {
 
   render() {
     const { items, redirect } = this.state;
-		if (redirect) return <Redirect to={redirect} />
+		if (redirect) return <Redirect to={redirect} />;
 
     return (
       <ListWithDetails
         isLoaded={items.length > 0}
         detailsRoutePath='/items/:titleId'
         renderDetailsComponent={(props) => (
-          <ItemDetails item={ items.filter((item) =>
-            item.title_id === props.match.params.titleId
-          )[0] } />
+          <ItemDetails 
+            {...props}
+            match='/items'
+            item={ items.filter((item) =>
+              item.title_id === props.match.params.titleId
+            )[0] }
+            deleteItem={ this.deleteItem.bind(this) } />
         )} >
         <PaginatedList
           title='Items'

@@ -27,7 +27,7 @@ export default class ManageUsers extends Component {
 
   deleteUser(user) {
     const users = this.state.users.filter((stateUser) => stateUser._id !== user._id);
-    this.setState({ users, detailsComponent: null });
+    this.setState({users});
   }
 
   render() {
@@ -46,6 +46,8 @@ export default class ManageUsers extends Component {
         detailsRoutePath='/adminUsers/:username'
         renderDetailsComponent={(props) => (
           <UserDetails
+            {...props}
+            match='/adminUsers'
             user={ users.filter((user) =>
               user.username === props.match.params.username
             )[0] }

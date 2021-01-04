@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Confirm, Icon, Popup, Grid } from 'semantic-ui-react';
 
+import BackButton from '../../UI/Basic/Button/BackButton';
 import ItemDetailsFranchise from './ItemDetailsFranchise';
 import ItemDetailsList from './ItemDetailsList';
 import LinkedItems from '../../UI/LinkedItems/LinkedItems';
@@ -164,11 +165,8 @@ export default class ItemDetails extends Component {
 	onDelete() {
 		const itemId = this.state.details._id;
 		return fetch(`/api/items/${itemId}`, 'delete', true).then(res => {
-			if (this.props.onDelete) {
-				this.props.onDelete(this.state.details);
-			} else {
-				this.setState({redirect: '/'})
-			}
+			if (this.props.deleteItem) this.props.deleteItem(this.state.details);
+			this.setState({ redirect: this.props.match });
 		});
 	}
 
@@ -205,7 +203,10 @@ export default class ItemDetails extends Component {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
 		
-		const { details, isLoaded, userItem } = this.state;
+		const {
+			props: { isSideComponent },
+			state: { details, isLoaded, userItem }
+		} = this;
 
 		if (!isLoaded) return null;
 
@@ -213,14 +214,9 @@ export default class ItemDetails extends Component {
 			<a href={link.url} target='_blank'>{link.title}</a>
 		</li>) : undefined;
 
-		let backButtonAttributes = { as: Link, to: '/' };
-		if (this.props.onBackCallback) {
-			backButtonAttributes = { onClick: () => this.props.onBackCallback() };
-		}
-
 		return (
 			<div>
-				<Button labelPosition='left' icon='left chevron' content='Back' { ...backButtonAttributes } />
+				{ !isSideComponent && <BackButton {...this.props} /> }
 				<h1>
 					{getIcon(details)}
 					{details.title}
@@ -309,7 +305,7 @@ export default class ItemDetails extends Component {
 						item={ details }
 						userItem={ userItem }
 						updateUserItem={ this.updateUserItem }
-						onChangeStatus={ this.props.onChangeStatus } />
+						onChangeStatus={ this.props.onChangeStatus || null } />
         }
 				{
           canEdit(details) && 

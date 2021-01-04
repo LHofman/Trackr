@@ -51,7 +51,7 @@ export default class Items extends Component {
   }
 
   componentWillReceiveProps(props) {
-    this.checkCustomFilter(props);
+    this.setState({ redirect: '' }, () => { this.checkCustomFilter(props) });
   }
 
   checkCustomFilter(props) {
@@ -66,6 +66,13 @@ export default class Items extends Component {
     applyCustomFilter(filtersDefault, sortDefault, filter);
 
     this.setState({ filtersDefault, sortDefault});
+  }
+
+  deleteItem(item) {
+    const userItems = this.state.userItems.filter((stateUserItem) =>
+      stateUserItem.item_id !== item._id
+    );
+    this.setState({ userItems, redirect: '/userItems' });
   }
 
   getUser() {
@@ -85,9 +92,13 @@ export default class Items extends Component {
         isLoaded={userItems.length > 0}
         detailsRoutePath='/myItems/:titleId'
         renderDetailsComponent={(props) => (
-          <ItemDetails item={ userItems.filter((ui) =>
-            ui.item.title_id === props.match.params.titleId
-          )[0].item } />
+          <ItemDetails 
+            {...props}
+            match='/myItems'
+            item={ userItems.filter((ui) =>
+              ui.item.title_id === props.match.params.titleId
+            )[0].item }
+            deleteItem={ this.deleteItem.bind(this) } />
         )} >
         <PaginatedList
           title='My Items'

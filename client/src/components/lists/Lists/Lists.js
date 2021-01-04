@@ -37,7 +37,7 @@ export default class Lists extends Component {
 
   deleteList(list) {
     const lists = this.state.lists.filter((stateList) => stateList._id !== list._id);
-    this.setState({ lists, detailsComponent: null });
+    this.setState({lists});
   }
 
   render() {
@@ -51,6 +51,8 @@ export default class Lists extends Component {
         detailsRoutePath='/lists/:titleId'
         renderDetailsComponent={(props) => (
           <ListDetails
+            {...props}
+            match='/lists'
             list={ lists.filter((list) =>
               list.title_id === props.match.params.titleId
             )[0] }

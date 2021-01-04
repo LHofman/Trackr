@@ -27,6 +27,13 @@ export default class Franchises extends Component {
     this.getFranchises();
   }
 
+  deleteFranchise(franchise) {
+    const franchises = this.state.franchises.filter((stateFranchise) =>
+      stateFranchise._id !== franchise._id
+    );
+    this.setState({franchises});
+  }
+
   getFranchises() {
     return fetch('/api/franchises').then(franchises => {
       if (!franchises || franchises === null) throw new Error('No franchises found');
@@ -44,9 +51,13 @@ export default class Franchises extends Component {
         isLoaded={franchises.length > 0}
         detailsRoutePath='/franchises/:titleId'
         renderDetailsComponent={(props) => (
-          <FranchiseDetails franchise={ franchises.filter((franchise) =>
-            franchise.title_id === props.match.params.titleId
-          )[0] } />
+          <FranchiseDetails 
+            {...props}
+            match='/franchises'
+            franchise={ franchises.filter((franchise) =>
+              franchise.title_id === props.match.params.titleId
+            )[0] }
+            deleteFranchise={ this.deleteFranchise.bind(this) }/>
         )} >
         <PaginatedList
           title='Franchises'

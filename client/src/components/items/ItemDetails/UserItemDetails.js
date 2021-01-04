@@ -86,7 +86,7 @@ export default class UserItemDetails extends Component {
 
 		if (name === 'status') {
 			if (this.props.onChangeStatus) {
-				this.props.onChangeStatus(this.props.item);
+				this.props.onChangeStatus({ ...userItem, item: this.props.item });
 			}
 
 			if (

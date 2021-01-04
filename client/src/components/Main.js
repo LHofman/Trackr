@@ -37,25 +37,25 @@ const routes = [
   { path: '/adminUsers', component: getAuthComponent(ManageUsers), detailsRoute: {
     path: '/adminUsers/:username', component: getAuthComponent(UserDetails)
   } },
+  { path: '/franchises/add', component: getAuthComponent(AddFranchise) },
+  { path: '/franchises/:titleId/edit', component: getAuthComponent(EditFranchise) },
   { path: '/franchises', component: Franchises, detailsRoute: {
     path: '/franchises/:titleId', component: FranchiseDetails
   } },
-  { path: '/franchises/add', component: getAuthComponent(AddFranchise) },
-  { path: '/franchises/:titleId/edit', component: getAuthComponent(EditFranchise) },
   { path: '/home', component: getAuthComponent(HomePage), detailsRoute: {
     path: '/home/:titleId', component: ItemDetails
-  } },
-  { path: '/items', component: getAuthComponent(Items), detailsRoute: {
-    path: '/items/:titleId', component: ItemDetails
   } },
   { path: '/items/filters/:filter', component: Items },
   { path: '/items/add', component: getAuthComponent(AddItem) },
   { path: '/items/:titleId/edit', component: getAuthComponent(EditItem) },
-  { path: '/lists', component: getAuthComponent(Lists), detailsRoute: {
-    path: '/lists/:titleId', component: ListDetails
+  { path: '/items', component: getAuthComponent(Items), detailsRoute: {
+    path: '/items/:titleId', component: ItemDetails
   } },
   { path: '/lists/add', component: getAuthComponent(AddList) },
   { path: '/lists/:titleId/edit', component: getAuthComponent(EditList) },
+  { path: '/lists', component: getAuthComponent(Lists), detailsRoute: {
+    path: '/lists/:titleId', component: ListDetails
+  } },
   { path: '/objectives/:titleId', component: GameObjectives },
   { path: '/objectives/:titleId/add', component: getAuthComponent(AddGameObjective) },
   { path: '/objectives/:titleId/subObjectives/:parentId', component: GameObjectives },
@@ -72,10 +72,10 @@ const routes = [
     component: getAuthComponent(EditGameObjective)
   },
   { path: '/profile/edit', component: getAuthComponent(EditProfile) },
+  { path: '/myItems/filters/:filter', component: getAuthComponent(UserItems) },
   { path: '/myItems', component: getAuthComponent(UserItems), detailsRoute: {
     path: '/myItems/:titleId', component: ItemDetails
   } },
-  { path: '/myItems/filters/:filter', component: getAuthComponent(UserItems) },
   { path: '/login', component: getNonAuthComponent(Login) },
   { path: '/logout', component: getAuthComponent(Logout) },
   { path: '/register', component: getNonAuthComponent(Register) },

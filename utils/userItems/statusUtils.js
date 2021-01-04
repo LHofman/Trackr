@@ -1,0 +1,1 @@
+export const statusesInProgress = ['Doing', 'Listening', 'Playing', 'Reading', 'Watching'];

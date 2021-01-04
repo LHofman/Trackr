@@ -2,17 +2,35 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Confirm, Container, Grid } from 'semantic-ui-react';
 
+import BackButton from '../../UI/Basic/Button/BackButton';
 import Franchise from '../Franchises/Franchise';
 import FranchiseDetailsItem from './FranchiseDetailsItem';
 
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
 import LinkedItems from '../../UI/LinkedItems/LinkedItems';
-import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from '../../../utils/items/itemsFilters';
-import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
+import {
+  getItemsFiltersControlsExtraParams,
+  getItemsFiltersControls,
+  getItemsFiltersDefaults,
+  filterItem
+} from '../../../utils/items/itemsFilters';
+import {
+  itemsSortDefault,
+  sortItems,
+  getItemsSortControls
+} from '../../../utils/items/itemsSorting';
 
-import { ITEMS_LIST_FILTERS, ITEMS_LIST_PAGE, ITEMS_LIST_SORTING } from '../../../store/franchises/keys';
-import { SET_FRANCHISES_ITEMS_LIST_FILTERS, SET_FRANCHISES_ITEMS_LIST_PAGE, SET_FRANCHISES_ITEMS_LIST_SORTING } from '../../../store/franchises/actions';
+import {
+  ITEMS_LIST_FILTERS,
+  ITEMS_LIST_PAGE,
+  ITEMS_LIST_SORTING
+} from '../../../store/franchises/keys';
+import {
+  SET_FRANCHISES_ITEMS_LIST_FILTERS,
+  SET_FRANCHISES_ITEMS_LIST_PAGE,
+  SET_FRANCHISES_ITEMS_LIST_SORTING
+} from '../../../store/franchises/actions';
 
 export default class FranchiseDetails extends Component {
 	constructor(props) {
@@ -134,9 +152,10 @@ export default class FranchiseDetails extends Component {
 
 	onDelete() {
 		const franchiseId = this.state.details._id;
-		return fetch(`/api/franchises/${franchiseId}`, 'delete', true).then(res => 
-			this.setState({redirect: '/franchises'})
-		);
+		return fetch(`/api/franchises/${franchiseId}`, 'delete', true).then(res => {
+      if (this.props.deleteFranchise) this.props.deleteFranchise(this.state.details);
+      this.setState({ redirect: this.props.match });
+    });
 	}
 
   removeItem(item) {
@@ -156,19 +175,15 @@ export default class FranchiseDetails extends Component {
   }
   
 	render() {
-		const redirect = this.state.redirect;
+		const {
+      props: { isSideComponent },
+      state: { details, redirect }
+     } = this;
 		if (redirect) return <Redirect to={redirect} />
 		
-    const details = this.state.details;
-	
-		let backButtonAttributes = { as: Link, to: '/franchises' };
-		if (this.props.onBackCallback) {
-			backButtonAttributes = { onClick: () => this.props.onBackCallback() };
-		}
-
 		return (
 			<Container>
-				<Button labelPosition='left' icon='left chevron' content='Back' { ...backButtonAttributes } />
+        { !isSideComponent && <BackButton {...this.props} /> }
 				<h1>{details.title}</h1>
 				<Confirm
 					open={this.state.confirmationAlert}

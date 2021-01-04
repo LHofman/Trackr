@@ -2,16 +2,30 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Confirm } from 'semantic-ui-react';
 
+import BackButton from '../../UI/Basic/Button/BackButton';
 import LinkedItems from '../../UI/LinkedItems/LinkedItems';
 import ListDetailsItem from './ListDetailsItem';
 
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
-import { getItemsFiltersDefaults, getItemsFiltersControls, getItemsFiltersControlsExtraParams, filterItem } from '../../../utils/items/itemsFilters';
+import {
+	getItemsFiltersDefaults,
+	getItemsFiltersControls,
+	getItemsFiltersControlsExtraParams,
+	filterItem
+} from '../../../utils/items/itemsFilters';
 import { sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
 
-import { SET_LISTS_ITEMS_LIST_FILTERS, SET_LISTS_ITEMS_LIST_PAGE, SET_LISTS_ITEMS_LIST_SORTING } from '../../../store/lists/actions';
-import { ITEMS_LIST_FILTERS, ITEMS_LIST_PAGE, ITEMS_LIST_SORTING } from '../../../store/lists/keys';
+import {
+	SET_LISTS_ITEMS_LIST_FILTERS,
+	SET_LISTS_ITEMS_LIST_PAGE,
+	SET_LISTS_ITEMS_LIST_SORTING
+} from '../../../store/lists/actions';
+import {
+	ITEMS_LIST_FILTERS,
+	ITEMS_LIST_PAGE,
+	ITEMS_LIST_SORTING
+} from '../../../store/lists/keys';
 
 
 export default class ListDetails extends Component {
@@ -72,12 +86,9 @@ export default class ListDetails extends Component {
 	confirmDelete() {
 		const listId = this.state.list._id;
 		return fetch(`/api/lists/${listId}`, 'delete', true).then(res => {
-      if (this.props.onBackCallback) {
-        this.props.deleteList(this.state.list);
-      } else {
-        this.setState({ redirect: '/lists' })
-      }
-    }).catch(console.log);
+			if (this.props.deleteList) this.props.deleteList(this.state.list);
+      this.setState({ redirect: this.props.match });
+		}).catch(console.log);
 	}
 
 	toggleConfirmationAlert() {
@@ -141,27 +152,20 @@ export default class ListDetails extends Component {
 		const items = this.state.items;
 		const changedItem = items.splice(originalIndex - 1, 1);
 		items.splice(newIndex - 1, 0, changedItem[0]);
-		console.log(items);
 		this.setState({ items });
 	}
 
   render() {
     const {
-			changingOrder,
-			list,
-			redirect
-		} = this.state;
+			props: { isSideComponent },
+			state: { changingOrder, list, redirect }
+		} = this;
 
     if (redirect) return <Redirect to={ redirect } />;
 
-		let backButtonAttributes = { as: Link, to: '/lists' };
-		if (this.props.onBackCallback) {
-			backButtonAttributes = { onClick: () => this.props.onBackCallback() };
-		}
-
     return (
       <div>
-        <Button labelPosition='left' icon='left chevron' content='Back' { ...backButtonAttributes } />
+				{ !isSideComponent && <BackButton {...this.props} /> }
         <h1>{list.title}</h1>
         <h3>{list.description}</h3>
         <Confirm

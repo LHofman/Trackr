@@ -10,6 +10,8 @@ import User from '../models/User';
 import UserGameObjective from '../models/UserGameObjective';
 import UserItem from '../models/UserItem';
 
+import { statusesInProgress } from '../utils/userItems/statusUtils';
+
 const auth = passport.authenticate('jwt', { session: false });
 const router = express.Router();
 
@@ -145,8 +147,7 @@ router.delete('/items/:id', auth, (req, res, next) => {
 //#region userItems
 
 router.get('/userItems/:user/inProgress', (req, res, next) => {
-  const statusesInProgres = ['Doing', 'Listening', 'Playing', 'Reading', 'Watching'];
-  UserItem.find({ user: req.params.user, status: { $in: statusesInProgres } })
+  UserItem.find({ user: req.params.user, status: { $in: statusesInProgress } })
     .populate('item')
     .exec((err, userItems) => {
       if (err) return res.json([]);
