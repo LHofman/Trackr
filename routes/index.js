@@ -17,7 +17,9 @@ const router = express.Router();
 
 const STATUS_500_MESSAGE = 'Something went wrong';
 
-const isCreator = (model, user) => new mongoose.Types.ObjectId(user._id).equals(model.createdBy._id);
+const isCreator = (model, user) => {
+  return new mongoose.Types.ObjectId(user._id).equals(model.createdBy._id);
+}
 
 //#region items
 
@@ -97,14 +99,30 @@ router.post('/items', auth, (req, res, next) => {
 
     item.save((err, item) => {
       if (err) return res.status(500).send('Something went wrong');
-      res.json(item);
+      if (item.type === 'Video Game') {
+        const gameObjective = new GameObjective({
+          game: item._id,
+          createdBy: item.createdBy,
+          index: 1,
+          objective: 'Clear the Main Campaigns',
+          objective_id: 1
+        });
+        console.log(gameObjective);
+        gameObjective.save((err, gameObjective) => {
+          console.log(err);
+          console.log(gameObjective);
+          res.json(item);
+        });
+      }
     });
   });
 });
 
 router.put('/items/:id', auth, (req, res, next) => {
   Item.findById(req.params.id, (err, item) => {
-    if (!isCreator(item, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+    if (!isCreator(item, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+    }
 
     const newItem = req.body;
     const title = newItem.title;
@@ -130,7 +148,9 @@ router.put('/items/:id', auth, (req, res, next) => {
 router.delete('/items/:id', auth, (req, res, next) => {
   Item.findById(req.params.id, (err, item) => {
     if (err) return res.status(500).send({success: false, msg: 'Item not found'});
-    if (!isCreator(item, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+    if (!isCreator(item, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+    }
     
     item.remove((err, item) => {  
       if (err) return res.status(500).send('Something went wrong');
@@ -257,7 +277,7 @@ const getMaxGameObjectiveId = gameId =>
               )
         )
     )
-  );
+);
 
 router.get('/gameObjectives/byGame/:game', (req, res, next) => {
   GameObjective.find({game: req.params.game})
@@ -318,7 +338,9 @@ router.post('/gameObjectives', auth, (req, res, next) => {
 router.delete('/gameObjectives/:id', auth, (req, res, next) => {
   GameObjective.findById(req.params.id, (err, gameObjective) => {
     if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
-    if (!isCreator(gameObjective, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this game objective'});
+    if (!isCreator(gameObjective, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this game objective'});
+    }
     
     gameObjective.remove((err, gameObjective) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
@@ -333,7 +355,9 @@ router.delete('/gameObjectives/:id', auth, (req, res, next) => {
 router.put('/gameObjectives/:id', auth, (req, res, next) => {
   const gameObjectiveId = req.params.id;
   GameObjective.findById(gameObjectiveId, (err, gameObjective) => {
-    if (!isCreator(gameObjective, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this gameObjective'});
+    if (!isCreator(gameObjective, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this gameObjective'});
+    }
 
     GameObjective.findByIdAndUpdate(gameObjectiveId, req.body, { new: true }).exec(
       (err, gameObjective) => {
@@ -391,13 +415,21 @@ router.put('/userGameObjectives/:id', auth, (req, res, next) => {
     if (err) return res.status(500).send({success: false, msg: 'UserGameObjective not found'});
 
     if (!new mongoose.Types.ObjectId(req.user._id).equals(userGameObjective.user)) {
-      return res.status(500).send({sucess: false, msg: 'You did not create this userGameObjective'});
+      return res.status(500).send({
+        success: false,
+        msg: 'You did not create this userGameObjective'
+      });
     }
     
-    UserGameObjective.findByIdAndUpdate(userGameObjectiveId, req.body, { new: true }, (err, userGameObjective) => {
-      if (err) return res.status(500).send(STATUS_500_MESSAGE);
-      return res.json(userGameObjective);
-    });
+    UserGameObjective.findByIdAndUpdate(
+      userGameObjectiveId,
+      req.body,
+      { new: true },
+      (err, userGameObjective) => {
+        if (err) return res.status(500).send(STATUS_500_MESSAGE);
+        return res.json(userGameObjective);
+      }
+    );
   });
 });
 
@@ -486,7 +518,9 @@ router.get('/franchises/title_id/:title_id', (req, res, next) => {
 router.delete('/franchises/:id', auth, (req, res, next) => {
   Franchise.findById(req.params.id, (err, franchise) => {
     if (err) return res.status(500).send({success: false, msg: 'Franchise not found'});
-    if (!isCreator(franchise, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    if (!isCreator(franchise, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    }
     
     franchise.remove((err, franchise) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
@@ -511,7 +545,9 @@ router.post('/franchises', auth, (req, res, next) => {
 
 router.put('/franchises/:id', auth, (req, res, next) => {
   Franchise.findById(req.params.id, (err, franchise) => {
-    if (!isCreator(franchise, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    if (!isCreator(franchise, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    }
 
     const newFranchise = req.body;
     const title = newFranchise.title;
@@ -570,10 +606,13 @@ router.get('/franchises/byItem/:item', (req, res, next) => {
 });
 
 router.get('/franchises/bySubFranchise/:subFranchise', (req, res, next) => {
-  Franchise.find({ subFranchises: mongoose.Types.ObjectId(req.params.subFranchise) }, (err, franchises) => {
-    if (err) return res.status(500).send(STATUS_500_MESSAGE);
-    return res.json(franchises);
-  })
+  Franchise.find(
+    { subFranchises: mongoose.Types.ObjectId(req.params.subFranchise) },
+    (err, franchises) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return res.json(franchises);
+    }
+  );
 });
 
 router.put('/franchises/addFranchiseToMultiple/:subFranchise', (req, res, next) => {
@@ -657,7 +696,9 @@ router.get('/lists/title_id/:title_id', (req, res, next) => {
 router.delete('/lists/:id', auth, (req, res, next) => {
   List.findById(req.params.id, (err, list) => {
     if (err) return res.status(500).send({success: false, msg: 'List not found'});
-    if (!isCreator(list, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this list'});
+    if (!isCreator(list, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this list'});
+    }
     
     list.remove((err, list) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
@@ -682,7 +723,9 @@ router.post('/lists', auth, (req, res, next) => {
 
 router.put('/lists/:id', auth, (req, res, next) => {
   List.findById(req.params.id, (err, list) => {
-    if (!isCreator(list, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this list'});
+    if (!isCreator(list, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this list'});
+    }
 
     const newList = req.body;
     const title = newList.title;
@@ -791,7 +834,9 @@ router.put('/users/:id', auth, (req, res, next) => {
 router.delete('/users/:id', auth, (req, res, next) => {
   User.findById(req.params.id, (err, user) => {
     if (err) return res.status(500).send({success: false, msg: 'User not found'});
-    if (!req.user.isAdmin) return res.status(500).send({sucess: false, msg: 'You do not have permission'});
+    if (!req.user.isAdmin) {
+      return res.status(500).send({sucess: false, msg: 'You do not have permission'});
+    }
     
     user.remove((err, user) => {  
       if (err) return res.status(500).send('Something went wrong');

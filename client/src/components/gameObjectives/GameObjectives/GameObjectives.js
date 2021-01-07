@@ -48,7 +48,9 @@ class GameObjectives extends Component {
         });
       else {
         this.getParent(parentId).then(() => {
-          this.getGameObjectives(`/api/gameObjectives/byParent/${this.state.parent._id}`).then(() => {
+          this.getGameObjectives(
+            `/api/gameObjectives/byParent/${this.state.parent._id}`
+          ).then(() => {
             this.getUserGameObjectives();
           });
         });
@@ -72,11 +74,13 @@ class GameObjectives extends Component {
   }
 
   getParent(objective_id) {
-    return fetch(`/api/gameObjectives/objective_id/${this.state.game._id}/${objective_id}`).then(gameObjective => {
+    return fetch(
+      `/api/gameObjectives/objective_id/${this.state.game._id}/${objective_id}`
+    ).then(gameObjective => {
       if (!gameObjective) throw new Error('GameObjective not found');
       this.setState({
         parent: gameObjective,
-        blindPlaythrough: true
+        blindPlaythrough: gameObjective.objective === 'Clear the Main Campaign' ? true : null
       });
     }).catch(reason => {
       this.setState({redirect: '/'});
@@ -95,14 +99,19 @@ class GameObjectives extends Component {
   getUserGameObjectives() {
     const user = getUser();
     if (!user) return;
-    return fetch(`/api/userGameObjectives/${user.id}/game/${this.state.game._id}`).then(userGameObjectives => {
+    return fetch(
+      `/api/userGameObjectives/${user.id}/game/${this.state.game._id}`
+    ).then(userGameObjectives => {
       const gameObjectives = this.state.gameObjectives;
       let highestObjectiveCompleted = 0;
       userGameObjectives.forEach(userGameObjective => {
         for (let i = 0; i < gameObjectives.length; i++) {
           if (gameObjectives[i]._id === userGameObjective.gameObjective) {
             if (userGameObjective.completed) {
-              highestObjectiveCompleted = Math.max(highestObjectiveCompleted, gameObjectives[i].index);
+              highestObjectiveCompleted = Math.max(
+                highestObjectiveCompleted,
+                gameObjectives[i].index
+              );
             }
             gameObjectives[i].userGameObjective = userGameObjective;
           }
@@ -129,9 +138,12 @@ class GameObjectives extends Component {
       active = parent === this.state.parent;
       sections.unshift({
         key: parent._id,
-        content: active ? 
-          parent.objective : 
-          <a href={`/objectives/${this.state.game.title_id}/subObjectives/${parent.objective_id}`}>{parent.objective}</a>,
+        content: active
+          ? parent.objective
+          : <a href={
+              `/objectives/${this.state.game.title_id}
+              /subObjectives/${parent.objective_id}`
+            }> {parent.objective} </a>,
         active
       });
       parent = parent.parent;
@@ -182,7 +194,12 @@ class GameObjectives extends Component {
           userGameObjective.amount = 0;
         }
 
-        promise = fetch(`/api/userGameObjectives/${userGameObjective._id}`, 'put', true, userGameObjective);
+        promise = fetch(
+          `/api/userGameObjectives/${userGameObjective._id}`,
+          'put',
+          true,
+          userGameObjective
+        );
       } else {
         if (!data.checked) continue;
 
@@ -229,7 +246,9 @@ class GameObjectives extends Component {
     }, true);
 
     if (blindPlaythrough) {
-      gameObjectives = gameObjectives.filter((gameObjective) => gameObjective.index <= highestObjectiveCompleted + 1);
+      gameObjectives = gameObjectives.filter((gameObjective) =>
+        gameObjective.index <= highestObjectiveCompleted + 1
+      );
     }
 
     gameObjectives = gameObjectives.sort((o1, o2) => o1.index - o2.index).map(gameObjective => 
@@ -247,7 +266,12 @@ class GameObjectives extends Component {
 
     return (
       <div>
-        <Button labelPosition='left' icon='left chevron' content='Back' as={Link} to={`/items/${game.title_id}`} />
+        <Button
+          labelPosition='left'
+          icon='left chevron'
+          content='Back'
+          as={Link}
+          to={`/items/${game.title_id}`} />
         <h1>{game.title} objectives</h1>
         {this.getBreadCrumbs()}
         {
@@ -261,11 +285,19 @@ class GameObjectives extends Component {
           blindPlaythrough !== null &&
           <div>
             <br />
-            <Checkbox key='blind' name='blind' checked={blindPlaythrough} onChange={(e, data) => this.toggleBlindPlaythrough()} label="Blind Playthrough"/>
+            <Checkbox
+              key='blind'
+              name='blind'
+              checked={blindPlaythrough}
+              onChange={(e, data) => this.toggleBlindPlaythrough()} label="Blind Playthrough"/>
             <br />
           </div>
         }
-        <Checkbox key='all' name='all' checked={all} onChange={(e, data) => this.selectAll(data)} label="(De)select all"/>
+        <Checkbox
+          key='all'
+          name='all'
+          checked={all}
+          onChange={(e, data) => this.selectAll(data)} label="(De)select all"/>
         <br/><br />
         <List>
           {gameObjectives}
