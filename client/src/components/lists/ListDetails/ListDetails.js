@@ -77,7 +77,12 @@ export default class ListDetails extends Component {
 	getListDetails(titleId) {
 		return fetch(`/api/lists/title_id/${titleId}`).then(list => {
 			if (!list || list === null) throw new Error('List not found');
-			this.setState({ list, items: list.items.map((item) => { return { ...item.item, itemModel: item.itemModel } }) });
+			this.setState({
+				list,
+				items: list.items.map((item) => {
+					return { ...item.item, itemModel: item.itemModel }
+				})
+			});
 		}).catch(reason => {
 			this.setState({redirect: '/'});
 		});
@@ -96,8 +101,19 @@ export default class ListDetails extends Component {
   }
   
 	addItems(itemsToAdd) {
-		const items = itemsToAdd.map((item) => { return { item, itemModel: this.state.allItemsTypes[item] } });
-		return fetch(`/api/lists/${this.state.list._id}/items/add`, 'put', true, items);
+		const items = itemsToAdd.map((item) => {
+			return { item, itemModel: this.state.allItemsTypes[item] }
+		});
+		return fetch(
+			`/api/lists/${this.state.list._id}/items/add`,
+			'put',
+			true,
+			items
+		).then(completeItems => {
+			return Promise.resolve(completeItems.map((item) => {
+				return { ...item, itemModel: this.state.allItemsTypes[item._id] }
+			}));
+		})
 	}
 	
 	getItems() {
@@ -106,7 +122,9 @@ export default class ListDetails extends Component {
 			fetch('/api/franchises')
 		]).then(itemsArray => {
 			const itemsItems = itemsArray[0].map((item) => { return { ...item, type: 'Item' } });
-			const itemsFranchises = itemsArray[1].map((franchise) => { return { ...franchise, title: `${franchise.title} (Franchise)`, type: 'Franchise' } });
+			const itemsFranchises = itemsArray[1].map((franchise) => {
+				return { ...franchise, title: `${franchise.title} (Franchise)`, type: 'Franchise' }
+			});
 			const items = [ ...itemsItems, ...itemsFranchises ];
       this.setState({
 				allItemsTypes: items.reduce((map, item) => { return { ...map, [item._id]: item.type } }),
@@ -130,7 +148,12 @@ export default class ListDetails extends Component {
 	}
 
   removeItem(item) {
-    return fetch(`/api/lists/${this.state.list._id}/items/remove`, 'put', true, [item._id]).then(() => {
+    return fetch(
+			`/api/lists/${this.state.list._id}/items/remove`,
+			'put',
+			true,
+			[item._id]
+		).then(() => {
 			const items = this.state.items.filter(itemB => itemB._id !== item._id);
 			this.setState({ items });
 		});
@@ -158,7 +181,7 @@ export default class ListDetails extends Component {
   render() {
     const {
 			props: { isSideComponent },
-			state: { changingOrder, list, redirect }
+			state: { changingOrder, confirmationAlert, list, redirect }
 		} = this;
 
     if (redirect) return <Redirect to={ redirect } />;
@@ -169,7 +192,7 @@ export default class ListDetails extends Component {
         <h1>{list.title}</h1>
         <h3>{list.description}</h3>
         <Confirm
-					open={ this.state.confirmationAlert }
+					open={confirmationAlert}
 					header='confirm action'
 					content='Are you sure you want to delete this list?'
 					onCancel={ this.toggleConfirmationAlert.bind(this) }
@@ -203,7 +226,11 @@ export default class ListDetails extends Component {
 						saveOrder: this.saveOrder.bind(this),
 						reducer: 'lists'
 					}}
-					createItemComponent={ createItemComponent(list, changingOrder, this.changeIndex.bind(this)) }
+					createItemComponent={ createItemComponent(
+						list,
+						changingOrder,
+						this.changeIndex.bind(this)
+					) }
 					removeItem={ this.removeItem }
 					addItems={ changingOrder ? false : this.addItems.bind(this) }
 					parentComponent={ this }
@@ -215,8 +242,21 @@ export default class ListDetails extends Component {
         {
           (canEdit(list) && !changingOrder) &&
           [
-            <Button key='edit' positive floated='left' as={Link} to={`/lists/${list.title_id}/edit`}>Edit</Button>,
-						<Button key='delete' negative floated='right' onClick={() => this.toggleConfirmationAlert('delete')}>Delete</Button>	
+						<Button
+							key='edit'
+							positive
+							floated='left'
+							as={Link}
+							to={`/lists/${list.title_id}/edit`}>
+							Edit
+						</Button>,
+						<Button
+							key='delete'
+							negative
+							floated='right'
+							onClick={() => this.toggleConfirmationAlert('delete')}>
+							Delete
+						</Button>	
           ]
 				}
       </div>

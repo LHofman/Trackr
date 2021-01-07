@@ -33,7 +33,9 @@ export default class LinkedItems extends Component {
       
       this.props.parentComponent.setState({ 
         [this.props.stateKeyItems]: items,
-        [this.props.stateKeyOptions]: this.state.options.filter(item => completeItemsIds.indexOf(item.key) === -1)
+        [this.props.stateKeyOptions]: this.state.options.filter(item =>
+          completeItemsIds.indexOf(item.key) === -1
+        )
       });
     });
 	}
