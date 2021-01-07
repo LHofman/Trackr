@@ -14,7 +14,6 @@ export default class Register extends Component {
 
   registerUser(newUser, formComponent) {
     return fetch(`/users/register`, 'post', false, newUser).then(res => {
-      console.log(res);
       return fetch(`/users/authenticate`, 'post', false, {
         username: newUser.username,
         password: newUser.password

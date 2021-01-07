@@ -2,14 +2,35 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Confirm, Container, Grid } from 'semantic-ui-react';
 
+import BackButton from '../../UI/Basic/Button/BackButton';
 import Franchise from '../Franchises/Franchise';
 import FranchiseDetailsItem from './FranchiseDetailsItem';
 
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
 import LinkedItems from '../../UI/LinkedItems/LinkedItems';
-import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from '../../items/Items/itemsFilters';
-import { itemsSortDefault, sortItems, getItemsSortControls } from '../../items/Items/itemsSorting';
+import {
+  getItemsFiltersControlsExtraParams,
+  getItemsFiltersControls,
+  getItemsFiltersDefaults,
+  filterItem
+} from '../../../utils/items/itemsFilters';
+import {
+  itemsSortDefault,
+  sortItems,
+  getItemsSortControls
+} from '../../../utils/items/itemsSorting';
+
+import {
+  ITEMS_LIST_FILTERS,
+  ITEMS_LIST_PAGE,
+  ITEMS_LIST_SORTING
+} from '../../../store/franchises/keys';
+import {
+  SET_FRANCHISES_ITEMS_LIST_FILTERS,
+  SET_FRANCHISES_ITEMS_LIST_PAGE,
+  SET_FRANCHISES_ITEMS_LIST_SORTING
+} from '../../../store/franchises/actions';
 
 export default class FranchiseDetails extends Component {
 	constructor(props) {
@@ -131,9 +152,10 @@ export default class FranchiseDetails extends Component {
 
 	onDelete() {
 		const franchiseId = this.state.details._id;
-		return fetch(`/api/franchises/${franchiseId}`, 'delete', true).then(res => 
-			this.setState({redirect: '/franchises'})
-		);
+		return fetch(`/api/franchises/${franchiseId}`, 'delete', true).then(res => {
+      if (this.props.deleteFranchise) this.props.deleteFranchise(this.state.details);
+      this.setState({ redirect: this.props.match });
+    });
 	}
 
   removeItem(item) {
@@ -153,19 +175,15 @@ export default class FranchiseDetails extends Component {
   }
   
 	render() {
-		const redirect = this.state.redirect;
+		const {
+      props: { isSideComponent },
+      state: { details, redirect }
+     } = this;
 		if (redirect) return <Redirect to={redirect} />
 		
-    const details = this.state.details;
-	
-		let backButtonAttributes = { as: Link, to: '/franchises' };
-		if (this.props.onBackCallback) {
-			backButtonAttributes = { onClick: () => this.props.onBackCallback() };
-		}
-
 		return (
 			<Container>
-				<Button labelPosition='left' icon='left chevron' content='Back' { ...backButtonAttributes } />
+        { !isSideComponent && <BackButton {...this.props} /> }
 				<h1>{details.title}</h1>
 				<Confirm
 					open={this.state.confirmationAlert}
@@ -189,16 +207,26 @@ export default class FranchiseDetails extends Component {
               optionsLoaded={ this.state.itemOptionsLoaded }
               items={ this.state.items }
               paginatedList={{
-                filtersConfig:{
+                parentTitle: this.state.details.title_id,
+                filtersConfig: {
                   defaults: getItemsFiltersDefaults(),
                   getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-                  filterItem: filterItem
+                  filterItem: filterItem,
+                  action: SET_FRANCHISES_ITEMS_LIST_FILTERS,
+                  listKey: ITEMS_LIST_FILTERS
                 },
                 sortConfig:{
                   defaults: itemsSortDefault,
-                  getControls: getItemsSortControls,
-                  sortItems: sortItems
-                }
+                  getControls: getItemsSortControls(),
+                  sortItems: sortItems,
+                  action: SET_FRANCHISES_ITEMS_LIST_SORTING,
+                  listKey: ITEMS_LIST_SORTING
+                },
+                paginationConfig: {
+                  action: SET_FRANCHISES_ITEMS_LIST_PAGE,
+                  listKey: ITEMS_LIST_PAGE
+                },
+                reducer: 'franchises'
               }}
               createItemComponent={ createItemComponent(this.state.details) }
               removeItem={ this.removeItem }

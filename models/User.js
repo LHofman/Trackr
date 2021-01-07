@@ -35,6 +35,15 @@ export const addUser = (newUser, callback) => {
   });
 };
 
+export const encryptPassword = (password, callback) => {
+  bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(password, salt, (err, hash) => {
+      if (err) throw err;
+      callback(hash);
+    });
+  });
+}
+
 export const comparePassword = (candidatePassword, hash, callback) => {
   if (!candidatePassword)
     return callback(new Error('A password must be provided'), false);

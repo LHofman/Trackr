@@ -12,8 +12,9 @@ class GameObjective extends Component {
     super(props);
     this.state = {
       amount: 0,
-      completed: false,
+      completed: (props.gameObjective.userGameObjective || {}).completed,
       confirmationAlert: false,
+      editingAmount: false,
       following: props.following,
       gameObjective: props.gameObjective,
       hasSubObjectives: false,
@@ -86,6 +87,10 @@ class GameObjective extends Component {
     this.setState({ completed: !this.state.completed }, () => this.updateUserObjective());
   }
 
+  toggleEditAmount() {
+    this.setState({ editingAmount: !this.state.editingAmount });
+  }
+
   updateAmount(e) {
     this.setState({ amount: parseInt(e.target.value, 10) });
   }
@@ -116,7 +121,12 @@ class GameObjective extends Component {
 
     let promise = Promise.resolve({});
     if (gameObjective.userGameObjective) {
-      promise = fetch(`/api/userGameObjectives/${userGameObjective._id}`, 'put', true, userGameObjective);
+      promise = fetch(
+        `/api/userGameObjectives/${userGameObjective._id}`,
+        'put',
+        true,
+        userGameObjective
+      );
     } else {
       promise = fetch(`/api/userGameObjectives`, 'post', true, userGameObjective);
     }
@@ -125,13 +135,23 @@ class GameObjective extends Component {
       const gameObjective = this.state.gameObjective;
       gameObjective.userGameObjective = newUserGameObjective;
       this.setState({ gameObjective });
-      this.props.refreshParent();
+      this.props.updateGameObjective(gameObjective);
     }).catch(console.log);
   }
 
   render() {
-    const { gameObjective, amount, completed } = this.state;
-    const spoiler = gameObjective.spoiler && !this.state.viewTitle;
+    const {
+      amount,
+      completed,
+      confirmationAlert,
+      editingAmount,
+      following,
+      gameObjective,
+      hasSubObjectives,
+      showHint,
+      viewTitle
+    } = this.state;
+    const spoiler = gameObjective.spoiler && !viewTitle;
     const name = spoiler ? 'spoilers' : gameObjective.objective;
 
     return (
@@ -140,29 +160,37 @@ class GameObjective extends Component {
           <List.Header style={{ float: 'left' }} >
             {`${gameObjective.index}. `}
             {
-              this.state.hasSubObjectives ?
-                <a href={`/objectives/${gameObjective.game.title_id}/subObjectives/${gameObjective.objective_id}`}>
-                  { name }
-                </a> : name
+              hasSubObjectives
+                ? <a href={`/objectives/${gameObjective.game.title_id}
+                    /subObjectives/${gameObjective.objective_id}`}>
+                    { name }
+                  </a>
+                : name
             }
             {
-              this.state.following &&
+              following &&
               <div style={{ float: 'left', marginRight:'1em'}}>
                 {
                   gameObjective.amount && gameObjective.amount > 1
                     ? (
                       <div>
-                        <input
-                          name='amount'
-                          type='number'
-                          min='0'
-                          value={ amount }
-                          style={{ width: '50px' }}
-                          onChange={ this.updateAmount.bind(this) }
-                          onBlur={ this.saveUpdatedAmount.bind(this) } />
-                        &nbsp; / { gameObjective.amount }
+                        {
+                          editingAmount
+                          ? (
+                            <input
+                              name='amount'
+                              type='number'
+                              min='0'
+                              value={ amount }
+                              style={{ width: '50px' }}
+                              onChange={ this.updateAmount.bind(this) }
+                              onBlur={ this.saveUpdatedAmount.bind(this) } />
+                          ) : amount
+                        }
+                        <Icon name='pencil' onClick={this.toggleEditAmount.bind(this)} />
+                        / { gameObjective.amount }
                       </div>
-                    ) : (
+                    ) : ( 
                       <Checkbox
                         key='completed'
                         name='completed'
@@ -182,15 +210,13 @@ class GameObjective extends Component {
                 onMouseEnter={this.showHint.bind(this)}
                 onMouseLeave={this.hideHint.bind(this)}>
                 <Icon name='help' />
-                {
-                  this.state.showHint &&
-                  <div><br/>{ gameObjective.hint }</div>
-                }
+                { showHint && <div><br/>{ gameObjective.hint }</div> }
               </div>
             }
             {
-              isLoggedIn() && !this.state.hasSubObjectives &&
-              <Link to={`/objectives/${gameObjective.game.title_id}/subObjectives/${gameObjective.objective_id}/add`}>
+              isLoggedIn() && !hasSubObjectives &&
+              <Link to={`/objectives/${gameObjective.game.title_id}
+                  /subObjectives/${gameObjective.objective_id}/add`}>
                 <Icon name='angle double down' color='green' />
               </Link>
             }
@@ -204,7 +230,7 @@ class GameObjective extends Component {
               </div>
             }
             <Confirm
-              open={this.state.confirmationAlert}
+              open={confirmationAlert}
               header={`confirm deletion`}
               content={`Are you sure you want to delete ${gameObjective.objective}?`}
               onCancel={this.hideConfirmationAlert.bind(this)}

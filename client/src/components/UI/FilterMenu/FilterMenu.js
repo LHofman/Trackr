@@ -5,9 +5,9 @@ export default class FilterMenu extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      filters: props.defaultFilters,
+      filters: props.filters,
       isSidebarVisible: false,
-      sort: props.defaultSort,
+      sort: props.sort,
       titleFilter: ''
     }
 
@@ -15,6 +15,14 @@ export default class FilterMenu extends Component {
     this.handleSortChange = this.handleSortChange.bind(this);
     this.handleFilterChange = this.handleFilterChange.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
+  }
+
+  componentWillReceiveProps(props) {
+    this.setState({
+      filters: props.filters,
+      titleFilter: props.filters.title || '',
+      sort: props.sort
+    });
   }
 
   clearAll() {

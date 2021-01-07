@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { Button, Confirm } from 'semantic-ui-react';
+
+import BackButton from '../../../UI/Basic/Button/BackButton';
 
 import fetch from '../../../../utils/fetch';
 
@@ -15,7 +17,7 @@ export default class UserDetails extends Component {
   }
 
   componentWillMount() {
-    this.getUser(this.props);
+		this.getUser(this.props);
 	}
 	
 	componentWillReceiveProps(props) {
@@ -52,27 +54,22 @@ export default class UserDetails extends Component {
 	confirmDelete() {
 		const userId = this.state.user._id;
 		return fetch(`/api/users/${userId}`, 'delete', true).then(res => {
-      if (this.props.onBackCallback) {
-        this.props.deleteUser(this.state.user);
-      } else {
-        this.setState({ redirect: '/adminUsers' })
-      }
-    }).catch(console.log);
+			if (this.props.deleteUser) this.props.deleteUser(this.state.user);
+			this.setState({ redirect: this.props.match })
+		}).catch(console.log);
 	}
 
   render() {
-    const { redirect, user } = this.state;
+    const { 
+			props: { isSideComponent },
+			state: { redirect, user }
+		 } = this;
 
     if (redirect) return <Redirect to={ redirect } />;
 
-		let backButtonAttributes = { as: Link, to: '/adminUsers' };
-		if (this.props.onBackCallback) {
-			backButtonAttributes = { onClick: () => this.props.onBackCallback() };
-		}
-
     return (
       <div>
-        <Button labelPosition='left' icon='left chevron' content='Back' { ...backButtonAttributes } />
+				{ !isSideComponent && <BackButton {...this.props} /> }
         <h1>{ user.username }</h1>
         <h3>{ user.firstName } { user.name }</h3>
         <h3>Email: { user.email }</h3>

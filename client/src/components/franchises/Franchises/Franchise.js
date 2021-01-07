@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { Confirm, Icon, List } from 'semantic-ui-react';
 
 import canEdit from '../../../utils/canEdit';
@@ -28,23 +29,14 @@ export default class Franchise extends Component {
     this.setState({ confirmationAlert: true });
   }
 
-  onHeaderClick() {
-    this.props.onClickCallback(this.props.franchise);
-  }
-  
   render() {
     const { franchise, parent, onDelete } = this.props;
     
-    let onClickAttributes = { href: `/franchises/${franchise.title_id}` };
-    if (this.props.onClickCallback) {
-      onClickAttributes = { onClick: this.onHeaderClick.bind(this) };
-    }
-
     return (
       <List.Item>
         <List.Content>
           <List.Header>
-            <a { ...onClickAttributes }>{franchise.title}</a>
+            <Link to={`${this.props.match}/${franchise.title_id}`}>{franchise.title}</Link>
             {
               parent && onDelete && canEdit(parent) &&
               [ 

@@ -33,7 +33,9 @@ export default class LinkedItems extends Component {
       
       this.props.parentComponent.setState({ 
         [this.props.stateKeyItems]: items,
-        [this.props.stateKeyOptions]: this.state.options.filter(item => completeItemsIds.indexOf(item.key) === -1)
+        [this.props.stateKeyOptions]: this.state.options.filter(item =>
+          completeItemsIds.indexOf(item.key) === -1
+        )
       });
     });
 	}
@@ -41,21 +43,35 @@ export default class LinkedItems extends Component {
   //Need to set state in parent component
   removeItem(item) {
     this.props.removeItem(item).then(() => {
-      const items = this.state.items.filter(itemB => itemB._id !== item._id);
-
       const options = this.state.options
-      options.push({ key: item._id, value: item._id, text: item.title })
+      options.push({ key: item._id, value: item._id, text: item.title });
 
+      console.log(item);
+      console.log(this.state.items);
+      
       this.props.parentComponent.setState({
-        [this.props.stateKeyItems]: items,
+        [this.props.stateKeyItems]: this.state.items.filter((stateItem) => 
+          stateItem._id !== item._id
+        ),
         [this.props.stateKeyOptions]: options
       });
     });
   }
 
   render() {
-    let itemsList = null;
+    const {
+      props: {
+        extraAttributes,
+        optionsLoaded,
+        placeholder
+      },
+      state: {
+        addItems,
+        options
+      }
+    } = this;
 
+    let itemsList = null;
     
     if (this.state.items && this.state.items.length) {
       const items = this.state.items;
@@ -69,8 +85,7 @@ export default class LinkedItems extends Component {
               title=''
               items={ items }
               createItemComponent={ createItemComponent }
-              filtersConfig={ this.props.paginatedList.filtersConfig }
-              sortConfig={ this.props.paginatedList.sortConfig } />
+              { ...this.props.paginatedList } />
           </div>
         );
       } else {
@@ -88,17 +103,22 @@ export default class LinkedItems extends Component {
     return (
       <div>
         <h2>{ this.props.title }</h2>
-        <Dropdown
-          placeholder={ this.props.placeholder }
-          selection multiple search
-          loading={ !this.props.optionsLoaded }
-          { ...this.props.extraAttributes }
-          options={ this.state.options }
-          value={ this.state.addItems }
-          onChange={ this.handleValueChange.bind(this) } />
-        &nbsp;&nbsp;&nbsp;
-        <Button onClick={this.addItems.bind(this)}>Add</Button>
-        { itemsList }
+        {
+          this.props.addItems &&
+          <div>
+            <Dropdown
+              placeholder={placeholder}
+              selection multiple search
+              loading={!optionsLoaded}
+              { ...extraAttributes }
+              options={options}
+              value={addItems}
+              onChange={ this.handleValueChange.bind(this) } />
+            &nbsp;&nbsp;&nbsp;
+            <Button onClick={this.addItems.bind(this)}>Add</Button>
+          </div>
+        }
+        {itemsList}
       </div>
     );
   }

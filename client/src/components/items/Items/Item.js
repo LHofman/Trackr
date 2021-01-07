@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { List } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
@@ -12,23 +13,16 @@ export default class Item extends Component {
     }
   }
 
-  onHeaderClick() {
-    this.props.onClickCallback(this.state.item);
-  }
-  
   render() {
     const item = this.state.item;
-
-    let onClickAttributes = { href: `/items/${item.title_id}` };
-    if (this.props.onClickCallback) {
-      onClickAttributes = { onClick: this.onHeaderClick.bind(this) };
-    }
 
     return (
       <List.Item>
         {getIcon(item)}
         <List.Content>
-          <List.Header as='a' { ...onClickAttributes }>{item.title}</List.Header>
+          <List.Header>
+            <Link to={`${this.props.match}/${item.title_id}`}>{item.title}</Link>
+          </List.Header>
           <List.Description>
             Release Date: {
               item.releaseDateStatus === 'Date' ? 

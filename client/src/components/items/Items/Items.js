@@ -1,34 +1,68 @@
 import React, { Component } from 'react';
+import { Redirect} from 'react-router-dom';
 
 import Item from './Item';
 import ItemDetails from '../ItemDetails/ItemDetails';
-import ListWithDetails from '../../../hoc/ListWithDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
 
 import fetch from '../../../utils/fetch';
-import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem } from './itemsFilters';
-import { itemsSortDefault, sortItems, getItemsSortControls } from './itemsSorting';
-import { Redirect } from 'react-router-dom';
+import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem, applyCustomFilter } from '../../../utils/items/itemsFilters';
+import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
+
+import { SET_ITEMS_LIST_FILTERS, SET_ITEMS_LIST_PAGE, SET_ITEMS_LIST_SORTING } from '../../../store/items/actions';
+import { LIST_FILTERS, LIST_PAGE, LIST_SORTING } from '../../../store/items/keys';
+import ListWithDetails from '../../../hoc/ListWithDetails';
 
 export default class Items extends Component {
   constructor() {
     super();
     this.state = {
       items: [],
+      filtersDefault: getItemsFiltersDefaults(),
+      sortDefault: itemsSortDefault,
       filterControlsExtraFields: {},
-      detailsComponent: null,
       redirect: undefined
     }
-
-    this.setDetailsComponent = this.setDetailsComponent.bind(this);
   }
 
   componentWillMount() {
-    this.getItems();
+    Promise.all([
+      this.getItems(),
 
-    getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
-      this.setState({ filterControlsExtraFields });
+      new Promise((resolve) => {
+        getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
+          this.setState({ filterControlsExtraFields });
+          setTimeout(() => {
+            resolve();
+          });
+        });
+      })
+    ]).then(() => {
+      this.checkCustomFilter(this.props);
     });
+  }
+
+  componentWillReceiveProps(props) {
+    this.setState({ redirect: '' }, () => { this.checkCustomFilter(props) });
+  }
+
+  checkCustomFilter(props) {
+    if (!props.match || !props.match) {
+      return;
+    }
+
+    const filtersDefault = getItemsFiltersDefaults();
+    const sortDefault = itemsSortDefault;
+
+    const filter = props.match.params.filter;
+    applyCustomFilter(filtersDefault, sortDefault, filter);
+
+    this.setState({ filtersDefault, sortDefault});
+  }
+
+  deleteItem(item) {
+    const items = this.state.items.filter((stateItem) => stateItem._id !== item._id);
+    this.setState({ items, redirect: '/items' });
   }
 
   getItems() {
@@ -39,43 +73,49 @@ export default class Items extends Component {
     }).catch(console.log);
   }
 
-  setDetailsComponent(item) {
-    if (!item) {
-      this.setState({ detailsComponent: null });
-      return;
-    }
-
-    if (window.innerWidth < 1200) {
-      this.setState({ redirect: `/items/${item.title_id}`});
-      return;
-    }
-
-    this.setState({ detailsComponent: <ItemDetails item={ item } onBackCallback={ this.setDetailsComponent } /> });
-  }
-
   render() {
-    const redirect = this.state.redirect;
-		if (redirect) return <Redirect to={redirect} />
+    const { items, redirect } = this.state;
+		if (redirect) return <Redirect to={redirect} />;
 
     return (
-      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
+      <ListWithDetails
+        isLoaded={items.length > 0}
+        detailsRoutePath='/items/:titleId'
+        renderDetailsComponent={(props) => (
+          <ItemDetails 
+            {...props}
+            match='/items'
+            item={ items.filter((item) =>
+              item.title_id === props.match.params.titleId
+            )[0] }
+            deleteItem={ this.deleteItem.bind(this) } />
+        )} >
         <PaginatedList
           title='Items'
           createItemUrl={`/items/add`}
           items={this.state.items}
           createItemComponent={(item) => (
-            <Item key={item._id} item={item} onClickCallback={ this.setDetailsComponent } ></Item>
+            <Item key={item._id} item={item} match={'/items'} ></Item>
           )}
           filtersConfig={{
-            defaults: getItemsFiltersDefaults(),
+            defaults: this.state.filtersDefault,
             getControls: getItemsFiltersControls(this.state.filterControlsExtraFields),
-            filterItem: filterItem
+            filterItem: filterItem,
+            action: SET_ITEMS_LIST_FILTERS,
+            listKey: LIST_FILTERS
           }}
           sortConfig={{
-            defaults: itemsSortDefault,
-            getControls: getItemsSortControls,
-            sortItems: sortItems
-          }} />
+            defaults: this.state.sortDefault,
+            getControls: getItemsSortControls(),
+            sortItems: sortItems,
+            action: SET_ITEMS_LIST_SORTING,
+            listKey: LIST_SORTING
+          }}
+          paginationConfig={{
+            action: SET_ITEMS_LIST_PAGE,
+            listKey: LIST_PAGE
+          }}
+          reducer='items' />
       </ListWithDetails>
     );
   }

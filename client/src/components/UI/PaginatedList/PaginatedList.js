@@ -1,25 +1,21 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import MediaQuery from 'react-responsive';
 import { Link } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import { Button, Label, List, Pagination } from 'semantic-ui-react';
+import { Button, Grid, GridColumn, Label, List, Pagination } from 'semantic-ui-react';
 
 import FilterMenu from '../../UI/FilterMenu/FilterMenu';
 
 import isLoggedIn from '../../../utils/isLoggedIn';
 
-export default class PaginatedList extends Component {
+class PaginatedList extends Component {
   constructor(props) {
     super(props);
-    
-    const filtersConfig = props.filtersConfig || {};
-    const sortConfig = props.sortConfig || {};
 
     this.state = {
-      activePage: 1,
-      addItems: [],
-      filters: filtersConfig.defaults,
-      sort: sortConfig.defaults
+      changingOrder: false,
+      parentTitle: props.parentTitle
     }
     
     this.changePage = this.changePage.bind(this);
@@ -27,8 +23,22 @@ export default class PaginatedList extends Component {
     this.handleSortChange = this.handleSortChange.bind(this);
   }
   
+  componentWillReceiveProps(newProps) {
+    const existingParentTitle = this.state.parentTitle;
+
+    this.setState({ 
+      items: newProps.items || [],
+      parentTitle: newProps.parentTitle
+    });
+
+    if (newProps.parentTitle !== existingParentTitle) {
+      newProps.handleFilterChange(newProps.filtersConfig.defaults);
+      newProps.handleSortChange(newProps.sortConfig.defaults);
+    }
+  }
+
   changePage(activePage) {
-    this.handlePaginationChange(null, { activePage });
+    this.props.handlePageChange(activePage);
   }
 
   getPagination(totalPages) {
@@ -36,14 +46,14 @@ export default class PaginatedList extends Component {
       <div>
         <MediaQuery query='(max-width: 550px)'>
           <Button icon='fast backward' onClick={() => this.changePage(1)} />
-          <Button icon='step backward' onClick={() => this.changePage(this.state.activePage-1)} />
-          <Label content={`${this.state.activePage}/${totalPages}`} color='teal' />
-          <Button icon='step forward' onClick={() => this.changePage(this.state.activePage+1)} />
+          <Button icon='step backward' onClick={() => this.changePage(this.props.activePage-1)} />
+          <Label content={`${this.props.activePage}/${totalPages}`} color='teal' />
+          <Button icon='step forward' onClick={() => this.changePage(this.props.activePage+1)} />
           <Button icon='fast forward' onClick={() => this.changePage(totalPages)} />
         </MediaQuery>
         <MediaQuery query='(min-width: 550px)'>
           <Pagination
-            activePage={this.state.activePage}
+            activePage={this.props.activePage}
             totalPages={totalPages}
             onPageChange={this.handlePaginationChange.bind(this)} />
         </MediaQuery>
@@ -51,68 +61,123 @@ export default class PaginatedList extends Component {
     )
   }
 
-	handleAddItemsChange(e, { value }) {
-		this.setState({ addItems: value })
-	}
-
   handlePaginationChange(e, { activePage }) {
-    this.setState({ activePage });
+    this.props.handlePageChange(activePage);
     animateScroll.scrollToTop();
   }
 
   handleFilterChange(filters) {
-    this.setState({ filters });
-    this.setState({ activePage: 1 });
+    this.props.handleFilterChange(filters);
   }
 
   handleSortChange(newSort) {
-    this.setState({ sort: newSort });
+    this.props.handleSortChange(newSort);
   }
 
+	startChangeOrder() {
+    this.setState({ changingOrder: true });
+    this.props.startChangeOrder();
+	}
+
+	saveOrder() {
+    this.setState({ changingOrder: false });
+    this.props.saveOrder();
+	}
+
   render() {
-    const filtersConfig = this.props.filtersConfig;
-    const sortConfig = this.props.sortConfig;
+    const {
+      props: {
+        activePage,
+        createItemComponent,
+        createItemUrl,
+        filters,
+        filtersConfig,
+        items,
+        sort,
+        sortConfig,
+        startChangeOrder,
+        title
+      },
+      state: {
+        changingOrder
+      }
+    } = this;
 
     let filteredItems = [];
-    if (this.props.items && this.props.items.length > 0) {
-      filteredItems = this.props.items;
+    if (items && items.length > 0) {
+      filteredItems = items;
       if (filtersConfig) {
-        filteredItems = filteredItems.filter(item => this.props.filtersConfig.filterItem(item, this.state.filters));
+        filteredItems = filteredItems.filter(item => filtersConfig.filterItem(item, filters));
       }
       if (sortConfig) {
-        filteredItems = filteredItems.sort(this.props.sortConfig.sortItems(this.state.sort, this.state.filters));
+        filteredItems = filteredItems.sort(sortConfig.sortItems(sort, filters));
       }
     }
     
-    const begin = (this.state.activePage - 1) * 100;
+    const begin = (activePage - 1) * 100;
     const totalPages = Math.ceil(filteredItems.length / 100, 0);
-    const items = filteredItems
+    const itemComponents = filteredItems
       .slice(begin, begin + 100)
-      .map(this.props.createItemComponent);
+      .map(createItemComponent);
 
     return (
       <div>
-        <h2>{ this.props.title }</h2>
+        <h2>{title}</h2>
         {
-          (this.props.createItemUrl && isLoggedIn()) && 
-          <Button positive circular floated='right' icon='plus' as={Link} to={this.props.createItemUrl} />
+          (createItemUrl && isLoggedIn()) && 
+          <Button positive circular floated='right' icon='plus' as={Link} to={createItemUrl} />
         }
-        {
-          (filtersConfig || sortConfig) &&
-          <FilterMenu
-            defaultFilters={ filtersConfig.defaults }
-            defaultSort={ sortConfig.defaults }
-            handleFilterChange={this.handleFilterChange}
-            handleSortChange={this.handleSortChange}
-            getFilterControlsFunction={ filtersConfig.getControls }
-            getSortControlsFunction={ sortConfig.getControls } />
-        }
+        <Grid style={{ maxWidth: '750px' }}>
+          {
+            (filtersConfig || sortConfig) &&
+            <GridColumn width={8}>
+              <FilterMenu
+                filters={filters}
+                defaultFilters={filters}
+                sort={sort}
+                defaultSort={sortConfig.defaults}
+                handleFilterChange={this.handleFilterChange}
+                handleSortChange={this.handleSortChange}
+                getFilterControlsFunction={filtersConfig.getControls}
+                getSortControlsFunction={sortConfig.getControls} />
+            </GridColumn>
+          }
+          {
+            startChangeOrder &&
+            <GridColumn width={8}>
+              {
+                changingOrder
+                ? <Button positive onClick={ this.saveOrder.bind(this) }>Save order</Button>
+                : <Button onClick={ this.startChangeOrder.bind(this) }>change order</Button>
+              }
+              <br/><br/>
+            </GridColumn>
+          }
+        </Grid>
         {this.getPagination(totalPages)}
-        <List { ...this.props.extraAttributes }>
-          {items}
+        <List { ...(this.props.list || {}).extraAttributes }>
+          {itemComponents}
         </List>
         {this.getPagination(totalPages)}
       </div>
     );
   }
 }
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    activePage: state[ownProps.reducer][ownProps.paginationConfig.listKey],
+    filters: state[ownProps.reducer][ownProps.filtersConfig.listKey],
+    sort: state[ownProps.reducer][ownProps.sortConfig.listKey]
+  };
+};
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    handlePageChange: (page) => dispatch({ type: ownProps.paginationConfig.action, payload: page }),
+    handleFilterChange: (filters) => dispatch({ type: ownProps.filtersConfig.action, payload: filters }),
+    handleSortChange: (newSort) => dispatch({ type: ownProps.sortConfig.action, payload: newSort })
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(PaginatedList);

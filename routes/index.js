@@ -5,16 +5,21 @@ import passport from 'passport';
 import Franchise from '../models/Franchise';
 import Item from '../models/Item';
 import GameObjective from '../models/GameObjective';
+import List from '../models/List';
 import User from '../models/User';
 import UserGameObjective from '../models/UserGameObjective';
 import UserItem from '../models/UserItem';
+
+import { statusesInProgress } from '../utils/userItems/statusUtils';
 
 const auth = passport.authenticate('jwt', { session: false });
 const router = express.Router();
 
 const STATUS_500_MESSAGE = 'Something went wrong';
 
-const isCreator = (model, user) => new mongoose.Types.ObjectId(user._id).equals(model.createdBy._id);
+const isCreator = (model, user) => {
+  return new mongoose.Types.ObjectId(user._id).equals(model.createdBy._id);
+}
 
 //#region items
 
@@ -94,14 +99,30 @@ router.post('/items', auth, (req, res, next) => {
 
     item.save((err, item) => {
       if (err) return res.status(500).send('Something went wrong');
-      res.json(item);
+      if (item.type === 'Video Game') {
+        const gameObjective = new GameObjective({
+          game: item._id,
+          createdBy: item.createdBy,
+          index: 1,
+          objective: 'Clear the Main Campaigns',
+          objective_id: 1
+        });
+        console.log(gameObjective);
+        gameObjective.save((err, gameObjective) => {
+          console.log(err);
+          console.log(gameObjective);
+          res.json(item);
+        });
+      }
     });
   });
 });
 
 router.put('/items/:id', auth, (req, res, next) => {
   Item.findById(req.params.id, (err, item) => {
-    if (!isCreator(item, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+    if (!isCreator(item, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+    }
 
     const newItem = req.body;
     const title = newItem.title;
@@ -127,7 +148,9 @@ router.put('/items/:id', auth, (req, res, next) => {
 router.delete('/items/:id', auth, (req, res, next) => {
   Item.findById(req.params.id, (err, item) => {
     if (err) return res.status(500).send({success: false, msg: 'Item not found'});
-    if (!isCreator(item, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+    if (!isCreator(item, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this item'});
+    }
     
     item.remove((err, item) => {  
       if (err) return res.status(500).send('Something went wrong');
@@ -144,8 +167,7 @@ router.delete('/items/:id', auth, (req, res, next) => {
 //#region userItems
 
 router.get('/userItems/:user/inProgress', (req, res, next) => {
-  const statusesInProgres = ['Doing', 'Listening', 'Playing', 'Reading', 'Watching'];
-  UserItem.find({ user: req.params.user, status: { $in: statusesInProgres } })
+  UserItem.find({ user: req.params.user, status: { $in: statusesInProgress } })
     .populate('item')
     .exec((err, userItems) => {
       if (err) return res.json([]);
@@ -177,7 +199,6 @@ router.get('/review/:item', (req, res, next) => {
     .populate('user', 'username')
     .exec((err, userItems) => {
       if (err || userItems.length === 0) return res.json([]);
-      // return res.json(userItems);
       return res.json(
         userItems
           .map((userItem) => userItem.reviews.map((review) => { return {
@@ -256,7 +277,7 @@ const getMaxGameObjectiveId = gameId =>
               )
         )
     )
-  );
+);
 
 router.get('/gameObjectives/byGame/:game', (req, res, next) => {
   GameObjective.find({game: req.params.game})
@@ -317,7 +338,9 @@ router.post('/gameObjectives', auth, (req, res, next) => {
 router.delete('/gameObjectives/:id', auth, (req, res, next) => {
   GameObjective.findById(req.params.id, (err, gameObjective) => {
     if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
-    if (!isCreator(gameObjective, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this game objective'});
+    if (!isCreator(gameObjective, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this game objective'});
+    }
     
     gameObjective.remove((err, gameObjective) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
@@ -332,7 +355,9 @@ router.delete('/gameObjectives/:id', auth, (req, res, next) => {
 router.put('/gameObjectives/:id', auth, (req, res, next) => {
   const gameObjectiveId = req.params.id;
   GameObjective.findById(gameObjectiveId, (err, gameObjective) => {
-    if (!isCreator(gameObjective, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this gameObjective'});
+    if (!isCreator(gameObjective, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this gameObjective'});
+    }
 
     GameObjective.findByIdAndUpdate(gameObjectiveId, req.body, { new: true }).exec(
       (err, gameObjective) => {
@@ -390,13 +415,21 @@ router.put('/userGameObjectives/:id', auth, (req, res, next) => {
     if (err) return res.status(500).send({success: false, msg: 'UserGameObjective not found'});
 
     if (!new mongoose.Types.ObjectId(req.user._id).equals(userGameObjective.user)) {
-      return res.status(500).send({sucess: false, msg: 'You did not create this userGameObjective'});
+      return res.status(500).send({
+        success: false,
+        msg: 'You did not create this userGameObjective'
+      });
     }
     
-    UserGameObjective.findByIdAndUpdate(userGameObjectiveId, req.body, { new: true }, (err, userGameObjective) => {
-      if (err) return res.status(500).send(STATUS_500_MESSAGE);
-      return res.json(userGameObjective);
-    });
+    UserGameObjective.findByIdAndUpdate(
+      userGameObjectiveId,
+      req.body,
+      { new: true },
+      (err, userGameObjective) => {
+        if (err) return res.status(500).send(STATUS_500_MESSAGE);
+        return res.json(userGameObjective);
+      }
+    );
   });
 });
 
@@ -485,7 +518,9 @@ router.get('/franchises/title_id/:title_id', (req, res, next) => {
 router.delete('/franchises/:id', auth, (req, res, next) => {
   Franchise.findById(req.params.id, (err, franchise) => {
     if (err) return res.status(500).send({success: false, msg: 'Franchise not found'});
-    if (!isCreator(franchise, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    if (!isCreator(franchise, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    }
     
     franchise.remove((err, franchise) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
@@ -510,7 +545,9 @@ router.post('/franchises', auth, (req, res, next) => {
 
 router.put('/franchises/:id', auth, (req, res, next) => {
   Franchise.findById(req.params.id, (err, franchise) => {
-    if (!isCreator(franchise, req.user)) return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    if (!isCreator(franchise, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this franchise'});
+    }
 
     const newFranchise = req.body;
     const title = newFranchise.title;
@@ -569,10 +606,13 @@ router.get('/franchises/byItem/:item', (req, res, next) => {
 });
 
 router.get('/franchises/bySubFranchise/:subFranchise', (req, res, next) => {
-  Franchise.find({ subFranchises: mongoose.Types.ObjectId(req.params.subFranchise) }, (err, franchises) => {
-    if (err) return res.status(500).send(STATUS_500_MESSAGE);
-    return res.json(franchises);
-  })
+  Franchise.find(
+    { subFranchises: mongoose.Types.ObjectId(req.params.subFranchise) },
+    (err, franchises) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return res.json(franchises);
+    }
+  );
 });
 
 router.put('/franchises/addFranchiseToMultiple/:subFranchise', (req, res, next) => {
@@ -635,6 +675,131 @@ router.put('/franchises/:id/subFranchises/remove', auth, (req, res, next) => {
 
 //#endregion franchises
 
+//#region lists
+
+router.get('/lists', (req, res, next) => {
+  List.find((err, lists) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    res.json(lists);
+  });
+});
+
+router.get('/lists/title_id/:title_id', (req, res, next) => {
+  List.findOne({ title_id: req.params.title_id })
+    .populate('items.item')
+    .exec((err, list) => {
+      if (err) return res.status(404).send('List not found');
+      res.json(list);
+    });
+});
+
+router.delete('/lists/:id', auth, (req, res, next) => {
+  List.findById(req.params.id, (err, list) => {
+    if (err) return res.status(500).send({success: false, msg: 'List not found'});
+    if (!isCreator(list, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this list'});
+    }
+    
+    list.remove((err, list) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json({
+        success: true,
+        msg: `${list.title} has successfully been removed.`
+      });
+    });
+  });
+});
+
+router.post('/lists', auth, (req, res, next) => {
+  return getTitleId(req.body.title, List).then(title_id => {
+    const list = new List({ ...req.body, title_id });
+
+    list.save((err, list) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      res.json(list);
+    });
+  });
+});
+
+router.put('/lists/:id', auth, (req, res, next) => {
+  List.findById(req.params.id, (err, list) => {
+    if (!isCreator(list, req.user)) {
+      return res.status(500).send({sucess: false, msg: 'You did not create this list'});
+    }
+
+    const newList = req.body;
+    const title = newList.title;
+
+    const update = newList => {
+      List.findByIdAndUpdate(list._id, newList, { new: true }).exec(
+        (err, list) => {
+          if (err) return res.status(500).send(STATUS_500_MESSAGE);
+          res.json(list);
+        }
+      );
+    };
+
+    if (title && title !== list.title) {
+      return getTitleId(title, List).then(title_id => {
+        newList.title_id = title_id;
+        update(newList);
+      });
+    } else update(newList);
+  });
+});
+
+router.put('/lists/:id/items/add', auth, (req, res, next) => {
+  const items = req.body;
+  return List.updateOne(
+    { _id: req.params.id }, 
+    { $push: { items: { $each: items } } },
+    (err, _) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(items.map(item => 
+        mongoose.model(item.itemModel).findById(item.item).exec()
+      )).then(completeItems => res.json(completeItems));
+    }
+  );
+});
+
+router.put('/lists/:id/items/remove', auth, (req, res, next) => {
+  const items = req.body;
+  return List.updateOne(
+    { _id: req.params.id }, 
+    { $pull: { items: { item: { $in: items } } } },
+    (err) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(items.map(item => 
+        Item.findById(item.item).exec()
+      )).then(completeItems => res.json(completeItems));
+    }
+  );
+});
+
+router.get('/lists/byItem/:item', (req, res, next) => {
+  List.find({ items: mongoose.Types.ObjectId(req.params.item) }, (err, lists) => {
+    if (err) return res.status(500).send(STATUS_500_MESSAGE);
+    return res.json(lists);
+  })
+});
+
+router.put('/lists/addItemToMultiple/:item', (req, res, next) => {
+  const lists = req.body;
+  return List.update(
+    { '_id': { $in: lists } }, 
+    { $push: { items: req.params.item } },
+    { multi: true },
+    (err, test) => {
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
+      return Promise.all(lists.map(listId => 
+        List.findById(listId).exec()
+      )).then(completeLists => res.json(completeLists));
+    }
+  );
+});
+
+//#endregion lists
+
 //#region users
 
 router.get('/users', (req, res, next) => {
@@ -651,10 +816,27 @@ router.get('/users/byUsername/:username', (req, res, next) => {
   });
 });
 
+router.put('/users/:id', auth, (req, res, next) => {
+  User.findById(req.params.id, (err, user) => {
+    if (!new mongoose.Types.ObjectId(req.user._id).equals(user._id)) {
+      return res.status(500).send({sucess: false, msg: 'Unauthorized'});
+    }
+
+    delete req.body.password; //Don't allow changing of password via this endpoint
+
+    User.findByIdAndUpdate(user._id, req.body, { new: true }, (err, user) => {
+      if (err) return res.status(500).send('Something went wrong');
+      return res.json(user);
+    });
+  });
+});
+
 router.delete('/users/:id', auth, (req, res, next) => {
   User.findById(req.params.id, (err, user) => {
     if (err) return res.status(500).send({success: false, msg: 'User not found'});
-    if (!req.user.isAdmin) return res.status(500).send({sucess: false, msg: 'You do not have permission'});
+    if (!req.user.isAdmin) {
+      return res.status(500).send({sucess: false, msg: 'You do not have permission'});
+    }
     
     user.remove((err, user) => {  
       if (err) return res.status(500).send('Something went wrong');

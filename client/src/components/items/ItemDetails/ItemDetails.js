@@ -2,19 +2,21 @@ import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Button, Confirm, Icon, Popup, Grid } from 'semantic-ui-react';
 
+import BackButton from '../../UI/Basic/Button/BackButton';
 import ItemDetailsFranchise from './ItemDetailsFranchise';
+import ItemDetailsList from './ItemDetailsList';
+import LinkedItems from '../../UI/LinkedItems/LinkedItems';
+import Reviews from './Reviews';
+import UserItemDetails from './UserItemDetails';
 
 import canEdit from '../../../utils/canEdit';
 import fetch from '../../../utils/fetch';
+import getArtistType from '../getArtistType';
 import getIcon from '../../../utils/getIcon';
 import getUser from '../../../utils/getUser';
 import hasStarted from '../../../utils/hasStarted';
 import isLoggedIn from '../../../utils/isLoggedIn';
 import statusOptions from '../../userItems/statusOptions';
-import getArtistType from '../getArtistType';
-import LinkedItems from '../../UI/LinkedItems/LinkedItems';
-import Reviews from './Reviews';
-import UserItemDetails from './UserItemDetails';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -28,12 +30,16 @@ export default class ItemDetails extends Component {
 			franchiseOptions: [],
 			franchiseOptionsLoaded: false,
 			addFranchises: [],
-			isLoaded: false
+			isLoaded: false,
+			lists: [],
+			listOptions: [],
+			listOptionsLoaded: false
 		}
 
 		this.handleValueChange = this.handleValueChange.bind(this);
 		this.showConfirmationAlert = this.showConfirmationAlert.bind(this);
 		this.removeFromFranchise = this.removeFromFranchise.bind(this);
+		this.removeFromList = this.removeFromList.bind(this);
 		this.updateUserItem = this.updateUserItem.bind(this);
 	}
 
@@ -64,6 +70,7 @@ export default class ItemDetails extends Component {
 		}).then(() => {
 			Promise.all([
 				this.getFranchises().then(() => this.getAllFranchises()),
+				this.getLists().then(() => this.getAllLists()),
 				this.getUserItem()
 			]).then(() => {
 				this.setState({ isLoaded: true });
@@ -87,6 +94,26 @@ export default class ItemDetails extends Component {
 						.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
 						.map(franchise => { return { key: franchise._id, value: franchise._id, text: franchise.title } }),
 				franchiseOptionsLoaded: true
+      });
+		});
+	}
+
+	getLists() {
+		return fetch(`/api/lists/byItem/${this.state.details._id}`).then(lists => {
+      if (!lists || lists === null) return;
+      this.setState({ lists });
+		});
+	}
+
+	getAllLists() {
+		fetch('/api/lists').then(lists => {
+      if (!lists || lists === null) return;
+      this.setState({
+				listOptions: 
+					lists.filter(list => this.state.lists.map(list => list._id).indexOf(list._id) === -1)
+						.sort((f1, f2) => f1.title.toLowerCase() < f2.title.toLowerCase() ? -1 : 1)
+						.map(list => { return { key: list._id, value: list._id, text: list.title } }),
+				listOptionsLoaded: true
       });
 		});
 	}
@@ -138,11 +165,8 @@ export default class ItemDetails extends Component {
 	onDelete() {
 		const itemId = this.state.details._id;
 		return fetch(`/api/items/${itemId}`, 'delete', true).then(res => {
-			if (this.props.onDelete) {
-				this.props.onDelete(this.state.details);
-			} else {
-				this.setState({redirect: '/'})
-			}
+			if (this.props.deleteItem) this.props.deleteItem(this.state.details);
+			this.setState({ redirect: this.props.match });
 		});
 	}
 
@@ -154,8 +178,16 @@ export default class ItemDetails extends Component {
 		return fetch(`/api/franchises/addItemToMultiple/${this.state.details._id}`, 'put', true, addFranchises);
 	}
 	
+	addLists(addLists) {
+		return fetch(`/api/lists/addItemToMultiple/${this.state.details._id}`, 'put', true, addLists);
+	}
+	
   removeFromFranchise(franchise) {
     return fetch(`/api/franchises/${franchise._id}/items/remove`, 'put', true, [this.state.details._id]);
+	}
+	
+  removeFromList(list) {
+    return fetch(`/api/lists/${list._id}/items/remove`, 'put', true, [this.state.details._id]);
 	}
 	
   updateUserItem(userItem) {
@@ -171,7 +203,10 @@ export default class ItemDetails extends Component {
 		const redirect = this.state.redirect;
 		if (redirect) return <Redirect to={redirect} />
 		
-		const { details, isLoaded, userItem } = this.state;
+		const {
+			props: { isSideComponent },
+			state: { details, isLoaded, userItem }
+		} = this;
 
 		if (!isLoaded) return null;
 
@@ -179,14 +214,9 @@ export default class ItemDetails extends Component {
 			<a href={link.url} target='_blank'>{link.title}</a>
 		</li>) : undefined;
 
-		let backButtonAttributes = { as: Link, to: '/' };
-		if (this.props.onBackCallback) {
-			backButtonAttributes = { onClick: () => this.props.onBackCallback() };
-		}
-
 		return (
 			<div>
-				<Button labelPosition='left' icon='left chevron' content='Back' { ...backButtonAttributes } />
+				{ !isSideComponent && <BackButton {...this.props} /> }
 				<h1>
 					{getIcon(details)}
 					{details.title}
@@ -275,7 +305,7 @@ export default class ItemDetails extends Component {
 						item={ details }
 						userItem={ userItem }
 						updateUserItem={ this.updateUserItem }
-						onChangeStatus={ this.props.onChangeStatus } />
+						onChangeStatus={ this.props.onChangeStatus || null } />
         }
 				{
           canEdit(details) && 
@@ -299,6 +329,19 @@ export default class ItemDetails extends Component {
 							stateKeyItems='franchises'
 							stateKeyOptions='franchiseOptions'
 							placeholder='Add to franchises' />
+						<br/><br/>
+						<LinkedItems
+							title='In My Lists'
+							options={ this.state.listOptions }
+							optionsLoaded={ this.state.listOptionsLoaded }
+							items={ this.state.lists }
+							createItemComponent={ createListItemComponent(this.state.details) }
+							removeItem={ this.removeFromList }
+							addItems={ this.addLists.bind(this) }
+							parentComponent={ this }
+							stateKeyItems='lists'
+							stateKeyOptions='listOptions'
+							placeholder='Add to lists' />
 					</Grid.Column>
 					<Grid.Column width={ this.props.item ? 8 : 10 }>
 						<Reviews
@@ -320,6 +363,16 @@ const createFranchiseItemComponent = (details) => (onDelete) => (franchise) => {
 			key={ franchise._id }
 			item={ details }
 			franchise={ franchise }
+			onDelete={ onDelete } />
+	)
+}
+
+const createListItemComponent = (details) => (onDelete) => (list) => {
+  return (
+		<ItemDetailsList
+			key={ list._id }
+			item={ details }
+			list={ list }
 			onDelete={ onDelete } />
 	)
 }

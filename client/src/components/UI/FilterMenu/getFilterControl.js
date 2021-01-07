@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment';
-import { Dropdown, Input, Label, Menu } from 'semantic-ui-react';
+import { Dropdown, Input, Label, Menu, Rating } from 'semantic-ui-react';
 
 import { capitalizeFirstLetter, createLabel } from '../../../utils/stringUtils';
 
@@ -16,6 +16,14 @@ export default (name, control, handleValueChange, options = {}) => {
         name={name}
         value={moment(defaultValue).isValid() ? moment(defaultValue).format('YYYY-MM-DD') : ''}
         onChange={(event) => onFilterChangeEvent(event, handleValueChange)} />
+      );
+    case 'Rating':
+      return createControl(label, <Rating
+        icon='star'
+        clearable
+        maxRating={10}
+        defaultRating={ defaultValue || 0 }
+        onRate={(param, data) => handleValueChange(name, data.rating)} />
       );
     case 'Select':
       return createControl(label, <Dropdown

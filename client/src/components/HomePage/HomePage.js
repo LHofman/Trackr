@@ -4,11 +4,12 @@ import { Grid, GridColumn, List, Loader, Dimmer, Segment } from 'semantic-ui-rea
 
 import Item from '../items/Items/Item';
 import ItemDetails from '../items/ItemDetails/ItemDetails';
+import ListWithDetails from '../../hoc/ListWithDetails';
 
 import fetch from '../../utils/fetch';
 import getUser from '../../utils/getUser';
 import isLoggedIn from '../../utils/isLoggedIn';
-import ListWithDetails from '../../hoc/ListWithDetails';
+import { statusesInProgress } from '../../utils/userItems/statusUtils';
 
 export default class HomePage extends Component {
   constructor() {
@@ -16,13 +17,8 @@ export default class HomePage extends Component {
     this.state = {
       userItemsInProgress: [],
       itemsLoaded: false,
-      detailsComponent: null,
-      redirect: undefined,
-      itemStatusChanged: null
+      redirect: undefined
     }
-
-    this.setDetailsComponent = this.setDetailsComponent.bind(this);
-    this.setStatusChanged = this.setStatusChanged.bind(this);
   }
 
   componentWillMount() {
@@ -31,44 +27,26 @@ export default class HomePage extends Component {
     }
   }
 
+  componentWillReceiveProps(props) {
+    this.setState({ redirect: '' });
+  }
+
   getUserItemsInProgress() {
     fetch(`/api/userItems/${getUser().id}/inProgress`).then((userItemsInProgress) => {
       this.setState({ userItemsInProgress, itemsLoaded: true });
     })
   }
 
-  setDetailsComponent(item) {
-    if (this.state.itemStatusChanged) {
-      this.deleteItemFromList(this.state.itemStatusChanged);
-    }
-
-    if (!item) {
-      this.setState({ detailsComponent: null });
-      return;
-    }
-
-    if (window.innerWidth < 1200) {
-      this.setState({ redirect: `/items/${item.title_id}`});
-      return;
-    }
-
-    this.setState({
-      detailsComponent: (
-        <ItemDetails
-          item={ item }
-          onBackCallback={ this.setDetailsComponent }
-          onDelete={ this.deleteItemFromList.bind(this) }
-          onChangeStatus={ () => this.setStatusChanged(item) } />
-      )
-    });
-  }
-
-  setStatusChanged(item) {
-    this.setState({ itemStatusChanged: item });
+  setStatusChanged(userItem) {
+    if (statusesInProgress.includes(userItem.status)) return;
+    this.deleteItemFromList(userItem.item);
+    this.setState({ redirect: '/home' });
   }
 
   deleteItemFromList(item) {
-    const items = this.state.userItemsInProgress.filter((stateItem) => stateItem.item._id !== item._id);
+    const items = this.state.userItemsInProgress.filter((stateItem) =>
+      stateItem.item._id !== item._id
+    );
     this.setState({ userItemsInProgress: items, itemStatusChanged: null });
   }
 
@@ -76,9 +54,9 @@ export default class HomePage extends Component {
     if (!isLoggedIn()) {
       return <Redirect to='/items' />
     }
-
-    const redirect = this.state.redirect;
-		if (redirect) return <Redirect to={redirect} />
+  
+    const { itemsLoaded, redirect}  = this.state;
+		if (redirect) return <Redirect to={redirect} />;
 
     let userItemsInProgress = {};
     if (this.state.userItemsInProgress.length > 0) {
@@ -89,7 +67,7 @@ export default class HomePage extends Component {
             key={ userItem._id }
             item={ userItem.item }
             status={ userItem.status }
-            onClickCallback={ this.setDetailsComponent } />
+            match={'/home'} />
         ))
         .reduce((userItemsByStatus, userItem) => {
           const status = userItem.props.status;
@@ -98,13 +76,28 @@ export default class HomePage extends Component {
             [status]: [ ...(userItemsByStatus[status] || []), userItem ]
           }
         }, []);
-      }
+    }
 
     return (
-      <ListWithDetails detailsComponent={ this.state.detailsComponent }>
-        <h1 style={{ marginBottom: '1em' }}>Items in progress</h1>
+      <ListWithDetails
+        isLoaded={itemsLoaded}
+        detailsRoutePath='/home/:titleId'
+        renderDetailsComponent={(props) => {
+          let item = this.state.userItemsInProgress.filter((ui) =>
+            ui.item.title_id === props.match.params.titleId
+          )[0].item;
+          return (
+            <ItemDetails
+              {...props}
+              match='/home'
+              item={item}
+              onDelete={ this.deleteItemFromList.bind(this) }
+              onChangeStatus={ this.setStatusChanged.bind(this) } />
+          )
+        }} >
+          <h1 style={{ marginBottom: '1em' }}>Items in progress</h1>
           {
-            this.state.itemsLoaded
+            itemsLoaded
             ? (
               Object.values(userItemsInProgress).length > 0
               ? (
