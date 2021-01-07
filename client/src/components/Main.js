@@ -48,7 +48,7 @@ const routes = [
   { path: '/items/filters/:filter', component: Items },
   { path: '/items/add', component: getAuthComponent(AddItem) },
   { path: '/items/:titleId/edit', component: getAuthComponent(EditItem) },
-  { path: '/items', component: getAuthComponent(Items), detailsRoute: {
+  { path: '/items', component: Items, detailsRoute: {
     path: '/items/:titleId', component: ItemDetails
   } },
   { path: '/lists/add', component: getAuthComponent(AddList) },
