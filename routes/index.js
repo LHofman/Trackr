@@ -104,7 +104,7 @@ router.post('/items', auth, (req, res, next) => {
           game: item._id,
           createdBy: item.createdBy,
           index: 1,
-          objective: 'Clear the Main Campaigns',
+          objective: 'Clear the Main Campaign',
           objective_id: 1
         });
         console.log(gameObjective);
