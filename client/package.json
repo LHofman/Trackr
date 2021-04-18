@@ -3,14 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "http-proxy-middleware": "^1.0.6",
+    "@types/jest": "^26.0.22",
+    "@types/node": "^14.14.41",
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
+    "@types/react-router-dom": "^5.1.7",
+    "http-proxy-middleware": "^1.2.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
-    "react-redux": "^7.2.2",
+    "react-redux": "^7.2.3",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "1.1.5",
+    "react-scripts": "4.0.3",
     "redux": "^4.0.5",
-    "semantic-ui-react": "^0.82.5"
+    "semantic-ui-react": "^0.82.5",
+    "typescript": "^4.2.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -18,17 +24,19 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
-  "proxy": {
-    "/api/*": {
-      "target": "http://localhost:3001",
-      "secure": "false"
-    },
-    "/users/*": {
-      "target": "http://localhost:3001",
-      "secure": "false"
-    }
-  },
   "devDependencies": {
     "concurrently": "^3.6.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

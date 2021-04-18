@@ -2,3 +2,5 @@
 /client/node_modules
 
 .env
+
+/client/src/react-app-env.d.ts
