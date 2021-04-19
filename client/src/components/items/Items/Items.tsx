@@ -1,21 +1,45 @@
-import React, { Component } from 'react';
-import { Redirect} from 'react-router-dom';
+import { Component } from 'react';
+import { match, Redirect} from 'react-router-dom';
 
 import Item from './Item';
 import ItemDetails from '../ItemDetails/ItemDetails';
 import PaginatedList from '../../UI/PaginatedList/PaginatedList';
+import ListWithDetails from '../../../hoc/ListWithDetails';
 
 import fetch from '../../../utils/fetch';
-import { getItemsFiltersControlsExtraParams, getItemsFiltersControls, getItemsFiltersDefaults, filterItem, applyCustomFilter } from '../../../utils/items/itemsFilters';
-import { itemsSortDefault, sortItems, getItemsSortControls } from '../../../utils/items/itemsSorting';
+import {
+    getItemsFiltersControlsExtraParams,
+    getItemsFiltersControls,
+    getItemsFiltersDefaults,
+    filterItem,
+    applyCustomFilter
+} from '../../../utils/items/itemsFilters';
+import {
+  itemsSortDefault,
+  sortItems,
+  getItemsSortControls
+} from '../../../utils/items/itemsSorting';
 
 import { SET_ITEMS_LIST_FILTERS, SET_ITEMS_LIST_PAGE, SET_ITEMS_LIST_SORTING } from '../../../store/items/actions';
 import { LIST_FILTERS, LIST_PAGE, LIST_SORTING } from '../../../store/items/keys';
-import ListWithDetails from '../../../hoc/ListWithDetails';
 
-export default class Items extends Component {
-  constructor() {
-    super();
+import * as ItemTypes from '../../../types/item/item';
+
+type MyProps = {
+  match: match<{ filter: ItemTypes.ItemCustomFilter }>;
+};
+
+type MyState = {
+  items: ItemTypes.Item[];
+  filtersDefault: ItemTypes.ItemFilters;
+  sortDefault: ItemTypes.ItemSorting;
+  filterControlsExtraFields: ItemTypes.ItemExtraParams;
+  redirect?: string;
+};
+
+export default class Items extends Component<MyProps, MyState> {
+  constructor(props) {
+    super(props);
     this.state = {
       items: [],
       filtersDefault: getItemsFiltersDefaults(),
@@ -29,7 +53,7 @@ export default class Items extends Component {
     Promise.all([
       this.getItems(),
 
-      new Promise((resolve) => {
+      new Promise<void>((resolve) => {
         getItemsFiltersControlsExtraParams().then(filterControlsExtraFields => {
           this.setState({ filterControlsExtraFields });
           setTimeout(() => {
@@ -42,11 +66,11 @@ export default class Items extends Component {
     });
   }
 
-  componentWillReceiveProps(props) {
+  componentWillReceiveProps(props: MyProps) {
     this.setState({ redirect: '' }, () => { this.checkCustomFilter(props) });
   }
 
-  checkCustomFilter(props) {
+  checkCustomFilter(props: MyProps) {
     if (!props.match || !props.match) {
       return;
     }
@@ -68,7 +92,7 @@ export default class Items extends Component {
   getItems() {
     return fetch('/api/items').then(items => {
       if (!items || items === null) throw new Error('No items found');
-      items.sort(sortItems(itemsSortDefault));
+      items.sort(sortItems(itemsSortDefault, getItemsFiltersDefaults()));
       this.setState({ items })
     }).catch(console.log);
   }

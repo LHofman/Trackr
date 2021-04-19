@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 
 import { getItemsSortControls, sortItems } from '../items/itemsSorting';
 import getSortControl from '../../components/UI/FilterMenu/getSortControl';
-import { sort, sortValues } from '../sortUtils';
+import { sort, sortValuesStandard } from '../sortUtils';
 
 export const getUserItemsSortControls = (extraFields = []) => (currentSort, currentFilters, handleSortChange) => (
   <Fragment>
@@ -17,7 +17,7 @@ export const sortUserItems = ({ field, order }, filters = {}) => (userItem1, use
       return sort({ field, order }, filters, (field, userItem1, userItem2) => {
         switch (field) {
           case 'rating':
-            return sortValues('Number', userItem1.rating, userItem2.rating);
+            return sortValuesStandard(userItem1.rating, userItem2.rating);
           default:
             return null;
         }

@@ -1,6 +1,8 @@
 import moment from 'moment';
 
-export default (type, value, filter) => {
+import { ItemReleaseDate } from '../types/item/item';
+
+export default (type: string, value: any, filter: any): boolean => {
   if (!filter) return true;
 
   const valueString = value.toString().toLowerCase();
@@ -16,7 +18,10 @@ export default (type, value, filter) => {
   }
 }
 
-const checkDateFilter = (value, filter) => {
+const checkDateFilter = (
+  value: ItemReleaseDate,
+  filter: { lowerLimit: string, upperLimit: string }
+): boolean => {
   if ((filter.lowerLimit || filter.upperLimit) && value.status !== 'Date') return false;
   if (filter.lowerLimit && !moment(filter.lowerLimit).isSameOrBefore(value.value)) return false;
   if (filter.upperLimit && !moment(filter.upperLimit).isSameOrAfter(value.value)) return false;

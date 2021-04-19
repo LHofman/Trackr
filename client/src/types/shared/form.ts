@@ -1,0 +1,1 @@
+export type Option<T> = { text: string; value: T; }

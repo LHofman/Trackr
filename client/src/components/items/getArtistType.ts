@@ -1,4 +1,7 @@
-export default type => {
+import { ItemType } from '../../types/item/item';
+import { Maybe } from '../../types/shared/general';
+
+export default (type: ItemType): Maybe<string> => {
   switch (type) {
     case 'Album': return 'Artist';
     case 'Book': return 'Author';

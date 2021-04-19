@@ -1,13 +1,31 @@
-import React from 'react';
 import moment from 'moment';
+import { ChangeEvent, ReactElement, SyntheticEvent } from 'react';
 import { Dropdown, Input, Label, Menu, Rating } from 'semantic-ui-react';
 
 import { capitalizeFirstLetter, createLabel } from '../../../utils/stringUtils';
 
-export default (name, control, handleValueChange, options = {}) => {
+import { Option } from '../../../types/shared/form';
+import { Maybe } from '../../../types/shared/general';
+import { ValueChangeHandler } from '../../../types/shared/handlers';
+
+type Control = 'Date' | 'Rating' | 'Select';
+type Options = {
+  label?: string;
+  placeholder?: string;
+  value?: any;
+  options?: Option<string>[];
+};
+
+export default function getFilterControl(
+  name: string,
+  control: Control,
+  handleValueChange: ValueChangeHandler,
+  options: Options = {}
+): Maybe<ReactElement> {
   const label = options.label || createLabel(name);
   const placeholder = options.placeholder ||  capitalizeFirstLetter(name);
   const defaultValue = options.value || '';
+  const selectOptions = options.options || [];
 
   switch (control) {
     case 'Date': 
@@ -15,7 +33,9 @@ export default (name, control, handleValueChange, options = {}) => {
         type='date'
         name={name}
         value={moment(defaultValue).isValid() ? moment(defaultValue).format('YYYY-MM-DD') : ''}
-        onChange={(event) => onFilterChangeEvent(event, handleValueChange)} />
+        onChange={
+          (event) => handleValueChange(event.currentTarget.name, event.currentTarget.value)
+        } />
       );
     case 'Rating':
       return createControl(label, <Rating
@@ -32,20 +52,16 @@ export default (name, control, handleValueChange, options = {}) => {
         selection
         search
         value={defaultValue}
-        options={[{ text: '---No Filter---', value: '' }, ...options.options]}
+        options={[{ text: '---No Filter---', value: '' }, ...selectOptions]}
         onChange={(param, data) => handleValueChange(name, data.value)} />
       );
     default: return null;
   }
 }
 
-const onFilterChangeEvent = (event, handleValueChange) => {
-  handleValueChange(event.target.name, event.target.value);
-}
-
-const createControl = (label, input) => (
+const createControl = (label: string, input: ReactElement): ReactElement => (
   <Menu.Item>
-    <Label>{ label }</Label>
-    { input } <br/>
+    <Label>{label}</Label>
+    {input} <br/>
   </Menu.Item>
 );

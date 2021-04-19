@@ -1,11 +1,22 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { List } from 'semantic-ui-react';
 
 import getIcon from '../../../utils/getIcon';
 import { isDateStatusValid } from '../../../utils/dateUtils';
 
-export default class Item extends Component {
+import * as ItemTypes from '../../../types/item/item';
+
+type MyProps = {
+  match: string;
+  item: ItemTypes.Item;
+};
+
+type MyState = {
+  item: ItemTypes.Item;
+};
+
+export default class Item extends Component<MyProps, MyState> {
   constructor(props) {
     super(props);
     this.state = {
@@ -30,8 +41,11 @@ export default class Item extends Component {
               item.releaseDateStatus
             }<br />
             {
-              item.type === 'Movie' && isDateStatusValid(item.releaseDateDvdStatus) ?
-              `Dvd Release Date: ${
+              (
+                item.releaseDateDvd &&
+                item.releaseDateDvdStatus &&
+                isDateStatusValid(item.releaseDateDvdStatus)
+              ) ? `Dvd Release Date: ${
                 item.releaseDateDvdStatus === 'Date' ? 
                 new Date(item.releaseDateDvd).toDateString() :
                 item.releaseDateDvdStatus
