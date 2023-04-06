@@ -49,6 +49,7 @@ export default class Lists extends Component {
         isLoaded={lists.length > 0}
         listWidth={6}
         detailsRoutePath='/lists/:titleId'
+        location={this.props.location}
         renderDetailsComponent={(props) => (
           <ListDetails
             {...props}

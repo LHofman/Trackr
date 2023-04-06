@@ -9,6 +9,8 @@ Tracking my collection/progress/... of movies/tvshows...
 
 ```shellsession
 npm install
+cd client
+npm install
 ```
 
 * Create a file '.env' in the root folder

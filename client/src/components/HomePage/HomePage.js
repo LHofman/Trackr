@@ -34,7 +34,7 @@ export default class HomePage extends Component {
   getUserItemsInProgress() {
     fetch(`/api/userItems/${getUser().id}/inProgress`).then((userItemsInProgress) => {
       this.setState({ userItemsInProgress, itemsLoaded: true });
-    })
+    });
   }
 
   setStatusChanged(userItem) {
@@ -58,6 +58,7 @@ export default class HomePage extends Component {
     const { itemsLoaded, redirect}  = this.state;
 		if (redirect) return <Redirect to={redirect} />;
 
+    
     let userItemsInProgress = {};
     if (this.state.userItemsInProgress.length > 0) {
       userItemsInProgress = this.state.userItemsInProgress
@@ -67,7 +68,8 @@ export default class HomePage extends Component {
             key={ userItem._id }
             item={ userItem.item }
             status={ userItem.status }
-            match={'/home'} />
+            match={'/home'}
+            showBookmarkedUserObjectives={true} />
         ))
         .reduce((userItemsByStatus, userItem) => {
           const status = userItem.props.status;
@@ -82,6 +84,7 @@ export default class HomePage extends Component {
       <ListWithDetails
         isLoaded={itemsLoaded}
         detailsRoutePath='/home/:titleId'
+        location={this.props.location}
         renderDetailsComponent={(props) => {
           let item = this.state.userItemsInProgress.filter((ui) =>
             ui.item.title_id === props.match.params.titleId
@@ -117,7 +120,7 @@ export default class HomePage extends Component {
                 <Dimmer active>
                   <Loader content='Loading' />
                 </Dimmer>
-              </Segment> 
+              </Segment>
             )
           }
       </ListWithDetails>

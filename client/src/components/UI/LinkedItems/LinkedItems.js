@@ -46,9 +46,6 @@ export default class LinkedItems extends Component {
       const options = this.state.options
       options.push({ key: item._id, value: item._id, text: item.title });
 
-      console.log(item);
-      console.log(this.state.items);
-      
       this.props.parentComponent.setState({
         [this.props.stateKeyItems]: this.state.items.filter((stateItem) => 
           stateItem._id !== item._id

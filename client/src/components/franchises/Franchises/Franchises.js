@@ -50,6 +50,7 @@ export default class Franchises extends Component {
       <ListWithDetails
         isLoaded={franchises.length > 0}
         detailsRoutePath='/franchises/:titleId'
+        location={this.props.location}
         renderDetailsComponent={(props) => (
           <FranchiseDetails 
             {...props}

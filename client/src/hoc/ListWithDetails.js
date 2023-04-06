@@ -1,12 +1,16 @@
 import React from 'react';
 import Media from 'react-media';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, matchPath } from 'react-router-dom';
 import { Grid, GridColumn } from 'semantic-ui-react';
 
 import { SPLIT_SCREEN_MIN_WIDTH } from '../constants/screenConstants';
 
 export default (props) => {
   const listWidth = props.listWidth || 8;
+
+  if (!matchPath(props.location.pathname, props.detailsRoutePath)) {
+    return props.children;
+  }
 
   return (
     <Media query={`(min-width: ${SPLIT_SCREEN_MIN_WIDTH})`}>

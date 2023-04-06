@@ -107,10 +107,8 @@ router.post('/items', auth, (req, res, next) => {
           objective: 'Clear the Main Campaign',
           objective_id: 1
         });
-        console.log(gameObjective);
+        
         gameObjective.save((err, gameObjective) => {
-          console.log(err);
-          console.log(gameObjective);
           res.json(item);
         });
       }
@@ -166,22 +164,73 @@ router.delete('/items/:id', auth, (req, res, next) => {
 
 //#region userItems
 
+const getAggregateStagesForBookmarkedGameObjectivesOnUserItems = (user) => [
+  { $lookup: {
+    from: "items",
+    localField: "item",
+    foreignField: "_id",
+    as: "item",
+  } },
+  { $unwind: { path: "$item" } },
+  { $lookup: {
+    from: "gameobjectives",
+    localField: "item._id",
+    foreignField: "game",
+    as: "item.gameObjectives",
+    pipeline: [
+      { $lookup: {
+        from: "usergameobjectives",
+        localField: "_id",
+        foreignField: "gameObjective",
+        as: "userGameObjective",
+        pipeline: [
+          { $match: {
+            user: mongoose.Types.ObjectId(user),
+            isBookmarked: true,
+          } },
+        ],
+      } },
+      { $match: { userGameObjective: { $ne: [] } } },
+      { $unwind: { path: "$userGameObjective" } },
+      { $lookup: {
+        from: "gameobjectives",
+        localField: "parent",
+        foreignField: "_id",
+        as: "parent",
+      } },
+      { $unwind: {
+        path: "$parent",
+        preserveNullAndEmptyArrays: true,
+      } },
+    ],
+  } },
+];
+
+/* inProgress query with aggregate */
 router.get('/userItems/:user/inProgress', (req, res, next) => {
-  UserItem.find({ user: req.params.user, status: { $in: statusesInProgress } })
-    .populate('item')
-    .exec((err, userItems) => {
-      if (err) return res.json([]);
-      return res.json(userItems);
-    });
+  UserItem.aggregate([
+    { $match: {
+      user: mongoose.Types.ObjectId(req.params.user),
+      status: { $in: statusesInProgress },
+    } },
+    ...getAggregateStagesForBookmarkedGameObjectivesOnUserItems(req.params.user),
+  ]).exec((err, userItems) => {
+    if (err) return res.json([]);
+    return res.json(userItems);
+  });
 });
 
 router.get('/userItems/:user/:item', (req, res, next) => {
-  UserItem.findOne({user: req.params.user, item: req.params.item}, 
-    (err, userItem) => {
-      if (err) return res.status(500).send({success: false, msg: 'UserItem not found'});
-      res.json(userItem);
-    }
-  );
+  UserItem.aggregate([
+    { $match: {
+      user: mongoose.Types.ObjectId(req.params.user),
+      item: mongoose.Types.ObjectId(req.params.item),
+    } },
+    ...getAggregateStagesForBookmarkedGameObjectivesOnUserItems(req.params.user),
+  ]).exec((err, userItems) => {
+    if (err) return res.json([]);
+    return res.json(userItems[0]);
+  });
 });
 
 router.get('/userItems/:user', (req, res, next) => {
@@ -388,7 +437,6 @@ router.get('/userGameObjectives/:user/game/:game', (req, res, next) => {
     });
   });
 });
-
 
 router.get('/userGameObjectives/:user/:gameObjective', (req, res, next) => {
   UserGameObjective.findOne({

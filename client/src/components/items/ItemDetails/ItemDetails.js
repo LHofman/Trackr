@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Button, Confirm, Icon, Popup, Grid } from 'semantic-ui-react';
+import { Button, Confirm, Icon, Popup, Grid, Segment, Dimmer, Loader, List } from 'semantic-ui-react';
 
 import BackButton from '../../UI/Basic/Button/BackButton';
 import ItemDetailsFranchise from './ItemDetailsFranchise';
@@ -17,6 +17,7 @@ import getUser from '../../../utils/getUser';
 import hasStarted from '../../../utils/hasStarted';
 import isLoggedIn from '../../../utils/isLoggedIn';
 import statusOptions from '../../userItems/statusOptions';
+import GameObjectiveBookmark from '../../gameObjectives/GameObjectives/GameObjectiveBookmark';
 
 export default class ItemDetails extends Component {
 	constructor(props) {
@@ -208,11 +209,21 @@ export default class ItemDetails extends Component {
 			state: { details, isLoaded, userItem }
 		} = this;
 
-		if (!isLoaded) return null;
+		if (!isLoaded) {
+			return (
+				<Segment style={{ height: '25vh' }}>
+					<Dimmer active>
+						<Loader content='Loading' />
+					</Dimmer>
+				</Segment>
+			);
+		}
 
 		const links = (details.links && details.links.length > 0) ? details.links.map(link => <li key={link.index}>
 			<a href={link.url} target='_blank'>{link.title}</a>
 		</li>) : undefined;
+
+		const gameObjectives = userItem?.item?.gameObjectives || []; 
 
 		return (
 			<div>
@@ -276,6 +287,17 @@ export default class ItemDetails extends Component {
 					<div>
 						{details.platforms.sort().join(', ')}<br/><br/>
 						<Button as={Link} to={`/objectives/${details.title_id}`} color='teal'>Objectives</Button><br /><br />
+						{
+							gameObjectives.length > 0 &&
+							<List>
+								{ gameObjectives.map(gameObjective => (
+									<GameObjectiveBookmark
+										key={gameObjective._id} 
+										gameObjective={ { ...gameObjective, game: details } } 
+									/>
+								)) }
+							</List>
+						}
 					</div>
 				}
 				{

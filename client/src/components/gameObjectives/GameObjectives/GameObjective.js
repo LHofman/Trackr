@@ -18,6 +18,7 @@ class GameObjective extends Component {
       following: props.following,
       gameObjective: props.gameObjective,
       hasSubObjectives: false,
+      isBookmarked: (props.gameObjective.userGameObjective || {}).isBookmarked,
       showHint: false,
       viewTitle: false,
     }
@@ -28,7 +29,8 @@ class GameObjective extends Component {
     if (userGameObjective) {
       this.setState({
         amount: userGameObjective.amount,
-        completed: userGameObjective.completed
+        completed: userGameObjective.completed,
+        isBookmarked: userGameObjective.isBookmarked,
       })
     }
   }
@@ -83,6 +85,10 @@ class GameObjective extends Component {
     this.setState({viewTitle: true})
   }
 
+  toggleBookmark() {
+    this.setState({ isBookmarked: !this.state.isBookmarked }, () => this.updateUserObjective());
+  }
+
   toggleCompleted() {
     this.setState({ completed: !this.state.completed }, () => this.updateUserObjective());
   }
@@ -96,7 +102,7 @@ class GameObjective extends Component {
   }
 
   updateUserObjective() {
-    let { amount, completed, gameObjective } = this.state;
+    let { amount, completed, gameObjective, isBookmarked } = this.state;
 
     if (amount < 0) {
       amount = 0;
@@ -110,12 +116,14 @@ class GameObjective extends Component {
     if (userGameObjective) {
       userGameObjective.amount = amount;
       userGameObjective.completed = completed;
+      userGameObjective.isBookmarked = isBookmarked;
     } else {
       userGameObjective = {
         gameObjective: this.state.gameObjective._id,
         user: getUser().id,
         amount,
-        completed
+        completed,
+        isBookmarked
       };
     }
 
@@ -148,6 +156,7 @@ class GameObjective extends Component {
       following,
       gameObjective,
       hasSubObjectives,
+      isBookmarked,
       showHint,
       viewTitle
     } = this.state;
@@ -158,15 +167,6 @@ class GameObjective extends Component {
       <List.Item>
         <List.Content>
           <List.Header style={{ float: 'left' }} >
-            {`${gameObjective.index}. `}
-            {
-              hasSubObjectives
-                ? <a href={`/objectives/${gameObjective.game.title_id}
-                    /subObjectives/${gameObjective.objective_id}`}>
-                    { name }
-                  </a>
-                : name
-            }
             {
               following &&
               <div style={{ float: 'left', marginRight:'1em'}}>
@@ -199,6 +199,19 @@ class GameObjective extends Component {
                     )
                 }
               </div>
+            }
+            {
+              following &&
+              <Icon name={ `bookmark${ isBookmarked ? '' : ` outline` }` } onClick={this.toggleBookmark.bind(this)} />
+            }
+            {`${gameObjective.index}. `}
+            {
+              hasSubObjectives
+                ? <a href={`/objectives/${gameObjective.game.title_id}
+                    /subObjectives/${gameObjective.objective_id}`}>
+                    { name }
+                  </a>
+                : name
             }
             {
               spoiler &&

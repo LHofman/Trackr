@@ -20,6 +20,10 @@ export default mongoose.model(
     amount: {
       type: Number,
       default: 0
+    },
+    isBookmarked: {
+      type: Boolean,
+      default: false
     }
   })
 );

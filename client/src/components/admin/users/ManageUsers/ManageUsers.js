@@ -44,6 +44,7 @@ export default class ManageUsers extends Component {
         isLoaded={users.length > 0}
         listWidth={6}
         detailsRoutePath='/adminUsers/:username'
+        location={this.props.location}
         renderDetailsComponent={(props) => (
           <UserDetails
             {...props}

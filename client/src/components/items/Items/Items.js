@@ -81,6 +81,7 @@ export default class Items extends Component {
       <ListWithDetails
         isLoaded={items.length > 0}
         detailsRoutePath='/items/:titleId'
+        location={this.props.location}
         renderDetailsComponent={(props) => (
           <ItemDetails 
             {...props}
