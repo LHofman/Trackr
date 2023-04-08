@@ -124,7 +124,15 @@ export default class MyForm extends Component {
 
     return (
       <div>
-        <h1>{ this.props.title }</h1>
+        <h1>
+          { this.props.title }
+          {
+            this.props.otherButton &&
+            <Button style={{ marginLeft: '25px' }} onClick={ this.props.otherButton.callback }>
+              { this.props.otherButton.text }
+            </Button>
+          }
+        </h1>
         <Form error onSubmit={this.handleSubmit.bind(this)}>
           { formFields }
           <Button positive floated='left' type='submit'>{ this.props.submitButtonText || 'Submit' }</Button>

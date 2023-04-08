@@ -330,6 +330,7 @@ const getMaxGameObjectiveId = gameId =>
 
 router.get('/gameObjectives/byGame/:game', (req, res, next) => {
   GameObjective.find({game: req.params.game})
+    .populate([{ path: 'createdBy', select: 'username' }, 'game', 'parent'])
     .exec((err, gameObjectives) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjectives not found'});
       const firstOrderGameObjectives = gameObjectives.filter(gameObjective => 
@@ -342,6 +343,7 @@ router.get('/gameObjectives/byGame/:game', (req, res, next) => {
 
 router.get('/gameObjectives/byParent/:parent', (req, res, next) => {
   GameObjective.find({ parent: req.params.parent })
+    .populate([{ path: 'createdBy', select: 'username' }, 'game', 'parent'])
     .exec((err, gameObjectives) => {
       if (err || !gameObjectives) return res.json([]);
       res.json(gameObjectives);
@@ -350,15 +352,31 @@ router.get('/gameObjectives/byParent/:parent', (req, res, next) => {
 
 router.get('/gameObjectives/objective_id/:game/:objective_id', (req, res, next) => {
   GameObjective.findOne({ game: req.params.game, objective_id: req.params.objective_id })
+    .populate([{ path: 'createdBy', select: 'username' }, 'game', 'parent'])
     .exec((err, gameObjective) => {
-      if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
+      if (err) return res.status(500).send(STATUS_500_MESSAGE);
       res.json(gameObjective);
     }
   );
 });
 
+router.get('/gameObjectives/lastIndex/:gameId/:parentId', (req, res, next) => {
+  let parentId = req.params.parentId;
+  if (parentId === 'undefined') parentId = null;
+
+  GameObjective.findOne(
+    { game: req.params.gameId, parent: parentId },
+    { index: 1 },    
+    { sort: { index: -1 } }
+  ).exec((err, gameObjective) => {
+    if (err) return res.status(500).send({success: false, msg: 'Something went wrong'});
+    res.json(gameObjective ? gameObjective.index : 0);
+  });
+});
+
 router.get('/gameObjectives/:id', (req, res, next) => {
   GameObjective.findById(req.params.id)
+    .populate([{ path: 'createdBy', select: 'username' }, 'game', 'parent'])
     .exec((err, gameObjective) => {
       if (err) return res.status(500).send({success: false, msg: 'GameObjective not found'});
       res.json(gameObjective);
@@ -373,13 +391,15 @@ router.get('/hasSubObjectives/:objective', (req, res, next) =>
 );
 
 router.post('/gameObjectives', auth, (req, res, next) => {
-  const gameObjective = new GameObjective(req.body);
-  return getMaxGameObjectiveId(gameObjective.game).then(maxObjective => {
-    gameObjective.objective_id = (maxObjective + 1);
-
-    gameObjective.save((err, gameObjective) => {
+  const gameObjectives = req.body.map((gameObjective) => new GameObjective(gameObjective));
+  return getMaxGameObjectiveId(gameObjectives[0].game).then((maxObjective) => {
+    gameObjectives.forEach((gameObjective) => {
+      gameObjective.objective_id = ++maxObjective;
+    });
+    
+    return GameObjective.insertMany(gameObjectives, (err, gameObjectives) => {
       if (err) return res.status(500).send(STATUS_500_MESSAGE);
-      res.json(gameObjective);
+      res.json(gameObjectives);
     });
   });
 });

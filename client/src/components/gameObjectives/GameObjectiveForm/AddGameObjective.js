@@ -3,17 +3,22 @@ import { Redirect } from 'react-router-dom';
 
 import fetch from '../../../utils/fetch';
 import GameObjectiveForm from './GameObjectiveForm';
+import AddMultipleGameObjectives from './AddMultipleGameObjectives';
 
 class AddObjective extends Component {
   constructor() {
     super();
     this.state = {
       backUrl: '',
+      form: 'single',
       game: undefined,
+      lastIndex: 0,
       parent: undefined,
       isLoaded: false,
       redirect: undefined
     }
+
+    this.toggleForm = this.toggleForm.bind(this);
   }
 
   componentWillReceiveProps(newProps) {
@@ -35,7 +40,9 @@ class AddObjective extends Component {
     this.setState({ backUrl });
     this.getGame(title_id).then(() => {
       (parent_id ? this.getParent(parent_id) : Promise.resolve()).then(() => {
-        this.setState({ isLoaded: true });
+        this.getLastIndex().then(() => {
+          this.setState({ isLoaded: true });
+        });
       })
     });
   }
@@ -58,15 +65,35 @@ class AddObjective extends Component {
     });
   }
 
-  addObjective(newObjective) {
-    newObjective.game = this.state.game;
-    if (this.state.parent) {
-      newObjective.parent = this.state.parent._id;
-    }
+  getLastIndex() {
+    const gameId = this.state.game._id;
+    const parentId = this.state.parent?._id;
+    return fetch(`/api/gameObjectives/lastIndex/${gameId}/${parentId}`).then(lastIndex => {
+      this.setState({ lastIndex });
+    }).catch(reason => {
+      this.setState({ redirect: '/' });
+    });
+  }
 
-    return fetch('/api/gameObjectives', 'post', true, newObjective).then(gameObjective => {
+  addObjective(newObjective) {
+    this.addObjectives([newObjective]);
+  }
+
+  addObjectives(newObjectives) {
+    newObjectives.forEach((newObjective) => {
+      newObjective.game = this.state.game._id;
+      if (this.state.parent) {
+        newObjective.parent = this.state.parent._id;
+      }
+    });
+
+    return fetch('/api/gameObjectives', 'post', true, newObjectives).then((gameObjectives) => {
       this.setState({redirect: this.state.backUrl});
     }).catch(console.log);
+  }
+
+  toggleForm() {
+    this.setState({ form: this.state.form === 'single' ? 'multiple': 'single' });
   }
 
   render() {
@@ -77,12 +104,22 @@ class AddObjective extends Component {
       return null;
     }
 
-    return (
+    return this.state.form === 'single' ? (
       <GameObjectiveForm
         title='Add Objective'
         submitButtonText='Submit'
         updateGameObjective={ this.addObjective.bind(this) }
-        cancelUrl={ this.state.backUrl } />
+        cancelUrl={ this.state.backUrl }
+        otherButton={{
+          text: 'Add multiple simple objectives',
+          callback: this.toggleForm,
+        }} />
+    ) : (
+      <AddMultipleGameObjectives
+        lastIndex={ this.state.lastIndex }
+        updateGameObjectives={ this.addObjectives.bind(this) }
+        cancelUrl={ this.state.backUrl }
+        toggleForm={ this.toggleForm } />
     );
   }
 }

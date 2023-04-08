@@ -89,6 +89,7 @@ const getInput = (field, config, formComponent, handleValueChange, group) => {
           autoHeight
           name={ field }
           { ...config.extraAttributes }
+          style={ config.style || {} }
           placeholder={ placeholder }
           value={ defaultValue }
           onChange={ (e) => onInputChangeEvent(e, syncValue) } />

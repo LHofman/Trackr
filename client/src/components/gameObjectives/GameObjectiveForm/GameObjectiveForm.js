@@ -91,7 +91,8 @@ export default class GameObjectiveForm extends Component {
         inputs={ inputs }
         submitButtonText={ this.props.submitButtonText }
         submit={ this.submitForm.bind(this) }
-        cancelUrl={ this.props.cancelUrl } />
+        cancelUrl={ this.props.cancelUrl }
+        { ...this.props } />
     );
   }
 }
